@@ -113,6 +113,32 @@ export const useBookmarks = () => {
     setLoading(false);
   };
 
+  const handleBulkDelete = async (bookmarkIds: string[]) => {
+    if (bookmarkIds.length === 0) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from('bookmarks')
+      .delete()
+      .in('id', bookmarkIds);
+
+    if (error) {
+      console.error('Error deleting bookmarks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete selected bookmarks",
+        variant: "destructive"
+      });
+    } else {
+      fetchBookmarks();
+      toast({
+        title: "Success",
+        description: `${bookmarkIds.length} bookmark${bookmarkIds.length === 1 ? '' : 's'} deleted successfully`,
+      });
+    }
+    setLoading(false);
+  };
+
   const handleToggleFavorite = async (id: string, isFavorite: boolean) => {
     setLoading(true);
     const { error } = await supabase
@@ -147,6 +173,7 @@ export const useBookmarks = () => {
     fetchBookmarks,
     handleSave,
     handleDelete,
+    handleBulkDelete,
     handleToggleFavorite
   };
 };

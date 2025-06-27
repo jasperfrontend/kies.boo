@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -34,6 +33,7 @@ export const Dashboard = () => {
     fetchBookmarks,
     handleSave,
     handleDelete,
+    handleBulkDelete,
     handleToggleFavorite
   } = useBookmarks();
 
@@ -52,10 +52,8 @@ export const Dashboard = () => {
     setSelectedBookmarks(bookmarkIds);
   };
 
-  const handleBulkDelete = async () => {
-    for (const bookmarkId of selectedBookmarks) {
-      await handleDelete(bookmarkId);
-    }
+  const handleBulkDeleteClick = async () => {
+    await handleBulkDelete(selectedBookmarks);
     setSelectedBookmarks([]);
   };
 
@@ -101,7 +99,7 @@ export const Dashboard = () => {
               favoriteCount={favoriteCount}
               onBookmarksAdded={fetchBookmarks}
               selectedBookmarks={selectedBookmarks}
-              onBulkDelete={handleBulkDelete}
+              onBulkDelete={handleBulkDeleteClick}
             />
 
             <BookmarkDisplay
