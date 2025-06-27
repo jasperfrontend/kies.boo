@@ -28,6 +28,12 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   selectedBookmarks = [],
   onBulkDelete
 }) => {
+  const [showSeedButton, setShowSeedButton] = React.useState(true);
+
+  const handleFeatureRemoved = () => {
+    setShowSeedButton(false);
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-4">
@@ -48,7 +54,12 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
           </Button>
         </div>
         <div className="flex items-center space-x-2">
-          <SeedBookmarksButton onBookmarksAdded={onBookmarksAdded} />
+          {showSeedButton && (
+            <SeedBookmarksButton 
+              onBookmarksAdded={onBookmarksAdded}
+              onFeatureRemoved={handleFeatureRemoved}
+            />
+          )}
           {selectedBookmarks.length > 0 && onBulkDelete && (
             <Button
               onClick={onBulkDelete}

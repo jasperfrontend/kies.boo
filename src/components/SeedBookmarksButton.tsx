@@ -4,10 +4,20 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { seedRandomBookmarks } from '@/utils/seedBookmarks';
-import { Database, Plus } from 'lucide-react';
+import { Database } from 'lucide-react';
+import { SeedBookmarksModal } from '@/components/SeedBookmarksModal';
 
-export const SeedBookmarksButton = ({ onBookmarksAdded }: { onBookmarksAdded: () => void }) => {
+interface SeedBookmarksButtonProps {
+  onBookmarksAdded: () => void;
+  onFeatureRemoved: () => void;
+}
+
+export const SeedBookmarksButton: React.FC<SeedBookmarksButtonProps> = ({ 
+  onBookmarksAdded, 
+  onFeatureRemoved 
+}) => {
   const [isSeeding, setIsSeeding] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -22,6 +32,8 @@ export const SeedBookmarksButton = ({ onBookmarksAdded }: { onBookmarksAdded: ()
     }
 
     setIsSeeding(true);
+    setShowModal(false);
+    
     try {
       const result = await seedRandomBookmarks(user.id);
       
@@ -46,25 +58,43 @@ export const SeedBookmarksButton = ({ onBookmarksAdded }: { onBookmarksAdded: ()
     }
   };
 
+  const handleRemoveFeature = () => {
+    setShowModal(false);
+    onFeatureRemoved();
+    toast({
+      title: "Feature Removed",
+      description: "The random bookmarks feature has been removed.",
+    });
+  };
+
   return (
-    <Button
-      onClick={handleSeedBookmarks}
-      disabled={isSeeding}
-      variant="outline"
-      size="sm"
-      className="gap-2"
-    >
-      {isSeeding ? (
-        <>
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          Seeding...
-        </>
-      ) : (
-        <>
-          <Database className="h-4 w-4" />
-          Add 100 Random Bookmarks
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        onClick={() => setShowModal(true)}
+        disabled={isSeeding}
+        variant="outline"
+        size="sm"
+        className="gap-2"
+      >
+        {isSeeding ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            Seeding...
+          </>
+        ) : (
+          <>
+            <Database className="h-4 w-4" />
+            Add 100 Random Bookmarks
+          </>
+        )}
+      </Button>
+
+      <SeedBookmarksModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        onConfirm={handleSeedBookmarks}
+        onRemoveFeature={handleRemoveFeature}
+      />
+    </>
   );
 };
