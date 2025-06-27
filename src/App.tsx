@@ -9,6 +9,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthForm } from "./components/AuthForm";
 import { Dashboard } from "./pages/Dashboard";
 import Hub from "./pages/Hub";
+import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,14 @@ const AppContent = () => (
       element={
         <ProtectedRoute>
           <Hub />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/search" 
+      element={
+        <ProtectedRoute>
+          <SearchResults />
         </ProtectedRoute>
       } 
     />
