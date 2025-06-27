@@ -5,11 +5,13 @@ import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
+import { CollectionCard } from '@/components/CollectionCard';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Clock, Star, Shuffle } from 'lucide-react';
+import { Trash2, Clock, Star, Shuffle, Brain } from 'lucide-react';
+import { TemporalClustering } from '@/utils/temporalClustering';
 
 interface Bookmark {
   id: string;
@@ -31,6 +33,12 @@ const Hub: React.FC = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
   
+  // Generate Smart Collections
+  const smartCollections = useMemo(() => {
+    if (bookmarks.length < 3) return [];
+    return TemporalClustering.generateSmartCollections(bookmarks);
+  }, [bookmarks]);
+
   // Get recent bookmarks (last 5)
   const recentBookmarks = useMemo(() => {
     return [...bookmarks]
@@ -132,6 +140,32 @@ const Hub: React.FC = () => {
                 {bookmarks.length} total bookmarks
               </Badge>
             </div>
+
+            {/* Smart Collections Section */}
+            {smartCollections.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
+                    Smart Collections
+                    <Badge variant="outline">{smartCollections.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {smartCollections.map((collection) => (
+                      <CollectionCard
+                        key={collection.id}
+                        collection={collection}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Recent Bookmarks Section */}
             <Card>
