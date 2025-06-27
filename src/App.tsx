@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthForm } from "./components/AuthForm";
 import { Dashboard } from "./pages/Dashboard";
+import Hub from "./pages/Hub";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,14 @@ const AppContent = () => (
       element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/hub" 
+      element={
+        <ProtectedRoute>
+          <Hub />
         </ProtectedRoute>
       } 
     />
