@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
@@ -35,6 +35,21 @@ export const Dashboard = () => {
     handleBulkDelete,
     handleToggleFavorite
   } = useBookmarks();
+
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key === 'a') {
+        event.preventDefault();
+        setIsDialogOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleEdit = (bookmark: Bookmark) => {
     setEditingBookmark(bookmark);

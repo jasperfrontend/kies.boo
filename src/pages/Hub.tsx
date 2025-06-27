@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { Header } from '@/components/Header';
 import { BookmarkTable } from '@/components/BookmarkTable';
@@ -76,6 +76,21 @@ const Hub: React.FC = () => {
   const handleApiKeysClick = () => {
     setShowApiKeys(!showApiKeys);
   };
+
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key === 'a') {
+        event.preventDefault();
+        setIsDialogOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   if (loading) {
     return (
