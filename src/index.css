@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Easter egg styles */
+.easter-egg-recovered {
+  @apply border-2 border-red-500 rounded-md p-1;
+}
+
+/* Fatality class for future animations */
+body.fatality-called {
+  /* Ready for future animations */
 }

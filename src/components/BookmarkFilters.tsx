@@ -30,9 +30,11 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
 }) => {
   const [showSeedButton, setShowSeedButton] = React.useState(true);
   const [typedSequence, setTypedSequence] = React.useState('');
+  const [recoveredByCode, setRecoveredByCode] = React.useState(false);
 
   const handleFeatureRemoved = () => {
     setShowSeedButton(false);
+    setRecoveredByCode(false);
   };
 
   React.useEffect(() => {
@@ -42,7 +44,10 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
       
       if (newSequence === 'abacabb') {
         setShowSeedButton(true);
+        setRecoveredByCode(true);
         setTypedSequence('');
+        // Add fatality-called class to body
+        document.body.classList.add('fatality-called');
       }
     };
 
@@ -71,10 +76,12 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
         </div>
         <div className="flex items-center space-x-2">
           {showSeedButton && (
-            <SeedBookmarksButton 
-              onBookmarksAdded={onBookmarksAdded}
-              onFeatureRemoved={handleFeatureRemoved}
-            />
+            <div className={recoveredByCode ? 'easter-egg-recovered' : ''}>
+              <SeedBookmarksButton 
+                onBookmarksAdded={onBookmarksAdded}
+                onFeatureRemoved={handleFeatureRemoved}
+              />
+            </div>
           )}
           {selectedBookmarks.length > 0 && onBulkDelete && (
             <Button
