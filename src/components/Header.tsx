@@ -2,10 +2,17 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookmarkPlus, LogOut, Search } from 'lucide-react';
+import { BookmarkPlus, LogOut, Search, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface HeaderProps {
   onAddBookmark: () => void;
@@ -16,6 +23,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSearchChange }) => {
   const { user, signOut } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const location = useLocation();
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-700">
@@ -54,12 +62,30 @@ export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSe
                 <span className="text-sm">🌙</span>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">{user?.email}</span>
-                <Button variant="ghost" size="sm" onClick={signOut}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
+              <Link 
+                to="/hub" 
+                className={`text-sm font-medium px-3 py-2 rounded-md transition-colors ${
+                  location.pathname === '/hub' 
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                Hub
+              </Link>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="rounded-full">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
