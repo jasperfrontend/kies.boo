@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { Header } from '@/components/Header';
@@ -86,6 +85,7 @@ const Hub: React.FC = () => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onApiKeysClick={handleApiKeysClick}
+          showApiKeys={showApiKeys}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
@@ -103,6 +103,7 @@ const Hub: React.FC = () => {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onApiKeysClick={handleApiKeysClick}
+        showApiKeys={showApiKeys}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -6,7 +6,7 @@ import { BookmarkPlus, LogOut, Search, User, Key } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,21 +19,41 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onApiKeysClick?: () => void;
+  showApiKeys?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSearchChange, onApiKeysClick }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  onAddBookmark, 
+  searchQuery, 
+  onSearchChange, 
+  onApiKeysClick,
+  showApiKeys 
+}) => {
   const { user, signOut } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleTitleClick = () => {
+    // If we're showing API keys, close them first
+    if (showApiKeys && onApiKeysClick) {
+      onApiKeysClick();
+    }
+    // Navigate to home
+    navigate('/');
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-2xl font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+            <button 
+              onClick={handleTitleClick}
+              className="text-2xl font-bold text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 transition-colors cursor-pointer bg-transparent border-none"
+            >
               Bookmark Bliss
-            </Link>
+            </button>
           </div>
           
           <div className="flex-1 max-w-lg mx-8">

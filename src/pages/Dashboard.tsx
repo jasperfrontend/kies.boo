@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -85,6 +84,7 @@ export const Dashboard = () => {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onApiKeysClick={handleApiKeysClick}
+        showApiKeys={showApiKeys}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
