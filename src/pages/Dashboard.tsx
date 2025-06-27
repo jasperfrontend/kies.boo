@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Grid, List, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { SeedBookmarksButton } from '@/components/SeedBookmarksButton';
 
 interface Bookmark {
   id: string;
@@ -225,6 +226,7 @@ export const Dashboard = () => {
                     Favorites <Badge variant="secondary" className="ml-2">{favoriteCount}</Badge>
                   </Button>
                 </div>
+                <SeedBookmarksButton onBookmarksAdded={fetchBookmarks} />
               </div>
               
               <div className="flex items-center space-x-2">
