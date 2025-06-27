@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { X, Loader2 } from 'lucide-react';
+import { TitleExtractor } from '@/utils/titleExtractor';
 
 interface Bookmark {
   id: string;
@@ -80,90 +81,14 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     setIsParsingTitle(true);
     
     try {
-      // Try multiple approaches for title parsing
-      let extractedTitle = null;
+      const result = await TitleExtractor.extractTitle(validUrl);
+      setTitle(result.title);
       
-      // First try: Use a more reliable CORS proxy
-      try {
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(validUrl)}`;
-        const response = await fetch(proxyUrl, {
-          method: 'GET',
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          }
-        });
-        
-        if (response.ok) {
-          const html = await response.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          
-          // Try multiple selectors for title
-          extractedTitle = 
-            doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
-            doc.querySelector('meta[name="twitter:title"]')?.getAttribute('content') ||
-            doc.querySelector('title')?.textContent ||
-            doc.querySelector('h1')?.textContent;
-        }
-      } catch (error) {
-        console.log('CORS proxy failed, trying alternative approach:', error);
-      }
+      // Log the extraction method for debugging
+      console.log(`Title extracted using ${result.source}:`, result.title);
       
-      // Second try: Use allorigins as fallback
-      if (!extractedTitle) {
-        try {
-          const fallbackUrl = `https://api.allorigins.com/get?url=${encodeURIComponent(validUrl)}`;
-          const response = await fetch(fallbackUrl);
-          const data = await response.json();
-          
-          if (data.contents) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            
-            extractedTitle = 
-              doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
-              doc.querySelector('meta[name="twitter:title"]')?.getAttribute('content') ||
-              doc.querySelector('title')?.textContent;
-          }
-        } catch (error) {
-          console.log('AllOrigins fallback failed:', error);
-        }
-      }
-      
-      // Clean up and set the title
-      if (extractedTitle) {
-        extractedTitle = extractedTitle.trim();
-        // Remove common suffixes
-        extractedTitle = extractedTitle.replace(/ - YouTube$/, '');
-        extractedTitle = extractedTitle.replace(/ \| .+$/, ''); // Remove " | SiteName" patterns
-        
-        if (extractedTitle.length > 100) {
-          extractedTitle = extractedTitle.substring(0, 100) + '...';
-        }
-        setTitle(extractedTitle);
-      } else {
-        // Last resort: use a cleaner domain name
-        const urlObj = new URL(validUrl);
-        let domain = urlObj.hostname.replace('www.', '');
-        
-        // Handle special cases for better domain display
-        if (domain.includes('youtube.com')) {
-          setTitle('YouTube Video');
-        } else if (domain.includes('github.com')) {
-          // Try to extract repo name from path
-          const pathParts = urlObj.pathname.split('/').filter(Boolean);
-          if (pathParts.length >= 2) {
-            setTitle(`${pathParts[0]}/${pathParts[1]} - GitHub`);
-          } else {
-            setTitle('GitHub Repository');
-          }
-        } else {
-          // Capitalize first letter of domain
-          setTitle(domain.charAt(0).toUpperCase() + domain.slice(1));
-        }
-      }
     } catch (error) {
-      console.log('All title parsing methods failed:', error);
+      console.log('Title extraction failed:', error);
       // Final fallback: use domain name
       try {
         const urlObj = new URL(validUrl);
