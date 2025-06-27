@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -277,9 +278,11 @@ export const Dashboard = () => {
 
       <BookmarkDialog
         open={isDialogOpen}
-        onClose={() => {
-          setIsDialogOpen(false);
-          setEditingBookmark(null);
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingBookmark(null);
+          }
         }}
         bookmark={editingBookmark}
         onSave={handleSave}
