@@ -34,7 +34,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
           {bookmark.favicon_url && (
@@ -50,13 +50,13 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
           
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
-              <h3 className="font-medium text-gray-900 truncate">{bookmark.title}</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white truncate">{bookmark.title}</h3>
               <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
-                  className={bookmark.is_favorite ? 'text-red-500' : 'text-gray-400'}
+                  className={bookmark.is_favorite ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}
                 >
                   <Heart className={`h-4 w-4 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
                 </Button>
@@ -70,7 +70,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             </div>
             
             {bookmark.description && (
-              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{bookmark.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{bookmark.description}</p>
             )}
             
             <div className="flex items-center justify-between mt-3">
