@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -29,8 +30,14 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   onDelete,
   onToggleFavorite
 }) => {
+  const navigate = useNavigate();
+
   const handleOpenUrl = () => {
     window.open(bookmark.url, '_blank');
+  };
+
+  const handleTagClick = (tag: string) => {
+    navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
   return (
@@ -76,7 +83,12 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             <div className="flex items-center justify-between mt-3">
               <div className="flex flex-wrap gap-1">
                 {bookmark.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+                  <Badge 
+                    key={index} 
+                    variant="secondary" 
+                    className="text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                    onClick={() => handleTagClick(tag)}
+                  >
                     {tag}
                   </Badge>
                 ))}
