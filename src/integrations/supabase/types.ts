@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookmark_categories: {
         Row: {
           bookmark_id: string
@@ -107,7 +137,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_api_key: {
+        Args: { api_key: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

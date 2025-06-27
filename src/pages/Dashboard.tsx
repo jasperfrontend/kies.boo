@@ -1,14 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Grid, List, Settings } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Bookmark {
   id: string;
@@ -21,225 +23,266 @@ interface Bookmark {
   created_at: string;
 }
 
+const initialBookmarkState: Bookmark = {
+  id: '',
+  title: '',
+  url: '',
+  description: '',
+  favicon_url: '',
+  tags: [],
+  is_favorite: false,
+  created_at: '',
+};
+
 export const Dashboard = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-  const [filteredBookmarks, setFilteredBookmarks] = useState<Bookmark[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [activeTab, setActiveTab] = useState('bookmarks');
   const { user } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      fetchBookmarks();
-    }
+    fetchBookmarks();
   }, [user]);
 
-  useEffect(() => {
-    // Filter bookmarks based on search query
-    if (!searchQuery) {
-      setFilteredBookmarks(bookmarks);
-    } else {
-      const filtered = bookmarks.filter(bookmark =>
-        bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bookmark.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      setFilteredBookmarks(filtered);
-    }
-  }, [bookmarks, searchQuery]);
-
   const fetchBookmarks = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('bookmarks')
-        .select('*')
-        .order('created_at', { ascending: false });
+    if (!user) return;
 
-      if (error) throw error;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching bookmarks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch bookmarks",
+        variant: "destructive"
+      });
+    } else {
       setBookmarks(data || []);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch bookmarks',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  const handleSaveBookmark = async (bookmarkData: Omit<Bookmark, 'id' | 'created_at'>) => {
-    try {
-      if (editingBookmark) {
-        // Update existing bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .update({
-            ...bookmarkData,
-            user_id: user!.id
-          })
-          .eq('id', editingBookmark.id);
+  const handleSave = async (bookmark: Bookmark) => {
+    if (!user) return;
 
-        if (error) throw error;
-        toast({ title: 'Bookmark updated successfully!' });
-      } else {
-        // Create new bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert({
-            ...bookmarkData,
-            user_id: user!.id
-          });
+    setLoading(true);
+    const isNew = !bookmark.id;
+    const payload = {
+      ...bookmark,
+      user_id: user.id,
+    };
 
-        if (error) throw error;
-        toast({ title: 'Bookmark saved successfully!' });
-      }
+    let query = supabase.from('bookmarks');
+    if (isNew) {
+      query = query.insert([payload]);
+    } else {
+      query = query.update(payload).eq('id', bookmark.id);
+    }
 
-      fetchBookmarks();
-    } catch (error) {
+    const { data, error } = await query.select('*').single();
+
+    if (error) {
+      console.error('Error saving bookmark:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to save bookmark',
-        variant: 'destructive'
+        title: "Error",
+        description: `Failed to ${isNew ? 'create' : 'update'} bookmark`,
+        variant: "destructive"
+      });
+    } else {
+      fetchBookmarks();
+      setIsDialogOpen(false);
+      setEditingBookmark(null);
+      toast({
+        title: "Success",
+        description: `Bookmark ${isNew ? 'created' : 'updated'} successfully`,
       });
     }
+    setLoading(false);
   };
 
-  const handleDeleteBookmark = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('bookmarks')
-        .delete()
-        .eq('id', id);
+  const handleEdit = (bookmark: Bookmark) => {
+    setEditingBookmark(bookmark);
+    setIsDialogOpen(true);
+  };
 
-      if (error) throw error;
-      toast({ title: 'Bookmark deleted successfully!' });
-      fetchBookmarks();
-    } catch (error) {
+  const handleDelete = async (id: string) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('bookmarks')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting bookmark:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to delete bookmark',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to delete bookmark",
+        variant: "destructive"
+      });
+    } else {
+      fetchBookmarks();
+      toast({
+        title: "Success",
+        description: "Bookmark deleted successfully",
       });
     }
+    setLoading(false);
   };
 
   const handleToggleFavorite = async (id: string, isFavorite: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('bookmarks')
-        .update({ is_favorite: isFavorite })
-        .eq('id', id);
+    setLoading(true);
+    const { error } = await supabase
+      .from('bookmarks')
+      .update({ is_favorite: isFavorite })
+      .eq('id', id);
 
-      if (error) throw error;
-      fetchBookmarks();
-    } catch (error) {
+    if (error) {
+      console.error('Error toggling favorite:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to update favorite status',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to toggle favorite status",
+        variant: "destructive"
+      });
+    } else {
+      fetchBookmarks();
+      toast({
+        title: "Success",
+        description: "Favorite status toggled successfully",
       });
     }
+    setLoading(false);
   };
 
-  const handleAddBookmark = () => {
-    setEditingBookmark(null);
-    setDialogOpen(true);
-  };
+  const filteredBookmarks = bookmarks.filter((bookmark) => {
+    const searchTerm = searchQuery.toLowerCase();
+    const matchesSearch =
+      bookmark.title.toLowerCase().includes(searchTerm) ||
+      bookmark.url.toLowerCase().includes(searchTerm) ||
+      (bookmark.description?.toLowerCase().includes(searchTerm) ?? false) ||
+      bookmark.tags.some((tag) => tag.toLowerCase().includes(searchTerm));
 
-  const handleEditBookmark = (bookmark: Bookmark) => {
-    setEditingBookmark(bookmark);
-    setDialogOpen(true);
-  };
+    if (filter === 'favorites') {
+      return bookmark.is_favorite && matchesSearch;
+    }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your bookmarks...</p>
-        </div>
-      </div>
-    );
-  }
+    return matchesSearch;
+  });
+
+  const favoriteCount = bookmarks.filter((bookmark) => bookmark.is_favorite).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header 
-        onAddBookmark={handleAddBookmark}
+        onAddBookmark={() => setIsDialogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {filteredBookmarks.length} bookmark{filteredBookmarks.length !== 1 ? 's' : ''}
-          </h2>
-          
-          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'card' | 'table')}>
-            <ToggleGroupItem value="card" aria-label="Card view">
-              <div className="flex items-center space-x-2">
-                <div className="grid grid-cols-2 gap-1 w-4 h-4">
-                  <div className="bg-current w-1.5 h-1.5 rounded-sm opacity-60"></div>
-                  <div className="bg-current w-1.5 h-1.5 rounded-sm opacity-60"></div>
-                  <div className="bg-current w-1.5 h-1.5 rounded-sm opacity-60"></div>
-                  <div className="bg-current w-1.5 h-1.5 rounded-sm opacity-60"></div>
-                </div>
-                <span className="text-sm">Cards</span>
-              </div>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Table view">
-              <div className="flex items-center space-x-2">
-                <div className="flex flex-col space-y-0.5 w-4 h-4">
-                  <div className="bg-current w-full h-0.5 rounded opacity-60"></div>
-                  <div className="bg-current w-full h-0.5 rounded opacity-60"></div>
-                  <div className="bg-current w-full h-0.5 rounded opacity-60"></div>
-                  <div className="bg-current w-full h-0.5 rounded opacity-60"></div>
-                </div>
-                <span className="text-sm">Table</span>
-              </div>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
+            <TabsTrigger value="api">API Keys</TabsTrigger>
+          </TabsList>
 
-        {filteredBookmarks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {searchQuery ? 'No bookmarks found matching your search.' : 'No bookmarks yet. Add your first bookmark!'}
-            </p>
-          </div>
-        ) : viewMode === 'card' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredBookmarks.map((bookmark) => (
-              <BookmarkCard
-                key={bookmark.id}
-                bookmark={bookmark}
-                onEdit={handleEditBookmark}
-                onDelete={handleDeleteBookmark}
+          <TabsContent value="bookmarks" className="space-y-6">
+            {/* Filter Tabs */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant={filter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilter('all')}
+                  >
+                    All <Badge variant="secondary" className="ml-2">{bookmarks.length}</Badge>
+                  </Button>
+                  <Button
+                    variant={filter === 'favorites' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFilter('favorites')}
+                  >
+                    Favorites <Badge variant="secondary" className="ml-2">{favoriteCount}</Badge>
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Bookmarks Display */}
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : filteredBookmarks.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {searchQuery ? 'No bookmarks found matching your search.' : 'No bookmarks yet. Add your first bookmark!'}
+                </p>
+              </div>
+            ) : viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredBookmarks.map((bookmark) => (
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                ))}
+              </div>
+            ) : (
+              <BookmarkTable
+                bookmarks={filteredBookmarks}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
                 onToggleFavorite={handleToggleFavorite}
               />
-            ))}
-          </div>
-        ) : (
-          <BookmarkTable
-            bookmarks={filteredBookmarks}
-            onEdit={handleEditBookmark}
-            onDelete={handleDeleteBookmark}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        )}
+            )}
+          </TabsContent>
+
+          <TabsContent value="api">
+            <ApiKeyManager />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <BookmarkDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={isDialogOpen}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setEditingBookmark(null);
+        }}
         bookmark={editingBookmark}
-        onSave={handleSaveBookmark}
+        onSave={handleSave}
       />
     </div>
   );
