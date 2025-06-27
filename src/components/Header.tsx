@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookmarkPlus, LogOut, Search, User } from 'lucide-react';
+import { BookmarkPlus, LogOut, Search, User, Key } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Input } from '@/components/ui/input';
@@ -17,9 +18,10 @@ interface HeaderProps {
   onAddBookmark: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onApiKeysClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSearchChange }) => {
+export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSearchChange, onApiKeysClick }) => {
   const { user, signOut } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const location = useLocation();
@@ -81,6 +83,12 @@ export const Header: React.FC<HeaderProps> = ({ onAddBookmark, searchQuery, onSe
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  {onApiKeysClick && (
+                    <DropdownMenuItem onClick={onApiKeysClick}>
+                      <Key className="mr-2 h-4 w-4" />
+                      <span>API Keys</span>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>

@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBookmarks } from '@/hooks/useBookmarks';
 
 interface Bookmark {
@@ -24,7 +24,7 @@ export const Dashboard = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [activeTab, setActiveTab] = useState('bookmarks');
+  const [showApiKeys, setShowApiKeys] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
 
   const {
@@ -57,6 +57,10 @@ export const Dashboard = () => {
     setSelectedBookmarks([]);
   };
 
+  const handleApiKeysClick = () => {
+    setShowApiKeys(!showApiKeys);
+  };
+
   const filteredBookmarks = bookmarks.filter((bookmark) => {
     const searchTerm = searchQuery.toLowerCase();
     const matchesSearch =
@@ -80,16 +84,14 @@ export const Dashboard = () => {
         onAddBookmark={() => setIsDialogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onApiKeysClick={handleApiKeysClick}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
-            <TabsTrigger value="api">API Keys</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="bookmarks" className="space-y-6">
+        {showApiKeys ? (
+          <ApiKeyManager />
+        ) : (
+          <div className="space-y-6">
             <BookmarkFilters
               filter={filter}
               setFilter={setFilter}
@@ -113,12 +115,8 @@ export const Dashboard = () => {
               onDelete={handleDelete}
               onToggleFavorite={handleToggleFavorite}
             />
-          </TabsContent>
-
-          <TabsContent value="api">
-            <ApiKeyManager />
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </main>
 
       <BookmarkDialog
