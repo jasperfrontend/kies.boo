@@ -4,7 +4,9 @@ interface Bookmark {
   title: string;
   url: string;
   description?: string;
+  favicon_url?: string;
   tags: string[];
+  is_favorite: boolean;
   created_at: string;
 }
 
