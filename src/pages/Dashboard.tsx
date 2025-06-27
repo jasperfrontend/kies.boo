@@ -5,7 +5,6 @@ import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
-import { BulkDeleteModal } from '@/components/BulkDeleteModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBookmarks } from '@/hooks/useBookmarks';
 
@@ -28,7 +27,6 @@ export const Dashboard = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [activeTab, setActiveTab] = useState('bookmarks');
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
-  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   const {
     bookmarks,
@@ -52,7 +50,6 @@ export const Dashboard = () => {
 
   const handleSelectionChange = (bookmarkIds: string[]) => {
     setSelectedBookmarks(bookmarkIds);
-    setIsBulkDeleteOpen(bookmarkIds.length > 0);
   };
 
   const handleBulkDelete = async () => {
@@ -60,12 +57,6 @@ export const Dashboard = () => {
       await handleDelete(bookmarkId);
     }
     setSelectedBookmarks([]);
-    setIsBulkDeleteOpen(false);
-  };
-
-  const handleCancelBulkDelete = () => {
-    setSelectedBookmarks([]);
-    setIsBulkDeleteOpen(false);
   };
 
   const filteredBookmarks = bookmarks.filter((bookmark) => {
@@ -109,6 +100,8 @@ export const Dashboard = () => {
               totalCount={bookmarks.length}
               favoriteCount={favoriteCount}
               onBookmarksAdded={fetchBookmarks}
+              selectedBookmarks={selectedBookmarks}
+              onBulkDelete={handleBulkDelete}
             />
 
             <BookmarkDisplay
@@ -140,13 +133,6 @@ export const Dashboard = () => {
         }}
         bookmark={editingBookmark}
         onSave={handleBookmarkSave}
-      />
-
-      <BulkDeleteModal
-        isOpen={isBulkDeleteOpen}
-        selectedCount={selectedBookmarks.length}
-        onConfirm={handleBulkDelete}
-        onCancel={handleCancelBulkDelete}
       />
     </div>
   );

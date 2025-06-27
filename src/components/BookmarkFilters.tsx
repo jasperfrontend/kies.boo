@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Grid, List } from 'lucide-react';
+import { Grid, List, Trash2 } from 'lucide-react';
 import { SeedBookmarksButton } from '@/components/SeedBookmarksButton';
 
 interface BookmarkFiltersProps {
@@ -13,6 +13,8 @@ interface BookmarkFiltersProps {
   totalCount: number;
   favoriteCount: number;
   onBookmarksAdded: () => void;
+  selectedBookmarks?: string[];
+  onBulkDelete?: () => void;
 }
 
 export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
@@ -22,7 +24,9 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   setViewMode,
   totalCount,
   favoriteCount,
-  onBookmarksAdded
+  onBookmarksAdded,
+  selectedBookmarks = [],
+  onBulkDelete
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -43,7 +47,20 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
             Favorites <Badge variant="secondary" className="ml-2">{favoriteCount}</Badge>
           </Button>
         </div>
-        <SeedBookmarksButton onBookmarksAdded={onBookmarksAdded} />
+        <div className="flex items-center space-x-2">
+          <SeedBookmarksButton onBookmarksAdded={onBookmarksAdded} />
+          {selectedBookmarks.length > 0 && onBulkDelete && (
+            <Button
+              onClick={onBulkDelete}
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedBookmarks.length} Selected
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="flex items-center space-x-2">
