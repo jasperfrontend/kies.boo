@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 
 interface Bookmark {
   id: string;
@@ -44,6 +44,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isParsingTitle, setIsParsingTitle] = useState(false);
 
   useEffect(() => {
     if (bookmark) {
@@ -62,6 +63,84 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     }
   }, [bookmark, open]);
 
+  const parseUrlTitle = async (inputUrl: string) => {
+    if (!inputUrl || isParsingTitle) return;
+    
+    // Basic URL validation
+    let validUrl = inputUrl.trim();
+    if (!validUrl.startsWith('http://') && !validUrl.startsWith('https://')) {
+      validUrl = 'https://' + validUrl;
+    }
+
+    try {
+      new URL(validUrl);
+    } catch {
+      return; // Invalid URL, don't parse
+    }
+
+    setIsParsingTitle(true);
+    
+    try {
+      // Create a proxy URL to avoid CORS issues
+      const proxyUrl = `https://api.allorigins.com/get?url=${encodeURIComponent(validUrl)}`;
+      const response = await fetch(proxyUrl);
+      const data = await response.json();
+      
+      if (data.contents) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+        
+        // Try to get title from OpenGraph first
+        let extractedTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content');
+        
+        // If no OpenGraph title, try Twitter card title
+        if (!extractedTitle) {
+          extractedTitle = doc.querySelector('meta[name="twitter:title"]')?.getAttribute('content');
+        }
+        
+        // If no social media title, use page title
+        if (!extractedTitle) {
+          extractedTitle = doc.querySelector('title')?.textContent;
+        }
+        
+        // Clean up the title
+        if (extractedTitle) {
+          extractedTitle = extractedTitle.trim();
+          if (extractedTitle.length > 100) {
+            extractedTitle = extractedTitle.substring(0, 100) + '...';
+          }
+          setTitle(extractedTitle);
+        }
+      }
+    } catch (error) {
+      console.log('Failed to parse title from URL:', error);
+      // Fallback: use domain name as title
+      try {
+        const urlObj = new URL(validUrl);
+        const domain = urlObj.hostname.replace('www.', '');
+        setTitle(domain.charAt(0).toUpperCase() + domain.slice(1));
+      } catch {
+        // If all else fails, leave title empty for user to fill
+      }
+    } finally {
+      setIsParsingTitle(false);
+    }
+  };
+
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl);
+    
+    // Parse title when URL looks complete
+    if (newUrl.trim() && (newUrl.includes('.') || newUrl.startsWith('http'))) {
+      // Debounce the parsing
+      const timeoutId = setTimeout(() => {
+        parseUrlTitle(newUrl);
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  };
+
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
@@ -79,11 +158,16 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const handleSave = () => {
     if (!title.trim() || !url.trim()) return;
 
+    let finalUrl = url.trim();
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://' + finalUrl;
+    }
+
     onSave({
       title: title.trim(),
-      url: url.trim(),
+      url: finalUrl,
       description: description.trim() || undefined,
-      favicon_url: `https://www.google.com/s2/favicons?domain=${url}`,
+      favicon_url: `https://www.google.com/s2/favicons?domain=${finalUrl}`,
       tags,
       is_favorite: isFavorite
     });
@@ -105,24 +189,34 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
         
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter bookmark title"
-            />
-          </div>
-          
-          <div className="grid gap-2">
             <Label htmlFor="url">URL</Label>
             <Input
               id="url"
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://example.com"
             />
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="title">Title</Label>
+            <div className="relative">
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter bookmark title"
+                disabled={isParsingTitle}
+                className={isParsingTitle ? 'pr-10' : ''}
+              />
+              {isParsingTitle && (
+                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+              )}
+            </div>
+            {isParsingTitle && (
+              <p className="text-xs text-gray-500">Parsing title from URL...</p>
+            )}
           </div>
           
           <div className="grid gap-2">
@@ -174,7 +268,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!title.trim() || !url.trim()}>
+          <Button onClick={handleSave} disabled={!title.trim() || !url.trim() || isParsingTitle}>
             {bookmark ? 'Update' : 'Save'} Bookmark
           </Button>
         </DialogFooter>
