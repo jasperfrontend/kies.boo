@@ -132,6 +132,81 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_bookmarks: {
+        Row: {
+          bookmark_id: string
+          collection_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          bookmark_id: string
+          collection_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          bookmark_id?: string
+          collection_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_bookmarks_bookmark_id_fkey"
+            columns: ["bookmark_id"]
+            isOneToOne: false
+            referencedRelation: "bookmarks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_bookmarks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "smart_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_collections: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          keywords: string[] | null
+          time_range_end: string | null
+          time_range_start: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          time_range_end?: string | null
+          time_range_start?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          time_range_end?: string | null
+          time_range_start?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
