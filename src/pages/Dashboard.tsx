@@ -5,6 +5,7 @@ import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
+import { BulkDeleteModal } from '@/components/BulkDeleteModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBookmarks } from '@/hooks/useBookmarks';
 
@@ -26,6 +27,8 @@ export const Dashboard = () => {
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [activeTab, setActiveTab] = useState('bookmarks');
+  const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   const {
     bookmarks,
@@ -45,6 +48,24 @@ export const Dashboard = () => {
     await handleSave(bookmark);
     setIsDialogOpen(false);
     setEditingBookmark(null);
+  };
+
+  const handleSelectionChange = (bookmarkIds: string[]) => {
+    setSelectedBookmarks(bookmarkIds);
+    setIsBulkDeleteOpen(bookmarkIds.length > 0);
+  };
+
+  const handleBulkDelete = async () => {
+    for (const bookmarkId of selectedBookmarks) {
+      await handleDelete(bookmarkId);
+    }
+    setSelectedBookmarks([]);
+    setIsBulkDeleteOpen(false);
+  };
+
+  const handleCancelBulkDelete = () => {
+    setSelectedBookmarks([]);
+    setIsBulkDeleteOpen(false);
   };
 
   const filteredBookmarks = bookmarks.filter((bookmark) => {
@@ -95,6 +116,8 @@ export const Dashboard = () => {
               viewMode={viewMode}
               loading={loading}
               searchQuery={searchQuery}
+              selectedBookmarks={selectedBookmarks}
+              onSelectionChange={handleSelectionChange}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleFavorite={handleToggleFavorite}
@@ -117,6 +140,13 @@ export const Dashboard = () => {
         }}
         bookmark={editingBookmark}
         onSave={handleBookmarkSave}
+      />
+
+      <BulkDeleteModal
+        isOpen={isBulkDeleteOpen}
+        selectedCount={selectedBookmarks.length}
+        onConfirm={handleBulkDelete}
+        onCancel={handleCancelBulkDelete}
       />
     </div>
   );

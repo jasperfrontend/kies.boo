@@ -19,6 +19,8 @@ interface BookmarkDisplayProps {
   viewMode: 'grid' | 'table';
   loading: boolean;
   searchQuery: string;
+  selectedBookmarks?: string[];
+  onSelectionChange?: (bookmarkIds: string[]) => void;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -29,6 +31,8 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   viewMode,
   loading,
   searchQuery,
+  selectedBookmarks = [],
+  onSelectionChange = () => {},
   onEdit,
   onDelete,
   onToggleFavorite
@@ -70,6 +74,8 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   return (
     <BookmarkTable
       bookmarks={bookmarks}
+      selectedBookmarks={selectedBookmarks}
+      onSelectionChange={onSelectionChange}
       onEdit={onEdit}
       onDelete={onDelete}
       onToggleFavorite={onToggleFavorite}

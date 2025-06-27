@@ -3,6 +3,7 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
 
 interface Bookmark {
@@ -18,6 +19,8 @@ interface Bookmark {
 
 interface BookmarkTableProps {
   bookmarks: Bookmark[];
+  selectedBookmarks: string[];
+  onSelectionChange: (bookmarkIds: string[]) => void;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -25,6 +28,8 @@ interface BookmarkTableProps {
 
 export const BookmarkTable: React.FC<BookmarkTableProps> = ({
   bookmarks,
+  selectedBookmarks,
+  onSelectionChange,
   onEdit,
   onDelete,
   onToggleFavorite
@@ -33,11 +38,38 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
     window.open(url, '_blank');
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      onSelectionChange(bookmarks.map(bookmark => bookmark.id));
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleSelectBookmark = (bookmarkId: string, checked: boolean) => {
+    if (checked) {
+      onSelectionChange([...selectedBookmarks, bookmarkId]);
+    } else {
+      onSelectionChange(selectedBookmarks.filter(id => id !== bookmarkId));
+    }
+  };
+
+  const isAllSelected = bookmarks.length > 0 && selectedBookmarks.length === bookmarks.length;
+  const isIndeterminate = selectedBookmarks.length > 0 && selectedBookmarks.length < bookmarks.length;
+
   return (
     <div className="border rounded-lg">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-12">
+              <Checkbox
+                checked={isAllSelected}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all bookmarks"
+                {...(isIndeterminate && { 'data-state': 'indeterminate' })}
+              />
+            </TableHead>
             <TableHead className="w-8"></TableHead>
             <TableHead>Title</TableHead>
             <TableHead>Description</TableHead>
@@ -48,6 +80,13 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
         <TableBody>
           {bookmarks.map((bookmark) => (
             <TableRow key={bookmark.id}>
+              <TableCell>
+                <Checkbox
+                  checked={selectedBookmarks.includes(bookmark.id)}
+                  onCheckedChange={(checked) => handleSelectBookmark(bookmark.id, checked as boolean)}
+                  aria-label={`Select ${bookmark.title}`}
+                />
+              </TableCell>
               <TableCell>
                 {bookmark.favicon_url && (
                   <img 
