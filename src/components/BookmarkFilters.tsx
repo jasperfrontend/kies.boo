@@ -29,10 +29,26 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   onBulkDelete
 }) => {
   const [showSeedButton, setShowSeedButton] = React.useState(true);
+  const [typedSequence, setTypedSequence] = React.useState('');
 
   const handleFeatureRemoved = () => {
     setShowSeedButton(false);
   };
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const newSequence = (typedSequence + event.key.toLowerCase()).slice(-7);
+      setTypedSequence(newSequence);
+      
+      if (newSequence === 'abacabb') {
+        setShowSeedButton(true);
+        setTypedSequence('');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [typedSequence]);
 
   return (
     <div className="flex items-center justify-between">
