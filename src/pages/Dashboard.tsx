@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -84,14 +83,23 @@ export const Dashboard = () => {
       user_id: user.id,
     };
 
-    let query = supabase.from('bookmarks');
+    let result;
     if (isNew) {
-      query = query.insert([payload]);
+      result = await supabase
+        .from('bookmarks')
+        .insert([payload])
+        .select('*')
+        .single();
     } else {
-      query = query.update(payload).eq('id', bookmark.id);
+      result = await supabase
+        .from('bookmarks')
+        .update(payload)
+        .eq('id', bookmark.id)
+        .select('*')
+        .single();
     }
 
-    const { data, error } = await query.select('*').single();
+    const { data, error } = result;
 
     if (error) {
       console.error('Error saving bookmark:', error);
