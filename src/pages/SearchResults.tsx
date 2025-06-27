@@ -9,9 +9,12 @@ import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, FolderPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Bookmark {
   id: string;
@@ -32,6 +35,9 @@ const SearchResults: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   // Filter bookmarks based on search query
   const filteredBookmarks = useMemo(() => {
@@ -59,6 +65,59 @@ const SearchResults: React.FC = () => {
 
   const handleApiKeysClick = () => {
     setShowApiKeys(!showApiKeys);
+  };
+
+  const handleCreateSmartCollection = async () => {
+    if (!user || filteredBookmarks.length === 0) return;
+
+    setIsCreatingCollection(true);
+    
+    try {
+      // Create the smart collection
+      const collectionTitle = `Search: ${query}`;
+      const { data: collection, error: collectionError } = await supabase
+        .from('smart_collections')
+        .insert({
+          user_id: user.id,
+          title: collectionTitle,
+          type: 'manual',
+          keywords: [query],
+          confidence: 1.0,
+          time_range_start: filteredBookmarks[filteredBookmarks.length - 1]?.created_at,
+          time_range_end: filteredBookmarks[0]?.created_at
+        })
+        .select('*')
+        .single();
+
+      if (collectionError) throw collectionError;
+
+      // Add bookmarks to the collection
+      const collectionBookmarks = filteredBookmarks.map(bookmark => ({
+        collection_id: collection.id,
+        bookmark_id: bookmark.id
+      }));
+
+      const { error: bookmarkError } = await supabase
+        .from('collection_bookmarks')
+        .insert(collectionBookmarks);
+
+      if (bookmarkError) throw bookmarkError;
+
+      toast({
+        title: "Success",
+        description: `Smart Collection "${collectionTitle}" created with ${filteredBookmarks.length} bookmarks`,
+      });
+
+    } catch (error) {
+      console.error('Error creating smart collection:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create Smart Collection",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreatingCollection(false);
+    }
   };
 
   if (loading) {
@@ -116,9 +175,22 @@ const SearchResults: React.FC = () => {
                     <CardTitle>
                       Results for "{query}"
                     </CardTitle>
-                    <Badge variant="secondary">
-                      {filteredBookmarks.length} result{filteredBookmarks.length !== 1 ? 's' : ''}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="secondary">
+                        {filteredBookmarks.length} result{filteredBookmarks.length !== 1 ? 's' : ''}
+                      </Badge>
+                      {filteredBookmarks.length > 0 && (
+                        <Button
+                          onClick={handleCreateSmartCollection}
+                          disabled={isCreatingCollection}
+                          className="gap-2"
+                          size="sm"
+                        >
+                          <FolderPlus className="h-4 w-4" />
+                          {isCreatingCollection ? 'Creating...' : 'Create Smart Collection'}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
