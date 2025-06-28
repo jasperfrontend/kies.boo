@@ -1,12 +1,10 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useBookmarks } from '@/hooks/useBookmarks';
+import { useCompactMode } from '@/hooks/useCompactMode';
 import { Header } from '@/components/Header';
+import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
-import { BookmarkFilters } from '@/components/BookmarkFilters';
-import { BookmarkDisplay } from '@/components/BookmarkDisplay';
-import { useBookmarks } from '@/hooks/useBookmarks';
-import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -19,26 +17,50 @@ interface Bookmark {
   created_at: string;
 }
 
-export const Dashboard = () => {
+export const Dashboard: React.FC = () => {
+  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave, fetchBookmarks } = useBookmarks();
+  const { compactMode, setCompactMode } = useCompactMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
-  const [filter, setFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  const [compactMode, setCompactMode] = useState(false);
   const [showApiKeys, setShowApiKeys] = useState(false);
-  const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
-  const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [showFavorites, setShowFavorites] = useState(false);
 
-  const {
-    bookmarks,
-    loading,
-    fetchBookmarks,
-    handleSave,
-    handleDelete,
-    handleBulkDelete,
-    handleToggleFavorite
-  } = useBookmarks();
+  const filteredBookmarks = useMemo(() => {
+    let filtered = [...bookmarks];
+
+    if (searchQuery) {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(bookmark =>
+        bookmark.title.toLowerCase().includes(lowerCaseQuery) ||
+        bookmark.description?.toLowerCase().includes(lowerCaseQuery) ||
+        bookmark.url.toLowerCase().includes(lowerCaseQuery) ||
+        bookmark.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery))
+      );
+    }
+
+    if (showFavorites) {
+      filtered = filtered.filter(bookmark => bookmark.is_favorite);
+    }
+
+    return filtered;
+  }, [bookmarks, searchQuery, showFavorites]);
+
+  const handleEdit = (bookmark: Bookmark) => {
+    setEditingBookmark(bookmark);
+    setIsDialogOpen(true);
+  };
+
+  const handleBookmarkSave = async (bookmark: Bookmark) => {
+    await handleSave(bookmark);
+    setIsDialogOpen(false);
+    setEditingBookmark(null);
+  };
+
+  const handleApiKeysClick = () => {
+    setShowApiKeys(!showApiKeys);
+  };
 
   // Add keyboard shortcut handler
   useEffect(() => {
@@ -55,49 +77,7 @@ export const Dashboard = () => {
     };
   }, []);
 
-  // Debounced redirect to search when searchQuery changes
-  useEffect(() => {
-    if (!searchQuery.trim()) return;
-
-    const delayedSearch = setTimeout(() => {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }, 1000);
-
-    return () => clearTimeout(delayedSearch);
-  }, [searchQuery, navigate]);
-
-  const handleEdit = (bookmark: Bookmark) => {
-    setEditingBookmark(bookmark);
-    setIsDialogOpen(true);
-  };
-
-  const handleBookmarkSave = async (bookmark: Bookmark) => {
-    await handleSave(bookmark);
-    setIsDialogOpen(false);
-    setEditingBookmark(null);
-  };
-
-  const handleSelectionChange = (bookmarkIds: string[]) => {
-    setSelectedBookmarks(bookmarkIds);
-  };
-
-  const handleBulkDeleteClick = async () => {
-    await handleBulkDelete(selectedBookmarks);
-    setSelectedBookmarks([]);
-  };
-
-  const handleApiKeysClick = () => {
-    setShowApiKeys(!showApiKeys);
-  };
-
-  const filteredBookmarks = bookmarks.filter((bookmark) => {
-    if (filter === 'favorites') {
-      return bookmark.is_favorite;
-    }
-    return true;
-  });
-
-  const favoriteCount = bookmarks.filter((bookmark) => bookmark.is_favorite).length;
+  const favoritesCount = bookmarks.filter(b => b.is_favorite).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -105,37 +85,34 @@ export const Dashboard = () => {
         onAddBookmark={() => setIsDialogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onApiKeysClick={handleApiKeysClick}
+        showApiKeys={showApiKeys}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         compactMode={compactMode}
         onCompactModeChange={setCompactMode}
-        showFavorites={filter === 'favorites'}
-        onShowFavoritesChange={(show) => setFilter(show ? 'favorites' : 'all')}
-        onBookmarkAdded={fetchBookmarks}
+        showFavorites={showFavorites}
+        onShowFavoritesChange={setShowFavorites}
         onSeedBookmarksAdded={fetchBookmarks}
         onSeedFeatureRemoved={() => {}}
         bookmarkCount={bookmarks.length}
-        favoritesCount={favoriteCount}
+        favoritesCount={favoritesCount}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showApiKeys ? (
           <ApiKeyManager />
         ) : (
-          <div className="space-y-6">
-            <BookmarkDisplay
-              bookmarks={filteredBookmarks}
-              viewMode={viewMode}
-              compactMode={compactMode}
-              loading={loading}
-              searchQuery=""
-              selectedBookmarks={selectedBookmarks}
-              onSelectionChange={handleSelectionChange}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          </div>
+          <BookmarkDisplay
+            bookmarks={filteredBookmarks}
+            viewMode={viewMode}
+            compactMode={compactMode}
+            loading={loading}
+            searchQuery={searchQuery}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onToggleFavorite={handleToggleFavorite}
+          />
         )}
       </main>
 

@@ -1,7 +1,7 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
+import { useCompactMode } from '@/hooks/useCompactMode';
 import { Header } from '@/components/Header';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkCard } from '@/components/BookmarkCard';
@@ -31,6 +31,7 @@ interface Bookmark {
 const Hub: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, fetchBookmarks } = useBookmarks();
   const { smartCollections, loading: collectionsLoading, deleteSmartCollection, updateSmartCollection } = useSmartCollections(bookmarks);
+  const { compactMode, setCompactMode } = useCompactMode();
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [oldBookmarksDays, setOldBookmarksDays] = useState<string>('100');
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,6 +40,7 @@ const Hub: React.FC = () => {
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [isCollectionEditDialogOpen, setIsCollectionEditDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<{ id: string; title: string } | null>(null);
+  
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -136,6 +138,8 @@ const Hub: React.FC = () => {
           onSearchChange={setSearchQuery}
           onApiKeysClick={handleApiKeysClick}
           showApiKeys={showApiKeys}
+          compactMode={compactMode}
+          onCompactModeChange={setCompactMode}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
@@ -155,6 +159,8 @@ const Hub: React.FC = () => {
           onSearchChange={setSearchQuery}
           onSeedBookmarksAdded={fetchBookmarks}
           onSeedFeatureRemoved={() => {}}
+          compactMode={compactMode}
+          onCompactModeChange={setCompactMode}
         />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -192,6 +198,7 @@ const Hub: React.FC = () => {
                         <CollectionCard
                           key={collection.id}
                           collection={collection}
+                          compactMode={compactMode}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
                           onToggleFavorite={handleToggleFavorite}
@@ -223,11 +230,12 @@ const Hub: React.FC = () => {
                   {recentBookmarks.length === 0 ? (
                     <p className="text-gray-500 dark:text-gray-400">No bookmarks yet.</p>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
                       {recentBookmarks.map((bookmark) => (
                         <BookmarkCard
                           key={bookmark.id}
                           bookmark={bookmark}
+                          compact={compactMode}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
                           onToggleFavorite={handleToggleFavorite}
@@ -328,6 +336,7 @@ const Hub: React.FC = () => {
                     <div className="max-w-md">
                       <BookmarkCard
                         bookmark={randomBookmark}
+                        compact={compactMode}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleFavorite={handleToggleFavorite}
