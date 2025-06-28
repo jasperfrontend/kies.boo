@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, Check } from 'lucide-react';
 import { TitleExtractor } from '@/utils/titleExtractor';
 
 interface Bookmark {
@@ -45,6 +45,47 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
   const [isParsingTitle, setIsParsingTitle] = useState(false);
+  const [clipboardMessage, setClipboardMessage] = useState('');
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      // Try with https:// prefix
+      try {
+        new URL('https://' + string);
+        return string.includes('.') && !string.includes(' ');
+      } catch (_) {
+        return false;
+      }
+    }
+  };
+
+  const checkClipboard = async () => {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      return;
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (clipboardText && isValidUrl(clipboardText.trim())) {
+        const cleanUrl = clipboardText.trim();
+        setUrl(cleanUrl);
+        setClipboardMessage('URL in your clipboard detected and prefilled for you');
+        
+        // Auto-hide the message after 4 seconds
+        setTimeout(() => {
+          setClipboardMessage('');
+        }, 4000);
+
+        // Auto-parse title for the clipboard URL
+        parseUrlTitle(cleanUrl);
+      }
+    } catch (error) {
+      console.log('Could not read clipboard:', error);
+    }
+  };
 
   useEffect(() => {
     if (bookmark) {
@@ -53,6 +94,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setDescription(bookmark.description || '');
       setTags(bookmark.tags);
       setIsFavorite(bookmark.is_favorite);
+      setClipboardMessage(''); // Clear clipboard message when editing
     } else {
       setTitle('');
       setUrl('');
@@ -60,6 +102,12 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTags([]);
       setTagInput('');
       setIsFavorite(false);
+      setClipboardMessage('');
+      
+      // Only check clipboard for new bookmarks
+      if (open) {
+        checkClipboard();
+      }
     }
   }, [bookmark, open]);
 
@@ -104,6 +152,11 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
 
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl);
+    
+    // Clear clipboard message when user manually types
+    if (clipboardMessage) {
+      setClipboardMessage('');
+    }
     
     // Parse title when URL looks complete
     if (newUrl.trim() && (newUrl.includes('.') || newUrl.startsWith('http'))) {
@@ -175,6 +228,12 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://example.com"
             />
+            {clipboardMessage && (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <Check className="h-4 w-4" />
+                {clipboardMessage}
+              </div>
+            )}
           </div>
           
           <div className="grid gap-2">
