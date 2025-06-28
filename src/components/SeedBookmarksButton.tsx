@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -18,8 +18,15 @@ export const SeedBookmarksButton: React.FC<SeedBookmarksButtonProps> = ({
 }) => {
   const [isSeeding, setIsSeeding] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if the user wants to show the seed button
+    const showSeedButton = localStorage.getItem('showSeedBookmarksButton') === 'true';
+    setIsVisible(showSeedButton);
+  }, []);
 
   const handleSeedBookmarks = async () => {
     if (!user) {
@@ -66,6 +73,11 @@ export const SeedBookmarksButton: React.FC<SeedBookmarksButtonProps> = ({
       description: "The random bookmarks feature has been removed.",
     });
   };
+
+  // Don't render if not visible
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <>

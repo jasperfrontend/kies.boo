@@ -10,6 +10,7 @@ import { AuthForm } from "./components/AuthForm";
 import { Dashboard } from "./pages/Dashboard";
 import Hub from "./pages/Hub";
 import SearchResults from "./pages/SearchResults";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,14 @@ const AppContent = () => (
       element={
         <ProtectedRoute>
           <SearchResults />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/profile" 
+      element={
+        <ProtectedRoute>
+          <UserProfile />
         </ProtectedRoute>
       } 
     />
