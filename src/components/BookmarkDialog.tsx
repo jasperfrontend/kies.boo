@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -8,10 +9,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
 import { TitleExtractor } from '@/utils/titleExtractor';
 import { BookmarkUrlField } from './BookmarkUrlField';
 import { BookmarkTitleField } from './BookmarkTitleField';
-import { BookmarkTagsAutocomplete } from './BookmarkTagsAutocomplete';
 import { BookmarkFormFields } from './BookmarkFormFields';
 
 interface Bookmark {
@@ -47,16 +51,6 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isParsingTitle, setIsParsingTitle] = useState(false);
   const [clipboardMessage, setClipboardMessage] = useState('');
-
-  // Get all available tags from existing bookmarks
-  const availableTags = React.useMemo(() => {
-    const allTags = existingBookmarks.flatMap(bookmark => bookmark.tags);
-    return [...new Set(allTags)].sort();
-  }, [existingBookmarks]);
-
-  console.log('Available tags for autocomplete:', availableTags);
-  console.log('Current tags:', tags);
-  console.log('Tag input:', tagInput);
 
   const isValidUrl = (string: string) => {
     try {
@@ -181,33 +175,17 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   };
 
   const handleAddTag = (e: React.KeyboardEvent) => {
-    console.log('handleAddTag called with key:', e.key, 'tagInput:', tagInput);
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
       if (!tags.includes(tagInput.trim())) {
-        const newTags = [...tags, tagInput.trim()];
-        setTags(newTags);
-        console.log('Added tag, new tags:', newTags);
+        setTags([...tags, tagInput.trim()]);
       }
       setTagInput('');
     }
   };
 
-  const handleTagSelect = (selectedTag: string) => {
-    console.log('handleTagSelect called with:', selectedTag);
-    if (!tags.includes(selectedTag)) {
-      const newTags = [...tags, selectedTag];
-      setTags(newTags);
-      console.log('Selected tag, new tags:', newTags);
-    }
-    setTagInput('');
-  };
-
   const removeTag = (tagToRemove: string) => {
-    console.log('removeTag called with:', tagToRemove);
-    const newTags = tags.filter(tag => tag !== tagToRemove);
-    setTags(newTags);
-    console.log('Removed tag, new tags:', newTags);
+    setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
   const handleSave = () => {
@@ -265,15 +243,29 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             onFavoriteChange={setIsFavorite}
           />
           
-          <BookmarkTagsAutocomplete
-            tags={tags}
-            tagInput={tagInput}
-            availableTags={availableTags}
-            onTagInputChange={setTagInput}
-            onTagAdd={handleAddTag}
-            onTagRemove={removeTag}
-            onTagSelect={handleTagSelect}
-          />
+          <div className="grid gap-2">
+            <Label htmlFor="tags">Tags</Label>
+            <Input
+              id="tags"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleAddTag}
+              placeholder="Type and press Enter to add tags"
+              autoComplete="off"
+            />
+            
+            <div className="flex flex-wrap gap-1 mt-2">
+              {tags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {tag}
+                  <X 
+                    className="h-3 w-3 cursor-pointer" 
+                    onClick={() => removeTag(tag)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
         </div>
         
         <DialogFooter>
