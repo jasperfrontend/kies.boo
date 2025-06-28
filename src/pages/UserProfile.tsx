@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useTipsVisibility } from '@/hooks/useTipsVisibility';
+import { useTheme } from '@/contexts/ThemeContext';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { showTips, toggleTips } = useTipsVisibility();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -40,6 +42,22 @@ const UserProfile: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="dark-mode" className="text-base">
+                  Dark Mode
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Switch between light and dark themes
+                </p>
+              </div>
+              <Switch
+                id="dark-mode"
+                checked={isDarkMode}
+                onCheckedChange={toggleDarkMode}
+              />
+            </div>
+            
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="show-tips" className="text-base">
