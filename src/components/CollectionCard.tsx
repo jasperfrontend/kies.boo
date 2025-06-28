@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, Clock, Globe, Hash } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
-import { SmartCollection } from '@/utils/temporalClustering';
+import type { SmartCollection } from '@/types/smartCollections';
 
 interface Bookmark {
   id: string;
@@ -19,7 +19,13 @@ interface Bookmark {
 }
 
 interface CollectionCardProps {
-  collection: SmartCollection;
+  collection: SmartCollection & {
+    bookmarks?: Bookmark[];
+    timeRange?: {
+      start: string;
+      end: string;
+    };
+  };
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -34,9 +40,15 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatTimeRange = () => {
-    const start = new Date(collection.timeRange.start);
-    const end = new Date(collection.timeRange.end);
-    const diffHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    // Handle both database collections and temporal clustering collections
+    const start = collection.timeRange?.start || collection.time_range_start;
+    const end = collection.timeRange?.end || collection.time_range_end;
+    
+    if (!start || !end) return 'Unknown duration';
+    
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffHours = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
     
     if (diffHours < 1) {
       return `${Math.round(diffHours * 60)} minutes`;
@@ -53,16 +65,23 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
         return <Globe className="h-4 w-4" />;
       case 'keyword':
         return <Hash className="h-4 w-4" />;
+      case 'search':
+        return <Hash className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
     }
   };
 
   const getConfidenceColor = () => {
-    if (collection.confidence >= 0.8) return 'bg-green-500';
-    if (collection.confidence >= 0.6) return 'bg-yellow-500';
+    const confidence = collection.confidence || 0;
+    if (confidence >= 0.8) return 'bg-green-500';
+    if (confidence >= 0.6) return 'bg-yellow-500';
     return 'bg-gray-500';
   };
+
+  const keywords = collection.keywords || [];
+  const bookmarks = collection.bookmarks || [];
+  const confidence = collection.confidence || 1;
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -88,12 +107,12 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
             <div className="flex items-center space-x-1">
               <div className={`w-2 h-2 rounded-full ${getConfidenceColor()}`} />
               <span className="text-xs text-muted-foreground">
-                {Math.round(collection.confidence * 100)}%
+                {Math.round(confidence * 100)}%
               </span>
             </div>
             <Badge variant="outline" className="flex items-center gap-1">
               {getTypeIcon()}
-              {collection.bookmarks.length}
+              {bookmarks.length}
             </Badge>
           </div>
         </div>
@@ -104,19 +123,19 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
             <span>Saved over {formatTimeRange()}</span>
           </div>
           <span>•</span>
-          <span>{new Date(collection.timeRange.start).toLocaleDateString()}</span>
+          <span>{new Date(collection.created_at).toLocaleDateString()}</span>
         </div>
 
-        {collection.keywords.length > 0 && (
+        {keywords.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {collection.keywords.slice(0, 3).map((keyword, index) => (
+            {keywords.slice(0, 3).map((keyword, index) => (
               <Badge key={index} variant="secondary" className="text-xs">
                 {keyword}
               </Badge>
             ))}
-            {collection.keywords.length > 3 && (
+            {keywords.length > 3 && (
               <Badge variant="secondary" className="text-xs">
-                +{collection.keywords.length - 3} more
+                +{keywords.length - 3} more
               </Badge>
             )}
           </div>
@@ -126,7 +145,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
       {!isExpanded && (
         <CardContent className="pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {collection.bookmarks.slice(0, 3).map((bookmark) => (
+            {bookmarks.slice(0, 3).map((bookmark) => (
               <div key={bookmark.id} className="scale-90 origin-top-left">
                 <BookmarkCard
                   bookmark={bookmark}
@@ -136,10 +155,10 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 />
               </div>
             ))}
-            {collection.bookmarks.length > 3 && (
+            {bookmarks.length > 3 && (
               <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
                 <span className="text-sm text-muted-foreground">
-                  +{collection.bookmarks.length - 3} more
+                  +{bookmarks.length - 3} more
                 </span>
               </div>
             )}
@@ -150,7 +169,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
       {isExpanded && (
         <CardContent className="pt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {collection.bookmarks.map((bookmark) => (
+            {bookmarks.map((bookmark) => (
               <BookmarkCard
                 key={bookmark.id}
                 bookmark={bookmark}

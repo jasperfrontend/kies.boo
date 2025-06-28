@@ -1,5 +1,7 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { useSmartCollections } from '@/hooks/useSmartCollections';
 import { Header } from '@/components/Header';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkCard } from '@/components/BookmarkCard';
@@ -11,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Clock, Star, Shuffle, Brain } from 'lucide-react';
-import { TemporalClustering } from '@/utils/temporalClustering';
 
 interface Bookmark {
   id: string;
@@ -26,18 +27,13 @@ interface Bookmark {
 
 const Hub: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
+  const { smartCollections, loading: collectionsLoading } = useSmartCollections(bookmarks);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [oldBookmarksDays, setOldBookmarksDays] = useState<string>('100');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
-  
-  // Generate Smart Collections
-  const smartCollections = useMemo(() => {
-    if (bookmarks.length < 3) return [];
-    return TemporalClustering.generateSmartCollections(bookmarks);
-  }, [bookmarks]);
 
   // Get recent bookmarks (last 5)
   const recentBookmarks = useMemo(() => {
@@ -100,7 +96,7 @@ const Hub: React.FC = () => {
     };
   }, []);
 
-  if (loading) {
+  if (loading || collectionsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header 
