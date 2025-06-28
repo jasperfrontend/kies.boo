@@ -76,7 +76,7 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
               className="justify-start gap-2"
             >
               <Layers3 className="h-4 w-4" />
-              Hub
+              Smart Hub
             </Button>
             
             <Button

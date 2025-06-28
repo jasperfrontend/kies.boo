@@ -29,7 +29,7 @@ export const HeaderNavigation: React.FC = () => {
         className="gap-2"
       >
         <Layers3 className="h-4 w-4" />
-        Hub
+        Smart Hub
       </Button>
     </nav>
   );
