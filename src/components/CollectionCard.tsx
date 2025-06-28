@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -119,6 +118,10 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
     if (onEditCollection && isDatabaseCollection) {
       onEditCollection(collection.id, collection.title);
     }
+  };
+
+  const handleMoreBookmarksClick = () => {
+    setIsExpanded(true);
   };
 
   return (
@@ -307,11 +310,21 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 </div>
               ))}
               {bookmarks.length > 3 && (
-                <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                  <span className="text-sm text-muted-foreground">
-                    +{bookmarks.length - 3} more
-                  </span>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className="flex items-center justify-center p-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      onClick={handleMoreBookmarksClick}
+                    >
+                      <span className="text-sm text-muted-foreground">
+                        +{bookmarks.length - 3} more
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Click to show all bookmarks in this collection</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </CardContent>
