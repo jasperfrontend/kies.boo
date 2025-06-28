@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check } from 'lucide-react';
@@ -8,17 +8,31 @@ interface BookmarkUrlFieldProps {
   url: string;
   onUrlChange: (url: string) => void;
   clipboardMessage: string;
+  autoFocus?: boolean;
 }
 
 export const BookmarkUrlField: React.FC<BookmarkUrlFieldProps> = ({
   url,
   onUrlChange,
-  clipboardMessage
+  clipboardMessage,
+  autoFocus = false
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      // Small delay to ensure the dialog is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [autoFocus]);
+
   return (
     <div className="grid gap-2">
       <Label htmlFor="url">URL</Label>
       <Input
+        ref={inputRef}
         id="url"
         type="url"
         value={url}

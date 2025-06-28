@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -228,6 +227,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             url={url}
             onUrlChange={handleUrlChange}
             clipboardMessage={clipboardMessage}
+            autoFocus={!bookmark && open}
           />
           
           <BookmarkTitleField
