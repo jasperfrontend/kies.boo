@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -12,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { TitleExtractor } from '@/utils/titleExtractor';
 import { BookmarkUrlField } from './BookmarkUrlField';
 import { BookmarkTitleField } from './BookmarkTitleField';
-import { BookmarkTagsField } from './BookmarkTagsField';
+import { BookmarkTagsAutocomplete } from './BookmarkTagsAutocomplete';
 import { BookmarkFormFields } from './BookmarkFormFields';
 
 interface Bookmark {
@@ -29,6 +28,7 @@ interface BookmarkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bookmark?: Bookmark | null;
+  existingBookmarks?: Bookmark[];
   onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => void;
 }
 
@@ -36,6 +36,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   open,
   onOpenChange,
   bookmark,
+  existingBookmarks = [],
   onSave
 }) => {
   const [title, setTitle] = useState('');
@@ -46,6 +47,12 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isParsingTitle, setIsParsingTitle] = useState(false);
   const [clipboardMessage, setClipboardMessage] = useState('');
+
+  // Get all available tags from existing bookmarks
+  const availableTags = React.useMemo(() => {
+    const allTags = existingBookmarks.flatMap(bookmark => bookmark.tags);
+    return [...new Set(allTags)].sort();
+  }, [existingBookmarks]);
 
   const isValidUrl = (string: string) => {
     try {
@@ -179,6 +186,13 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     }
   };
 
+  const handleTagSelect = (selectedTag: string) => {
+    if (!tags.includes(selectedTag)) {
+      setTags([...tags, selectedTag]);
+    }
+    setTagInput('');
+  };
+
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
@@ -238,12 +252,14 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             onFavoriteChange={setIsFavorite}
           />
           
-          <BookmarkTagsField
+          <BookmarkTagsAutocomplete
             tags={tags}
             tagInput={tagInput}
+            availableTags={availableTags}
             onTagInputChange={setTagInput}
             onTagAdd={handleAddTag}
             onTagRemove={removeTag}
+            onTagSelect={handleTagSelect}
           />
         </div>
         
