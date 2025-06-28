@@ -203,7 +203,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteCollection} className="bg-red-500 hover:bg-red-700">
+                      <AlertDialοgAction onClick={handleDeleteCollection} className="bg-red-500 hover:bg-red-700">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -211,22 +211,23 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 </AlertDialog>
               )}
               
-              <div className="flex items-center space-x-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center space-x-1 cursor-help">
                     <div className={`w-2 h-2 rounded-full ${getConfidenceColor()}`} />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Collection confidence score: {Math.round(confidence * 100)}%</p>
-                    <p className="text-xs text-muted-foreground">
-                      How confident the AI is that these bookmarks belong together
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-                <span className="text-xs text-muted-foreground">
-                  {Math.round(confidence * 100)}%
-                </span>
-              </div>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(confidence * 100)}%
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Collection confidence score: {Math.round(confidence * 100)}%</p>
+                  <p className="text-xs text-muted-foreground">
+                    How confident the AI is that these bookmarks belong together
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+              
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge variant="outline" className="flex items-center gap-1">
