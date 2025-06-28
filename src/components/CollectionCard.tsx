@@ -46,7 +46,6 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   onEditCollection
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const formatTimeRange = () => {
     // Handle both database collections and temporal clustering collections
@@ -103,16 +102,12 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
 
   const handleEditCollection = () => {
     if (onEditCollection && isDatabaseCollection) {
-      // This will be handled by the parent component's dialog
+      onEditCollection(collection.id, collection.title);
     }
   };
 
   return (
-    <Card 
-      className="hover:shadow-md transition-shadow"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 flex-1">
@@ -128,22 +123,21 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 <ChevronRight className="h-4 w-4" />
               )}
             </Button>
-            <div className="flex items-center space-x-2 flex-1">
-              <CardTitle className="text-lg">{collection.title}</CardTitle>
-              {isDatabaseCollection && isHovered && onEditCollection && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEditCollection}
-                  className="p-1 h-auto opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <CardTitle className="text-lg">{collection.title}</CardTitle>
           </div>
           
           <div className="flex items-center space-x-2">
+            {isDatabaseCollection && onEditCollection && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEditCollection}
+                className="p-1 h-auto text-blue-500 hover:text-blue-700"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            
             {isDatabaseCollection && onDeleteCollection && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
