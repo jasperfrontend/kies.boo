@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SeedBookmarksButton } from '@/components/SeedBookmarksButton';
 import { Plus, Grid3X3, Table, Star, Maximize2, Minimize2 } from 'lucide-react';
 
 interface HeaderDashboardActionsProps {
@@ -15,8 +14,6 @@ interface HeaderDashboardActionsProps {
   compactMode?: boolean;
   onCompactModeChange?: (compact: boolean) => void;
   onAddBookmark?: () => void;
-  onSeedBookmarksAdded?: () => void;
-  onSeedFeatureRemoved?: () => void;
 }
 
 export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
@@ -28,9 +25,7 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
   onViewModeChange,
   compactMode,
   onCompactModeChange,
-  onAddBookmark,
-  onSeedBookmarksAdded,
-  onSeedFeatureRemoved
+  onAddBookmark
 }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -95,13 +90,6 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
           <span className="hidden sm:inline">Add Bookmark</span>
           <span className="sm:hidden">Add</span>
         </Button>
-        
-        {onSeedBookmarksAdded && onSeedFeatureRemoved && (
-          <SeedBookmarksButton
-            onBookmarksAdded={onSeedBookmarksAdded}
-            onFeatureRemoved={onSeedFeatureRemoved}
-          />
-        )}
       </div>
     </div>
   );

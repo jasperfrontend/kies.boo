@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Grid, List, Trash2 } from 'lucide-react';
-import { SeedBookmarksButton } from '@/components/SeedBookmarksButton';
 
 interface BookmarkFiltersProps {
   filter: string;
@@ -25,47 +24,9 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   setViewMode,
   totalCount,
   favoriteCount,
-  onBookmarksAdded,
   selectedBookmarks = [],
   onBulkDelete
 }) => {
-  const [showSeedButton, setShowSeedButton] = React.useState(false);
-  const [typedSequence, setTypedSequence] = React.useState('');
-  const [recoveredByCode, setRecoveredByCode] = React.useState(false);
-
-  React.useEffect(() => {
-    // Load the preference from localStorage
-    const saved = localStorage.getItem('showSeedBookmarksButton');
-    setShowSeedButton(saved === 'true');
-  }, []);
-
-  const handleFeatureRemoved = () => {
-    setShowSeedButton(false);
-    setRecoveredByCode(false);
-    // Update localStorage when feature is removed
-    localStorage.setItem('showSeedBookmarksButton', 'false');
-  };
-
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const newSequence = (typedSequence + event.key.toLowerCase()).slice(-7);
-      setTypedSequence(newSequence);
-      
-      if (newSequence === 'abacabb') {
-        setShowSeedButton(true);
-        setRecoveredByCode(true);
-        setTypedSequence('');
-        // Update localStorage when recovered by code
-        localStorage.setItem('showSeedBookmarksButton', 'true');
-        // Add fatality-called class to body
-        document.body.classList.add('fatality-called');
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [typedSequence]);
-
   return (
     <TooltipProvider>
       <div className="flex items-center justify-between">
@@ -102,14 +63,6 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
             </Tooltip>
           </div>
           <div className="flex items-center space-x-2">
-            {showSeedButton && (
-              <div className={recoveredByCode ? 'easter-egg-recovered' : ''}>
-                <SeedBookmarksButton 
-                  onBookmarksAdded={onBookmarksAdded}
-                  onFeatureRemoved={handleFeatureRemoved}
-                />
-              </div>
-            )}
             {selectedBookmarks.length > 0 && onBulkDelete && (
               <Tooltip>
                 <TooltipTrigger asChild>
