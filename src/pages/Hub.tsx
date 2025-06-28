@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -13,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Clock, Star, Shuffle, Brain } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -34,6 +34,14 @@ const Hub: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const navigate = useNavigate();
+
+  // Redirect to search when searchQuery changes
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, navigate]);
 
   // Get recent bookmarks (last 5)
   const recentBookmarks = useMemo(() => {

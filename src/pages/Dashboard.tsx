@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -5,6 +6,7 @@ import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -25,6 +27,7 @@ export const Dashboard = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const {
     bookmarks,
@@ -51,6 +54,13 @@ export const Dashboard = () => {
     };
   }, []);
 
+  // Redirect to search when searchQuery changes
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, navigate]);
+
   const handleEdit = (bookmark: Bookmark) => {
     setEditingBookmark(bookmark);
     setIsDialogOpen(true);
@@ -76,18 +86,10 @@ export const Dashboard = () => {
   };
 
   const filteredBookmarks = bookmarks.filter((bookmark) => {
-    const searchTerm = searchQuery.toLowerCase();
-    const matchesSearch =
-      bookmark.title.toLowerCase().includes(searchTerm) ||
-      bookmark.url.toLowerCase().includes(searchTerm) ||
-      (bookmark.description?.toLowerCase().includes(searchTerm) ?? false) ||
-      bookmark.tags.some((tag) => tag.toLowerCase().includes(searchTerm));
-
     if (filter === 'favorites') {
-      return bookmark.is_favorite && matchesSearch;
+      return bookmark.is_favorite;
     }
-
-    return matchesSearch;
+    return true;
   });
 
   const favoriteCount = bookmarks.filter((bookmark) => bookmark.is_favorite).length;
@@ -123,7 +125,7 @@ export const Dashboard = () => {
               bookmarks={filteredBookmarks}
               viewMode={viewMode}
               loading={loading}
-              searchQuery={searchQuery}
+              searchQuery=""
               selectedBookmarks={selectedBookmarks}
               onSelectionChange={handleSelectionChange}
               onEdit={handleEdit}
