@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 interface Bookmark {
   id: string;
@@ -57,6 +58,14 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy • h:mm a');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   const isAllSelected = bookmarks.length > 0 && selectedBookmarks.length === bookmarks.length;
   const isIndeterminate = selectedBookmarks.length > 0 && selectedBookmarks.length < bookmarks.length;
 
@@ -77,6 +86,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
             <TableHead>Title</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Tags</TableHead>
+            <TableHead className="w-40">Date Added</TableHead>
             <TableHead className="w-32">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -135,6 +145,11 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                 </div>
               </TableCell>
               <TableCell>
+                <div className="text-sm text-muted-foreground">
+                  {formatDate(bookmark.created_at)}
+                </div>
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center space-x-1">
                   <Button
                     variant="ghost"
@@ -162,7 +177,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
+        </tbody>
       </Table>
     </div>
   );

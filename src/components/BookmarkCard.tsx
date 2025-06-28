@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 
 interface Bookmark {
   id: string;
@@ -34,6 +35,14 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
 
   const handleTagClick = (tag: string) => {
     navigate(`/search?q=${encodeURIComponent(tag)}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy • h:mm a');
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   return (
@@ -98,6 +107,12 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
               >
                 <ExternalLink className="h-4 w-4" />
               </a>
+            </div>
+            
+            <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {formatDate(bookmark.created_at)}
+              </p>
             </div>
           </div>
         </div>
