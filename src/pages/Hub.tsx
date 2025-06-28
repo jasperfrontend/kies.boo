@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -15,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Trash2, Clock, Star, Shuffle, Brain } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -42,6 +43,36 @@ const Hub: React.FC = () => {
   const [editingCollection, setEditingCollection] = useState<{ id: string; title: string } | null>(null);
   
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get expanded collections from URL parameters
+  const expandedCollections = useMemo(() => {
+    const expanded = searchParams.get('expanded');
+    if (!expanded) return new Set<string>();
+    return new Set(expanded.split(',').filter(Boolean));
+  }, [searchParams]);
+
+  // Function to update expanded collections in URL
+  const updateExpandedCollections = (collectionId: string, isExpanded: boolean) => {
+    const newExpanded = new Set(expandedCollections);
+    
+    if (isExpanded) {
+      newExpanded.add(collectionId);
+    } else {
+      newExpanded.delete(collectionId);
+    }
+
+    const expandedArray = Array.from(newExpanded);
+    const newParams = new URLSearchParams(searchParams);
+    
+    if (expandedArray.length > 0) {
+      newParams.set('expanded', expandedArray.join(','));
+    } else {
+      newParams.delete('expanded');
+    }
+    
+    setSearchParams(newParams, { replace: true });
+  };
 
   // Debounced redirect to search when searchQuery changes
   useEffect(() => {
@@ -171,7 +202,7 @@ const Hub: React.FC = () => {
           ) : (
             <div className="space-y-8">
               <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold">Hub</h1>
+                <h1 className="text-3xl font-bold">Smart Hub</h1>
                 <Badge variant="secondary" className="text-sm">
                   {bookmarks.length} total bookmarks
                 </Badge>
@@ -201,6 +232,8 @@ const Hub: React.FC = () => {
                           key={collection.id}
                           collection={collection}
                           compactMode={compactMode}
+                          isExpanded={expandedCollections.has(collection.id)}
+                          onToggleExpanded={(isExpanded) => updateExpandedCollections(collection.id, isExpanded)}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
                           onToggleFavorite={handleToggleFavorite}

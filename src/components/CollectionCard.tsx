@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +32,8 @@ interface Bookmark {
 interface CollectionCardProps {
   collection: ExtendedSmartCollection;
   compactMode?: boolean;
+  isExpanded?: boolean;
+  onToggleExpanded?: (isExpanded: boolean) => void;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -42,14 +44,14 @@ interface CollectionCardProps {
 export const CollectionCard: React.FC<CollectionCardProps> = ({
   collection,
   compactMode = false,
+  isExpanded = false,
+  onToggleExpanded,
   onEdit,
   onDelete,
   onToggleFavorite,
   onDeleteCollection,
   onEditCollection
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const formatTimeRange = () => {
     // Handle both database collections and temporal clustering collections
     const start = collection.timeRange?.start || collection.time_range_start;
@@ -131,7 +133,15 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   };
 
   const handleMoreBookmarksClick = () => {
-    setIsExpanded(true);
+    if (onToggleExpanded) {
+      onToggleExpanded(true);
+    }
+  };
+
+  const handleToggleExpanded = () => {
+    if (onToggleExpanded) {
+      onToggleExpanded(!isExpanded);
+    }
   };
 
   return (
@@ -145,7 +155,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsExpanded(!isExpanded)}
+                    onClick={handleToggleExpanded}
                     className="p-1 h-auto"
                   >
                     {isExpanded ? (
