@@ -131,7 +131,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                       <TooltipTrigger asChild>
                         <Badge 
                           variant="secondary" 
-                          className="text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                          className="text-xs cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors bg-gray-100 dark:bg-gray-700"
                           onClick={() => handleTagClick(tag)}
                         >
                           {tag}
