@@ -113,21 +113,21 @@ export const Header: React.FC<HeaderProps> = ({
               </Tooltip>
               
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">☀️</span>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm">☀️</span>
                       <Switch
                         checked={isDarkMode}
                         onCheckedChange={toggleDarkMode}
                       />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Toggle {isDarkMode ? 'light' : 'dark'} mode</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <span className="text-sm">🌙</span>
-                </div>
+                      <span className="text-sm">🌙</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Toggle {isDarkMode ? 'light' : 'dark'} mode</p>
+                  </TooltipContent>
+                </Tooltip>
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
