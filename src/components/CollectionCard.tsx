@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ChevronDown, ChevronRight, Clock, Globe, Hash, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, Globe, Hash, Trash2, Edit } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
 import type { ExtendedSmartCollection } from '@/hooks/useSmartCollections';
 
@@ -35,6 +34,7 @@ interface CollectionCardProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onDeleteCollection?: (collectionId: string) => void;
+  onEditCollection?: (collectionId: string, newTitle: string) => void;
 }
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({
@@ -42,9 +42,11 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onDeleteCollection
+  onDeleteCollection,
+  onEditCollection
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const formatTimeRange = () => {
     // Handle both database collections and temporal clustering collections
@@ -99,11 +101,21 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
     }
   };
 
+  const handleEditCollection = () => {
+    if (onEditCollection && isDatabaseCollection) {
+      // This will be handled by the parent component's dialog
+    }
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card 
+      className="hover:shadow-md transition-shadow"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-1">
             <Button
               variant="ghost"
               size="sm"
@@ -116,7 +128,19 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 <ChevronRight className="h-4 w-4" />
               )}
             </Button>
-            <CardTitle className="text-lg">{collection.title}</CardTitle>
+            <div className="flex items-center space-x-2 flex-1">
+              <CardTitle className="text-lg">{collection.title}</CardTitle>
+              {isDatabaseCollection && isHovered && onEditCollection && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEditCollection}
+                  className="p-1 h-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center space-x-2">

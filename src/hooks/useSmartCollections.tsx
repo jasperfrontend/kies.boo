@@ -107,6 +107,42 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
     }
   };
 
+  const updateSmartCollection = async (collectionId: string, newTitle: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('smart_collections')
+        .update({ 
+          title: newTitle,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', collectionId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setDbCollections(prev => prev.map(collection => 
+        collection.id === collectionId 
+          ? { ...collection, title: newTitle, updated_at: new Date().toISOString() }
+          : collection
+      ));
+
+      toast({
+        title: "Success",
+        description: "Smart collection updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating smart collection:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update smart collection",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Generate automatic collections from temporal clustering and transform them
   const autoCollections: ExtendedSmartCollection[] = bookmarks.length >= 3 
     ? TemporalClustering.generateSmartCollections(bookmarks).map(collection => ({
@@ -132,6 +168,7 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
     smartCollections: allCollections,
     loading,
     refetch: fetchSmartCollections,
-    deleteSmartCollection
+    deleteSmartCollection,
+    updateSmartCollection
   };
 };

@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { SmartCollectionEditDialog } from '@/components/SmartCollectionEditDialog';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { CollectionCard } from '@/components/CollectionCard';
 import { Button } from '@/components/ui/button';
@@ -27,13 +28,15 @@ interface Bookmark {
 
 const Hub: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
-  const { smartCollections, loading: collectionsLoading, deleteSmartCollection } = useSmartCollections(bookmarks);
+  const { smartCollections, loading: collectionsLoading, deleteSmartCollection, updateSmartCollection } = useSmartCollections(bookmarks);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [oldBookmarksDays, setOldBookmarksDays] = useState<string>('100');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const [isCollectionEditDialogOpen, setIsCollectionEditDialogOpen] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<{ id: string; title: string } | null>(null);
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -91,6 +94,20 @@ const Hub: React.FC = () => {
 
   const handleApiKeysClick = () => {
     setShowApiKeys(!showApiKeys);
+  };
+
+  const handleEditCollection = (collectionId: string, newTitle: string) => {
+    const collection = smartCollections.find(c => c.id === collectionId);
+    if (collection) {
+      setEditingCollection({ id: collectionId, title: collection.title });
+      setIsCollectionEditDialogOpen(true);
+    }
+  };
+
+  const handleCollectionSave = async (collectionId: string, newTitle: string) => {
+    await updateSmartCollection(collectionId, newTitle);
+    setIsCollectionEditDialogOpen(false);
+    setEditingCollection(null);
   };
 
   // Add keyboard shortcut handler
@@ -169,6 +186,7 @@ const Hub: React.FC = () => {
                         onDelete={handleDelete}
                         onToggleFavorite={handleToggleFavorite}
                         onDeleteCollection={deleteSmartCollection}
+                        onEditCollection={handleEditCollection}
                       />
                     ))}
                   </div>
@@ -294,6 +312,18 @@ const Hub: React.FC = () => {
         }}
         bookmark={editingBookmark}
         onSave={handleBookmarkSave}
+      />
+
+      <SmartCollectionEditDialog
+        open={isCollectionEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsCollectionEditDialogOpen(open);
+          if (!open) {
+            setEditingCollection(null);
+          }
+        }}
+        collection={editingCollection}
+        onSave={handleCollectionSave}
       />
     </div>
   );
