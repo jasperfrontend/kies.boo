@@ -54,6 +54,10 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     return [...new Set(allTags)].sort();
   }, [existingBookmarks]);
 
+  console.log('Available tags for autocomplete:', availableTags);
+  console.log('Current tags:', tags);
+  console.log('Tag input:', tagInput);
+
   const isValidUrl = (string: string) => {
     try {
       new URL(string);
@@ -177,24 +181,33 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   };
 
   const handleAddTag = (e: React.KeyboardEvent) => {
+    console.log('handleAddTag called with key:', e.key, 'tagInput:', tagInput);
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
       if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
+        const newTags = [...tags, tagInput.trim()];
+        setTags(newTags);
+        console.log('Added tag, new tags:', newTags);
       }
       setTagInput('');
     }
   };
 
   const handleTagSelect = (selectedTag: string) => {
+    console.log('handleTagSelect called with:', selectedTag);
     if (!tags.includes(selectedTag)) {
-      setTags([...tags, selectedTag]);
+      const newTags = [...tags, selectedTag];
+      setTags(newTags);
+      console.log('Selected tag, new tags:', newTags);
     }
     setTagInput('');
   };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    console.log('removeTag called with:', tagToRemove);
+    const newTags = tags.filter(tag => tag !== tagToRemove);
+    setTags(newTags);
+    console.log('Removed tag, new tags:', newTags);
   };
 
   const handleSave = () => {
