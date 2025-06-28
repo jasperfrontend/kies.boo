@@ -203,7 +203,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialοgAction onClick={handleDeleteCollection} className="bg-red-500 hover:bg-red-700">
+                      <AlertDialogAction onClick={handleDeleteCollection} className="bg-red-500 hover:bg-red-700">
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
