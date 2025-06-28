@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,28 +43,39 @@ export const useBookmarks = () => {
     setLoading(false);
   };
 
-  const handleSave = async (bookmark: Bookmark) => {
+  const handleSave = async (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => {
     if (!user) return;
 
     setLoading(true);
-    const isNew = !bookmark.id;
+    const isNew = !bookmarkData.id;
+    
+    console.log('Saving bookmark:', { isNew, bookmarkData });
+    
     const payload = {
-      ...bookmark,
+      title: bookmarkData.title,
+      url: bookmarkData.url,
+      description: bookmarkData.description,
+      favicon_url: bookmarkData.favicon_url,
+      tags: bookmarkData.tags,
+      is_favorite: bookmarkData.is_favorite,
       user_id: user.id,
     };
 
     let result;
     if (isNew) {
+      console.log('Creating new bookmark with payload:', payload);
       result = await supabase
         .from('bookmarks')
         .insert([payload])
         .select('*')
         .single();
     } else {
+      console.log('Updating existing bookmark with ID:', bookmarkData.id, 'and payload:', payload);
       result = await supabase
         .from('bookmarks')
         .update(payload)
-        .eq('id', bookmark.id)
+        .eq('id', bookmarkData.id)
+        .eq('user_id', user.id)
         .select('*')
         .single();
     }
@@ -80,6 +90,7 @@ export const useBookmarks = () => {
         variant: "destructive"
       });
     } else {
+      console.log('Bookmark saved successfully:', data);
       fetchBookmarks();
       toast({
         title: "Success",

@@ -29,7 +29,7 @@ interface BookmarkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bookmark?: Bookmark | null;
-  onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'>) => void;
+  onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => void;
 }
 
 export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
@@ -138,15 +138,18 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       finalUrl = 'https://' + finalUrl;
     }
 
-    onSave({
+    const bookmarkData = {
       title: title.trim(),
       url: finalUrl,
       description: description.trim() || undefined,
       favicon_url: `https://www.google.com/s2/favicons?domain=${finalUrl}`,
       tags,
-      is_favorite: isFavorite
-    });
+      is_favorite: isFavorite,
+      ...(bookmark?.id && { id: bookmark.id }) // Include ID when editing
+    };
 
+    console.log('Submitting bookmark data:', bookmarkData);
+    onSave(bookmarkData);
     onOpenChange(false);
   };
 
