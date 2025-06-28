@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -161,6 +162,8 @@ const Hub: React.FC = () => {
           onSeedFeatureRemoved={() => {}}
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
+          bookmarkCount={bookmarks.length}
+          favoritesCount={bookmarks.filter(b => b.is_favorite).length}
         />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
