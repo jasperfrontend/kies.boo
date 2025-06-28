@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -8,12 +9,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { X, Loader2, Check } from 'lucide-react';
 import { TitleExtractor } from '@/utils/titleExtractor';
+import { BookmarkUrlField } from './BookmarkUrlField';
+import { BookmarkTitleField } from './BookmarkTitleField';
+import { BookmarkTagsField } from './BookmarkTagsField';
+import { BookmarkFormFields } from './BookmarkFormFields';
 
 interface Bookmark {
   id: string;
@@ -219,86 +219,32 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
         </DialogHeader>
         
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="url">URL</Label>
-            <Input
-              id="url"
-              type="url"
-              value={url}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://example.com"
-            />
-            {clipboardMessage && (
-              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                <Check className="h-4 w-4" />
-                {clipboardMessage}
-              </div>
-            )}
-          </div>
+          <BookmarkUrlField
+            url={url}
+            onUrlChange={handleUrlChange}
+            clipboardMessage={clipboardMessage}
+          />
           
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <div className="relative">
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter bookmark title"
-                disabled={isParsingTitle}
-                className={isParsingTitle ? 'pr-10' : ''}
-              />
-              {isParsingTitle && (
-                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
-              )}
-            </div>
-            {isParsingTitle && (
-              <p className="text-xs text-gray-500">Parsing title from URL...</p>
-            )}
-          </div>
+          <BookmarkTitleField
+            title={title}
+            onTitleChange={setTitle}
+            isParsingTitle={isParsingTitle}
+          />
           
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add a description..."
-              rows={3}
-            />
-          </div>
+          <BookmarkFormFields
+            description={description}
+            onDescriptionChange={setDescription}
+            isFavorite={isFavorite}
+            onFavoriteChange={setIsFavorite}
+          />
           
-          <div className="grid gap-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={handleAddTag}
-              placeholder="Type and press Enter to add tags"
-            />
-            <div className="flex flex-wrap gap-1 mt-2">
-              {tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeTag(tag)}
-                  />
-                </Badge>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="favorite"
-              checked={isFavorite}
-              onChange={(e) => setIsFavorite(e.target.checked)}
-              className="rounded"
-            />
-            <Label htmlFor="favorite">Mark as favorite</Label>
-          </div>
+          <BookmarkTagsField
+            tags={tags}
+            tagInput={tagInput}
+            onTagInputChange={setTagInput}
+            onTagAdd={handleAddTag}
+            onTagRemove={removeTag}
+          />
         </div>
         
         <DialogFooter>
