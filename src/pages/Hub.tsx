@@ -136,6 +136,7 @@ const Hub: React.FC = () => {
           onAddBookmark={() => setIsDialogOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          viewMode="grid"
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
           onSeedBookmarksAdded={fetchBookmarks}
@@ -159,10 +160,11 @@ const Hub: React.FC = () => {
           onAddBookmark={() => setIsDialogOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onSeedBookmarksAdded={fetchBookmarks}
-          onSeedFeatureRemoved={() => {}}
+          viewMode="grid"
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
+          onSeedBookmarksAdded={fetchBookmarks}
+          onSeedFeatureRemoved={() => {}}
           bookmarkCount={bookmarks.length}
           favoritesCount={bookmarks.filter(b => b.is_favorite).length}
         />
