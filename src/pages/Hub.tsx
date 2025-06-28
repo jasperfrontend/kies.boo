@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -137,10 +136,12 @@ const Hub: React.FC = () => {
           onAddBookmark={() => setIsDialogOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onApiKeysClick={handleApiKeysClick}
-          showApiKeys={showApiKeys}
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
+          onSeedBookmarksAdded={fetchBookmarks}
+          onSeedFeatureRemoved={() => {}}
+          bookmarkCount={bookmarks.length}
+          favoritesCount={bookmarks.filter(b => b.is_favorite).length}
         />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
