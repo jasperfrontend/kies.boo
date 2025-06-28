@@ -29,7 +29,7 @@ interface Bookmark {
 }
 
 const Hub: React.FC = () => {
-  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, fetchBookmarks } = useBookmarks();
   const { smartCollections, loading: collectionsLoading, deleteSmartCollection, updateSmartCollection } = useSmartCollections(bookmarks);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [oldBookmarksDays, setOldBookmarksDays] = useState<string>('100');
@@ -153,8 +153,8 @@ const Hub: React.FC = () => {
           onAddBookmark={() => setIsDialogOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onApiKeysClick={handleApiKeysClick}
-          showApiKeys={showApiKeys}
+          onSeedBookmarksAdded={fetchBookmarks}
+          onSeedFeatureRemoved={() => {}}
         />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

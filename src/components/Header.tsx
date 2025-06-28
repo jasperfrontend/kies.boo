@@ -21,22 +21,28 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
+  onAddBookmark?: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
-  viewMode: 'grid' | 'table';
-  onViewModeChange: (mode: 'grid' | 'table') => void;
-  showFavorites: boolean;
-  onShowFavoritesChange: (show: boolean) => void;
-  onBookmarkAdded: () => void;
-  onSeedBookmarksAdded: () => void;
-  onSeedFeatureRemoved: () => void;
+  onApiKeysClick?: () => void;
+  showApiKeys?: boolean;
+  viewMode?: 'grid' | 'table';
+  onViewModeChange?: (mode: 'grid' | 'table') => void;
+  showFavorites?: boolean;
+  onShowFavoritesChange?: (show: boolean) => void;
+  onBookmarkAdded?: () => void;
+  onSeedBookmarksAdded?: () => void;
+  onSeedFeatureRemoved?: () => void;
   bookmarkCount?: number;
   favoritesCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  onAddBookmark,
   searchQuery,
   onSearchChange,
+  onApiKeysClick,
+  showApiKeys,
   viewMode,
   onViewModeChange,
   showFavorites,
@@ -155,46 +161,50 @@ export const Header: React.FC<HeaderProps> = ({
                 
                 <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
                 
-                <Button
-                  variant={showFavorites ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => onShowFavoritesChange(!showFavorites)}
-                  className="gap-2"
-                >
-                  <Star className={`h-4 w-4 ${showFavorites ? 'fill-current' : ''}`} />
-                  {showFavorites ? 'All' : 'Favorites'}
+                {showFavorites !== undefined && onShowFavoritesChange && (
+                  <Button
+                    variant={showFavorites ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => onShowFavoritesChange(!showFavorites)}
+                    className="gap-2"
+                  >
+                    <Star className={`h-4 w-4 ${showFavorites ? 'fill-current' : ''}`} />
+                    {showFavorites ? 'All' : 'Favorites'}
+                  </Button>
+                )}
+                
+                {viewMode && onViewModeChange && (
+                  <div className="flex border rounded-md">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => onViewModeChange('grid')}
+                      className="rounded-r-none border-r"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'table' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => onViewModeChange('table')}
+                      className="rounded-l-none"
+                    >
+                      <Table className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                <Button size="sm" className="gap-2" onClick={onAddBookmark}>
+                  <Plus className="h-4 w-4" />
+                  Add Bookmark
                 </Button>
                 
-                <div className="flex border rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onViewModeChange('grid')}
-                    className="rounded-r-none border-r"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'table' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => onViewModeChange('table')}
-                    className="rounded-l-none"
-                  >
-                    <Table className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <BookmarkDialog onBookmarkAdded={onBookmarkAdded}>
-                  <Button size="sm" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Bookmark
-                  </Button>
-                </BookmarkDialog>
-                
-                <SeedBookmarksButton
-                  onBookmarksAdded={onSeedBookmarksAdded}
-                  onFeatureRemoved={onSeedFeatureRemoved}
-                />
+                {onSeedBookmarksAdded && onSeedFeatureRemoved && (
+                  <SeedBookmarksButton
+                    onBookmarksAdded={onSeedBookmarksAdded}
+                    onFeatureRemoved={onSeedFeatureRemoved}
+                  />
+                )}
               </div>
             </div>
           )}

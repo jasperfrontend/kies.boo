@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -103,8 +104,15 @@ export const Dashboard = () => {
         onAddBookmark={() => setIsDialogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onApiKeysClick={handleApiKeysClick}
-        showApiKeys={showApiKeys}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        showFavorites={filter === 'favorites'}
+        onShowFavoritesChange={(show) => setFilter(show ? 'favorites' : 'all')}
+        onBookmarkAdded={fetchBookmarks}
+        onSeedBookmarksAdded={fetchBookmarks}
+        onSeedFeatureRemoved={() => {}}
+        bookmarkCount={bookmarks.length}
+        favoritesCount={favoriteCount}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -112,18 +120,6 @@ export const Dashboard = () => {
           <ApiKeyManager />
         ) : (
           <div className="space-y-6">
-            <BookmarkFilters
-              filter={filter}
-              setFilter={setFilter}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              totalCount={bookmarks.length}
-              favoriteCount={favoriteCount}
-              onBookmarksAdded={fetchBookmarks}
-              selectedBookmarks={selectedBookmarks}
-              onBulkDelete={handleBulkDeleteClick}
-            />
-
             <BookmarkDisplay
               bookmarks={filteredBookmarks}
               viewMode={viewMode}
