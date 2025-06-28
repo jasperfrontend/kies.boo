@@ -69,6 +69,44 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
     }
   };
 
+  const deleteSmartCollection = async (collectionId: string) => {
+    if (!user) return;
+
+    try {
+      // First delete the collection_bookmarks relationships
+      const { error: bookmarksError } = await supabase
+        .from('collection_bookmarks')
+        .delete()
+        .eq('collection_id', collectionId);
+
+      if (bookmarksError) throw bookmarksError;
+
+      // Then delete the collection itself
+      const { error: collectionError } = await supabase
+        .from('smart_collections')
+        .delete()
+        .eq('id', collectionId)
+        .eq('user_id', user.id);
+
+      if (collectionError) throw collectionError;
+
+      // Update local state
+      setDbCollections(prev => prev.filter(collection => collection.id !== collectionId));
+
+      toast({
+        title: "Success",
+        description: "Smart collection deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting smart collection:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete smart collection",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Generate automatic collections from temporal clustering and transform them
   const autoCollections: ExtendedSmartCollection[] = bookmarks.length >= 3 
     ? TemporalClustering.generateSmartCollections(bookmarks).map(collection => ({
@@ -93,6 +131,7 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
   return {
     smartCollections: allCollections,
     loading,
-    refetch: fetchSmartCollections
+    refetch: fetchSmartCollections,
+    deleteSmartCollection
   };
 };

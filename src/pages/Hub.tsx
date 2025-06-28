@@ -27,7 +27,7 @@ interface Bookmark {
 
 const Hub: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
-  const { smartCollections, loading: collectionsLoading } = useSmartCollections(bookmarks);
+  const { smartCollections, loading: collectionsLoading, deleteSmartCollection } = useSmartCollections(bookmarks);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const [oldBookmarksDays, setOldBookmarksDays] = useState<string>('100');
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,6 +156,7 @@ const Hub: React.FC = () => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleFavorite={handleToggleFavorite}
+                        onDeleteCollection={deleteSmartCollection}
                       />
                     ))}
                   </div>

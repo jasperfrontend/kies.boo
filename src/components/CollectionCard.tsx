@@ -3,7 +3,18 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight, Clock, Globe, Hash } from 'lucide-react';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { ChevronDown, ChevronRight, Clock, Globe, Hash, Trash2 } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
 import type { ExtendedSmartCollection } from '@/hooks/useSmartCollections';
 
@@ -23,13 +34,15 @@ interface CollectionCardProps {
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onDeleteCollection?: (collectionId: string) => void;
 }
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({
   collection,
   onEdit,
   onDelete,
-  onToggleFavorite
+  onToggleFavorite,
+  onDeleteCollection
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -77,6 +90,15 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   const bookmarks = collection.bookmarks || [];
   const confidence = collection.confidence || 1;
 
+  // Check if this is a database collection (has a real database ID)
+  const isDatabaseCollection = collection.id && collection.id.length === 36; // UUID length
+
+  const handleDeleteCollection = () => {
+    if (onDeleteCollection && isDatabaseCollection) {
+      onDeleteCollection(collection.id);
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -98,6 +120,31 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
           </div>
           
           <div className="flex items-center space-x-2">
+            {isDatabaseCollection && onDeleteCollection && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-1 h-auto text-red-500 hover:text-red-700">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Smart Collection</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{collection.title}"? This action cannot be undone.
+                      The bookmarks will not be deleted, only the collection.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteCollection} className="bg-red-500 hover:bg-red-700">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            
             <div className="flex items-center space-x-1">
               <div className={`w-2 h-2 rounded-full ${getConfidenceColor()}`} />
               <span className="text-xs text-muted-foreground">
@@ -118,6 +165,18 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
           </div>
           <span>•</span>
           <span>{new Date(collection.created_at).toLocaleDateString()}</span>
+          {isDatabaseCollection && (
+            <>
+              <span>•</span>
+              <Badge variant="secondary" className="text-xs">Manual</Badge>
+            </>
+          )}
+          {!isDatabaseCollection && (
+            <>
+              <span>•</span>
+              <Badge variant="outline" className="text-xs">Auto-generated</Badge>
+            </>
+          )}
         </div>
 
         {keywords.length > 0 && (
