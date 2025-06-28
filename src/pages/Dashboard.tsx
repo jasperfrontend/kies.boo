@@ -93,8 +93,6 @@ export const Dashboard: React.FC = () => {
         onCompactModeChange={setCompactMode}
         showFavorites={showFavorites}
         onShowFavoritesChange={setShowFavorites}
-        onSeedBookmarksAdded={fetchBookmarks}
-        onSeedFeatureRemoved={() => {}}
         bookmarkCount={bookmarks.length}
         favoritesCount={favoritesCount}
       />

@@ -21,9 +21,6 @@ interface HeaderProps {
   onCompactModeChange?: (compact: boolean) => void;
   showFavorites?: boolean;
   onShowFavoritesChange?: (show: boolean) => void;
-  onBookmarkAdded?: () => void;
-  onSeedBookmarksAdded?: () => void;
-  onSeedFeatureRemoved?: () => void;
   bookmarkCount?: number;
   favoritesCount?: number;
 }
@@ -38,8 +35,6 @@ export const Header: React.FC<HeaderProps> = ({
   onCompactModeChange,
   showFavorites,
   onShowFavoritesChange,
-  onSeedBookmarksAdded,
-  onSeedFeatureRemoved,
   bookmarkCount = 0,
   favoritesCount = 0
 }) => {
@@ -93,8 +88,6 @@ export const Header: React.FC<HeaderProps> = ({
                 compactMode={compactMode}
                 onCompactModeChange={onCompactModeChange}
                 onAddBookmark={onAddBookmark}
-                onSeedBookmarksAdded={onSeedBookmarksAdded}
-                onSeedFeatureRemoved={onSeedFeatureRemoved}
               />
             </div>
           )}

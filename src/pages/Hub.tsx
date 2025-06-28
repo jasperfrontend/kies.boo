@@ -139,8 +139,6 @@ const Hub: React.FC = () => {
           viewMode="grid"
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
-          onSeedBookmarksAdded={fetchBookmarks}
-          onSeedFeatureRemoved={() => {}}
           bookmarkCount={bookmarks.length}
           favoritesCount={bookmarks.filter(b => b.is_favorite).length}
         />
@@ -163,8 +161,6 @@ const Hub: React.FC = () => {
           viewMode="grid"
           compactMode={compactMode}
           onCompactModeChange={setCompactMode}
-          onSeedBookmarksAdded={fetchBookmarks}
-          onSeedFeatureRemoved={() => {}}
           bookmarkCount={bookmarks.length}
           favoritesCount={bookmarks.filter(b => b.is_favorite).length}
         />
