@@ -21,6 +21,7 @@ interface Bookmark {
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
+  compact?: boolean;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -28,6 +29,7 @@ interface BookmarkCardProps {
 
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   bookmark,
+  compact = false,
   onEdit,
   onDelete,
   onToggleFavorite
@@ -49,6 +51,102 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
       return 'Invalid date';
     }
   };
+
+  if (compact) {
+    return (
+      <TooltipProvider>
+        <Card 
+          className="group hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700 cursor-pointer" 
+          onDoubleClick={handleDoubleClick}
+        >
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                {bookmark.favicon_url && (
+                  <img 
+                    src={bookmark.favicon_url} 
+                    alt="" 
+                    className="w-4 h-4 flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                      {bookmark.title}
+                    </h3>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Double-click to open link in new tab</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              
+              <div className="flex items-center space-x-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={bookmark.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center h-7 w-7 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Open link in new tab</p>
+                  </TooltipContent>
+                </Tooltip>
+                
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
+                        className={`h-7 w-7 p-0 ${bookmark.is_favorite ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`}
+                      >
+                        <Heart className={`h-3 w-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => onEdit(bookmark)} className="h-7 w-7 p-0">
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit bookmark</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="sm" onClick={() => onDelete(bookmark.id)} className="h-7 w-7 p-0">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete bookmark</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>

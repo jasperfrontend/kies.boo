@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
@@ -17,6 +18,7 @@ interface Bookmark {
 interface BookmarkDisplayProps {
   bookmarks: Bookmark[];
   viewMode: 'grid' | 'table';
+  compactMode?: boolean;
   loading: boolean;
   searchQuery: string;
   selectedBookmarks?: string[];
@@ -29,6 +31,7 @@ interface BookmarkDisplayProps {
 export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   bookmarks,
   viewMode,
+  compactMode = false,
   loading,
   searchQuery,
   selectedBookmarks = [],
@@ -80,11 +83,12 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
       )}
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {bookmarks.map((bookmark) => (
             <BookmarkCard
               key={bookmark.id}
               bookmark={bookmark}
+              compact={compactMode}
               onEdit={onEdit}
               onDelete={onDelete}
               onToggleFavorite={onToggleFavorite}

@@ -25,6 +25,7 @@ export const Dashboard = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [compactMode, setCompactMode] = useState(false);
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -106,6 +107,8 @@ export const Dashboard = () => {
         onSearchChange={setSearchQuery}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        compactMode={compactMode}
+        onCompactModeChange={setCompactMode}
         showFavorites={filter === 'favorites'}
         onShowFavoritesChange={(show) => setFilter(show ? 'favorites' : 'all')}
         onBookmarkAdded={fetchBookmarks}
@@ -123,6 +126,7 @@ export const Dashboard = () => {
             <BookmarkDisplay
               bookmarks={filteredBookmarks}
               viewMode={viewMode}
+              compactMode={compactMode}
               loading={loading}
               searchQuery=""
               selectedBookmarks={selectedBookmarks}

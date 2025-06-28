@@ -31,6 +31,7 @@ interface Bookmark {
 
 interface CollectionCardProps {
   collection: ExtendedSmartCollection;
+  compactMode?: boolean;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -40,6 +41,7 @@ interface CollectionCardProps {
 
 export const CollectionCard: React.FC<CollectionCardProps> = ({
   collection,
+  compactMode = false,
   onEdit,
   onDelete,
   onToggleFavorite,
@@ -312,11 +314,12 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
 
         {!isExpanded && (
           <CardContent className="pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className={`grid gap-2 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
               {bookmarks.slice(0, 3).map((bookmark) => (
-                <div key={bookmark.id} className="scale-90 origin-top-left">
+                <div key={bookmark.id} className={compactMode ? '' : 'scale-90 origin-top-left'}>
                   <BookmarkCard
                     bookmark={bookmark}
+                    compact={compactMode}
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleFavorite={onToggleFavorite}
@@ -346,11 +349,12 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
 
         {isExpanded && (
           <CardContent className="pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
               {bookmarks.map((bookmark) => (
                 <BookmarkCard
                   key={bookmark.id}
                   bookmark={bookmark}
+                  compact={compactMode}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onToggleFavorite={onToggleFavorite}

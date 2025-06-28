@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SeedBookmarksButton } from '@/components/SeedBookmarksButton';
-import { Plus, Grid3X3, Table, Star } from 'lucide-react';
+import { Plus, Grid3X3, Table, Star, Maximize2, Minimize2 } from 'lucide-react';
 
 interface HeaderDashboardActionsProps {
   bookmarkCount: number;
@@ -12,6 +12,8 @@ interface HeaderDashboardActionsProps {
   onShowFavoritesChange?: (show: boolean) => void;
   viewMode?: 'grid' | 'table';
   onViewModeChange?: (mode: 'grid' | 'table') => void;
+  compactMode?: boolean;
+  onCompactModeChange?: (compact: boolean) => void;
   onAddBookmark?: () => void;
   onSeedBookmarksAdded?: () => void;
   onSeedFeatureRemoved?: () => void;
@@ -24,6 +26,8 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
   onShowFavoritesChange,
   viewMode,
   onViewModeChange,
+  compactMode,
+  onCompactModeChange,
   onAddBookmark,
   onSeedBookmarksAdded,
   onSeedFeatureRemoved
@@ -72,6 +76,18 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
               <Table className="h-4 w-4" />
             </Button>
           </div>
+        )}
+
+        {compactMode !== undefined && onCompactModeChange && viewMode === 'grid' && (
+          <Button
+            variant={compactMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onCompactModeChange(!compactMode)}
+            className="gap-2"
+          >
+            {compactMode ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            <span className="hidden sm:inline">{compactMode ? 'Extended' : 'Compact'}</span>
+          </Button>
         )}
         
         <Button size="sm" className="gap-2" onClick={onAddBookmark}>

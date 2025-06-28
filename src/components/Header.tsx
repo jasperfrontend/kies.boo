@@ -17,6 +17,8 @@ interface HeaderProps {
   showApiKeys?: boolean;
   viewMode?: 'grid' | 'table';
   onViewModeChange?: (mode: 'grid' | 'table') => void;
+  compactMode?: boolean;
+  onCompactModeChange?: (compact: boolean) => void;
   showFavorites?: boolean;
   onShowFavoritesChange?: (show: boolean) => void;
   onBookmarkAdded?: () => void;
@@ -32,6 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   viewMode,
   onViewModeChange,
+  compactMode,
+  onCompactModeChange,
   showFavorites,
   onShowFavoritesChange,
   onSeedBookmarksAdded,
@@ -44,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const isCurrentPage = (path: string) => location.pathname === path;
+  const showDashboardActions = isCurrentPage('/') || isCurrentPage('/hub');
 
   return (
     <div className="border-b bg-white dark:bg-gray-900 dark:border-gray-700">
@@ -70,8 +75,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Second row - Search and actions (only show on dashboard) */}
-          {isCurrentPage('/') && (
+          {/* Second row - Search and actions (only show on dashboard pages) */}
+          {showDashboardActions && (
             <div className="flex flex-col gap-3 sm:gap-4">
               <HeaderSearch
                 searchQuery={searchQuery}
@@ -85,6 +90,8 @@ export const Header: React.FC<HeaderProps> = ({
                 onShowFavoritesChange={onShowFavoritesChange}
                 viewMode={viewMode}
                 onViewModeChange={onViewModeChange}
+                compactMode={compactMode}
+                onCompactModeChange={onCompactModeChange}
                 onAddBookmark={onAddBookmark}
                 onSeedBookmarksAdded={onSeedBookmarksAdded}
                 onSeedFeatureRemoved={onSeedFeatureRemoved}
