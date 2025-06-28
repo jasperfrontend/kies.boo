@@ -53,6 +53,14 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
     const start = collection.timeRange?.start || collection.time_range_start;
     const end = collection.timeRange?.end || collection.time_range_end;
     
+    // Check if this is a database collection (has a real database ID)
+    const isDatabaseCollection = collection.id && collection.id.length === 36; // UUID length
+    
+    // For manually created collections, show "Saved manually"
+    if (isDatabaseCollection && (!start || !end)) {
+      return 'Saved manually';
+    }
+    
     if (!start || !end) return 'Unknown duration';
     
     const startDate = new Date(start);
@@ -242,11 +250,16 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    <span>Saved over {formatTimeRange()}</span>
+                    <span>{formatTimeRange()}</span>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Time span when these bookmarks were saved</p>
+                  <p>
+                    {isDatabaseCollection && (!collection.timeRange?.start && !collection.time_range_start) 
+                      ? 'Manually created collection' 
+                      : 'Time span when these bookmarks were saved'
+                    }
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>
