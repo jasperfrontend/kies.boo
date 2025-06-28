@@ -32,10 +32,6 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleOpenUrl = () => {
-    window.open(bookmark.url, '_blank');
-  };
-
   const handleTagClick = (tag: string) => {
     navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
@@ -94,9 +90,14 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                 ))}
               </div>
               
-              <Button variant="ghost" size="sm" onClick={handleOpenUrl}>
+              <a
+                href={bookmark.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <ExternalLink className="h-4 w-4" />
-              </Button>
+              </a>
             </div>
           </div>
         </div>

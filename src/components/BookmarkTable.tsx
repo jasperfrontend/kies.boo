@@ -37,10 +37,6 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleOpenUrl = (url: string) => {
-    window.open(url, '_blank');
-  };
-
   const handleTagClick = (tag: string) => {
     navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
@@ -109,12 +105,14 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               <TableCell>
                 <div className="font-medium">{bookmark.title}</div>
                 <div className="text-sm text-muted-foreground truncate max-w-xs">
-                  <button
-                    onClick={() => handleOpenUrl(bookmark.url)}
+                  <a
+                    href={bookmark.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                   >
                     {bookmark.url}
-                  </button>
+                  </a>
                 </div>
               </TableCell>
               <TableCell>
@@ -152,9 +150,14 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   <Button variant="ghost" size="sm" onClick={() => onDelete(bookmark.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleOpenUrl(bookmark.url)}>
+                  <a
+                    href={bookmark.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
                     <ExternalLink className="h-4 w-4" />
-                  </Button>
+                  </a>
                 </div>
               </TableCell>
             </TableRow>
