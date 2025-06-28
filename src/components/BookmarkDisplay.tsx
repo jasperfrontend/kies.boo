@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
+import { useTipsVisibility } from '@/hooks/useTipsVisibility';
 import { Info, X } from 'lucide-react';
 
 interface Bookmark {
@@ -40,7 +41,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   onDelete,
   onToggleFavorite
 }) => {
-  const [showProTip, setShowProTip] = useState(true);
+  const { showTips, toggleTips } = useTipsVisibility();
 
   if (loading) {
     return (
@@ -62,7 +63,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
 
   return (
     <div className="space-y-4">
-      {showProTip && (
+      {showTips && (
         <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
@@ -73,7 +74,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
             to open the link in a new tab!
           </p>
           <button
-            onClick={() => setShowProTip(false)}
+            onClick={() => toggleTips(false)}
             className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors"
             aria-label="Close tip"
           >

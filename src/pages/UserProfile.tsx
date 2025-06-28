@@ -2,11 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useTipsVisibility } from '@/hooks/useTipsVisibility';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
+  const { showTips, toggleTips } = useTipsVisibility();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -36,8 +40,20 @@ const UserProfile: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="text-center text-gray-500 dark:text-gray-400">
-              No preferences available at this time.
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="show-tips" className="text-base">
+                  Show Tips
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Display helpful tips and hints throughout the application
+                </p>
+              </div>
+              <Switch
+                id="show-tips"
+                checked={showTips}
+                onCheckedChange={toggleTips}
+              />
             </div>
           </CardContent>
         </Card>
