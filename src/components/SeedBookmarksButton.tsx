@@ -67,6 +67,7 @@ export const SeedBookmarksButton: React.FC<SeedBookmarksButtonProps> = ({
 
   const handleRemoveFeature = () => {
     setShowModal(false);
+    setIsVisible(false);
     onFeatureRemoved();
     toast({
       title: "Feature Removed",

@@ -29,13 +29,21 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   selectedBookmarks = [],
   onBulkDelete
 }) => {
-  const [showSeedButton, setShowSeedButton] = React.useState(true);
+  const [showSeedButton, setShowSeedButton] = React.useState(false);
   const [typedSequence, setTypedSequence] = React.useState('');
   const [recoveredByCode, setRecoveredByCode] = React.useState(false);
+
+  React.useEffect(() => {
+    // Load the preference from localStorage
+    const saved = localStorage.getItem('showSeedBookmarksButton');
+    setShowSeedButton(saved === 'true');
+  }, []);
 
   const handleFeatureRemoved = () => {
     setShowSeedButton(false);
     setRecoveredByCode(false);
+    // Update localStorage when feature is removed
+    localStorage.setItem('showSeedBookmarksButton', 'false');
   };
 
   React.useEffect(() => {
@@ -47,6 +55,8 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
         setShowSeedButton(true);
         setRecoveredByCode(true);
         setTypedSequence('');
+        // Update localStorage when recovered by code
+        localStorage.setItem('showSeedBookmarksButton', 'true');
         // Add fatality-called class to body
         document.body.classList.add('fatality-called');
       }
