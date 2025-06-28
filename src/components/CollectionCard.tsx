@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, Clock, Globe, Hash } from 'lucide-react';
 import { BookmarkCard } from './BookmarkCard';
-import type { SmartCollection } from '@/types/smartCollections';
+import type { ExtendedSmartCollection } from '@/hooks/useSmartCollections';
 
 interface Bookmark {
   id: string;
@@ -19,13 +19,7 @@ interface Bookmark {
 }
 
 interface CollectionCardProps {
-  collection: SmartCollection & {
-    bookmarks?: Bookmark[];
-    timeRange?: {
-      start: string;
-      end: string;
-    };
-  };
+  collection: ExtendedSmartCollection;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;

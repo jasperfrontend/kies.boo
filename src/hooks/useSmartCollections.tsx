@@ -6,8 +6,17 @@ import { useToast } from '@/hooks/use-toast';
 import { TemporalClustering } from '@/utils/temporalClustering';
 import type { SmartCollection, Bookmark } from '@/types/smartCollections';
 
+// Extended type for collections with bookmarks
+export interface ExtendedSmartCollection extends SmartCollection {
+  bookmarks?: Bookmark[];
+  timeRange?: {
+    start: string;
+    end: string;
+  };
+}
+
 export const useSmartCollections = (bookmarks: Bookmark[]) => {
-  const [dbCollections, setDbCollections] = useState<SmartCollection[]>([]);
+  const [dbCollections, setDbCollections] = useState<ExtendedSmartCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -41,8 +50,8 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
 
       if (collectionsError) throw collectionsError;
 
-      // Transform the data to match our SmartCollection type
-      const transformedCollections = collections?.map(collection => ({
+      // Transform the data to match our ExtendedSmartCollection type
+      const transformedCollections: ExtendedSmartCollection[] = collections?.map(collection => ({
         ...collection,
         bookmarks: collection.collection_bookmarks?.map(cb => cb.bookmarks).filter(Boolean) || []
       })) || [];
@@ -60,9 +69,18 @@ export const useSmartCollections = (bookmarks: Bookmark[]) => {
     }
   };
 
-  // Generate automatic collections from temporal clustering
-  const autoCollections = bookmarks.length >= 3 
-    ? TemporalClustering.generateSmartCollections(bookmarks)
+  // Generate automatic collections from temporal clustering and transform them
+  const autoCollections: ExtendedSmartCollection[] = bookmarks.length >= 3 
+    ? TemporalClustering.generateSmartCollections(bookmarks).map(collection => ({
+        ...collection,
+        // Ensure all required SmartCollection properties exist
+        time_range_start: collection.timeRange?.start || null,
+        time_range_end: collection.timeRange?.end || null,
+        user_id: user?.id || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        bookmarks: collection.bookmarks || []
+      }))
     : [];
 
   // Combine both types of collections
