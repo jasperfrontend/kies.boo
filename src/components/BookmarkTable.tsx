@@ -177,7 +177,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               </TableCell>
             </TableRow>
           ))}
-        </tbody>
+        </TableBody>
       </Table>
     </div>
   );
