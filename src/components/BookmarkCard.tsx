@@ -38,6 +38,10 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
     navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
+  const handleDoubleClick = () => {
+    window.open(bookmark.url, '_blank', 'noopener,noreferrer');
+  };
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'MMM d, yyyy • h:mm a');
@@ -48,7 +52,10 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
 
   return (
     <TooltipProvider>
-      <Card className="group hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
+      <Card 
+        className="group hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700 cursor-pointer" 
+        onDoubleClick={handleDoubleClick}
+      >
         <CardContent className="p-4">
           <div className="flex items-start space-x-3">
             {bookmark.favicon_url && (
@@ -64,7 +71,14 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
             
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
-                <h3 className="font-medium text-gray-900 dark:text-white truncate">{bookmark.title}</h3>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 className="font-medium text-gray-900 dark:text-white truncate">{bookmark.title}</h3>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Double-click to open link in new tab</p>
+                  </TooltipContent>
+                </Tooltip>
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Tooltip>
                     <TooltipTrigger asChild>
