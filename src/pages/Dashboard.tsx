@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -54,11 +53,15 @@ export const Dashboard = () => {
     };
   }, []);
 
-  // Redirect to search when searchQuery changes
+  // Debounced redirect to search when searchQuery changes
   useEffect(() => {
-    if (searchQuery.trim()) {
+    if (!searchQuery.trim()) return;
+
+    const delayedSearch = setTimeout(() => {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    }, 1000);
+
+    return () => clearTimeout(delayedSearch);
   }, [searchQuery, navigate]);
 
   const handleEdit = (bookmark: Bookmark) => {
