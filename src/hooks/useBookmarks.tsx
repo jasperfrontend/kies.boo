@@ -47,7 +47,7 @@ export const useBookmarks = () => {
       return data || [];
     },
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // Reduced to 1 minute to catch updates faster
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
@@ -222,24 +222,62 @@ export const useBookmarks = () => {
     }
   });
 
-  // Update last visited mutation
+  // Update last visited mutation with optimistic updates
   const updateLastVisitedMutation = useMutation({
     mutationFn: async (id: string) => {
+      const now = new Date().toISOString();
+      console.log('Updating last visited for bookmark:', id, 'at time:', now);
+      
       const { error } = await supabase
         .from('bookmarks')
-        .update({ last_visited_at: new Date().toISOString() })
+        .update({ last_visited_at: now })
         .eq('id', id);
 
       if (error) {
         console.error('Error updating last visited:', error);
         throw error;
       }
+
+      return { id, last_visited_at: now };
     },
-    onSuccess: () => {
+    onMutate: async (id: string) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
+
+      // Snapshot the previous value
+      const previousBookmarks = queryClient.getQueryData([BOOKMARKS_QUERY_KEY, user?.id]);
+
+      // Optimistically update to the new value
+      const now = new Date().toISOString();
+      queryClient.setQueryData([BOOKMARKS_QUERY_KEY, user?.id], (old: Bookmark[] | undefined) => {
+        if (!old) return old;
+        return old.map(bookmark => 
+          bookmark.id === id 
+            ? { ...bookmark, last_visited_at: now }
+            : bookmark
+        );
+      });
+
+      console.log('Optimistically updated bookmark', id, 'with last_visited_at:', now);
+
+      // Return a context object with the snapshotted value
+      return { previousBookmarks };
+    },
+    onError: (err, id, context) => {
+      console.error('Error in updateLastVisited mutation:', err);
+      // If the mutation fails, use the context returned from onMutate to roll back
+      queryClient.setQueryData([BOOKMARKS_QUERY_KEY, user?.id], context?.previousBookmarks);
+      
+      // Show error toast for debugging
+      toast({
+        title: "Warning",
+        description: "Failed to track bookmark visit",
+        variant: "destructive"
+      });
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the latest data
       queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
-    },
-    onError: (error) => {
-      console.error('Error updating last visited:', error);
     }
   });
 
@@ -251,6 +289,9 @@ export const useBookmarks = () => {
     handleDelete: (id: string) => deleteMutation.mutate(id),
     handleBulkDelete: (bookmarkIds: string[]) => bulkDeleteMutation.mutate(bookmarkIds),
     handleToggleFavorite: (id: string, isFavorite: boolean) => toggleFavoriteMutation.mutate({ id, isFavorite }),
-    handleUpdateLastVisited: (id: string) => updateLastVisitedMutation.mutate(id)
+    handleUpdateLastVisited: (id: string) => {
+      console.log('handleUpdateLastVisited called for bookmark:', id);
+      updateLastVisitedMutation.mutate(id);
+    }
   };
 };
