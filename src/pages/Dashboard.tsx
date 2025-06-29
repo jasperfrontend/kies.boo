@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -19,7 +18,7 @@ interface Bookmark {
 }
 
 export const Dashboard: React.FC = () => {
-  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -28,6 +27,8 @@ export const Dashboard: React.FC = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  console.log('🏠 DASHBOARD: handleUpdateLastVisited function available:', !!handleUpdateLastVisited);
 
   // Debounced redirect to search when searchQuery changes
   useEffect(() => {
@@ -126,6 +127,7 @@ export const Dashboard: React.FC = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
+          onUpdateLastVisited={handleUpdateLastVisited}
         />
       </main>
 
