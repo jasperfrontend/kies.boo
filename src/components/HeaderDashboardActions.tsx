@@ -40,15 +40,26 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
       </div>
       
       <div className="flex items-center gap-2 flex-wrap">
+        {compactMode !== undefined && onCompactModeChange && viewMode === 'grid' && (
+          <Button
+            variant={compactMode ? 'outline' : 'ghost'}
+            size="sm"
+            onClick={() => onCompactModeChange(!compactMode)}
+            className="gap-2"
+          >
+            {compactMode ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            <span className="hidden sm:inline">{compactMode ? 'Extended' : 'Compact'}</span>
+          </Button>
+        )}
         {showFavorites !== undefined && onShowFavoritesChange && (
           <Button
-            variant={showFavorites ? 'default' : 'outline'}
+            variant={showFavorites ? 'outline' : 'ghost'}
             size="sm"
             onClick={() => onShowFavoritesChange(!showFavorites)}
             className="gap-2"
           >
             <Star className={`h-4 w-4 ${showFavorites ? 'fill-current' : ''}`} />
-            {showFavorites ? 'All' : 'Favorites'}
+            {showFavorites ? 'Show All' : 'Favorites'}
           </Button>
         )}
         
@@ -73,18 +84,6 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
           </div>
         )}
 
-        {compactMode !== undefined && onCompactModeChange && viewMode === 'grid' && (
-          <Button
-            variant={compactMode ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onCompactModeChange(!compactMode)}
-            className="gap-2"
-          >
-            {compactMode ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-            <span className="hidden sm:inline">{compactMode ? 'Extended' : 'Compact'}</span>
-          </Button>
-        )}
-        
         <Button size="sm" className="gap-2" onClick={onAddBookmark}>
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Add Bookmark</span>
