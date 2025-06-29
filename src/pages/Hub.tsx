@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -8,7 +7,6 @@ import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { SmartCollectionEditDialog } from '@/components/SmartCollectionEditDialog';
-import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { CollectionCard } from '@/components/CollectionCard';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,7 +36,6 @@ const Hub: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
-  const [showApiKeys, setShowApiKeys] = useState(false);
   const [isCollectionEditDialogOpen, setIsCollectionEditDialogOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<{ id: string; title: string } | null>(null);
   
@@ -127,10 +124,6 @@ const Hub: React.FC = () => {
     setEditingBookmark(null);
   };
 
-  const handleApiKeysClick = () => {
-    setShowApiKeys(!showApiKeys);
-  };
-
   const handleEditCollection = (collectionId: string, newTitle: string) => {
     const collection = smartCollections.find(c => c.id === collectionId);
     if (collection) {
@@ -197,191 +190,187 @@ const Hub: React.FC = () => {
         />
         
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {showApiKeys ? (
-            <ApiKeyManager />
-          ) : (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold">Smart Hub</h1>
-                <Badge variant="secondary" className="text-sm">
-                  {bookmarks.length} total bookmarks
-                </Badge>
-              </div>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-bold">Smart Hub</h1>
+              <Badge variant="secondary" className="text-sm">
+                {bookmarks.length} total bookmarks
+              </Badge>
+            </div>
 
-              {/* Smart Collections Section */}
-              {smartCollections.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Brain className="h-5 w-5" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>AI-generated collections based on bookmark patterns</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      Smart Collections
-                      <Badge variant="outline">{smartCollections.length}</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {smartCollections.map((collection) => (
-                        <CollectionCard
-                          key={collection.id}
-                          collection={collection}
-                          compactMode={compactMode}
-                          isExpanded={expandedCollections.has(collection.id)}
-                          onToggleExpanded={(isExpanded) => updateExpandedCollections(collection.id, isExpanded)}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onToggleFavorite={handleToggleFavorite}
-                          onDeleteCollection={deleteSmartCollection}
-                          onEditCollection={handleEditCollection}
-                        />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Recent Bookmarks Section */}
+            {/* Smart Collections Section */}
+            {smartCollections.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Clock className="h-5 w-5" />
+                        <Brain className="h-5 w-5" />
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Your most recently saved bookmarks</p>
+                        <p>AI-generated collections based on bookmark patterns</p>
                       </TooltipContent>
                     </Tooltip>
-                    Recent Bookmarks
+                    Smart Collections
+                    <Badge variant="outline">{smartCollections.length}</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {recentBookmarks.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400">No bookmarks yet.</p>
-                  ) : (
-                    <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-                      {recentBookmarks.map((bookmark) => (
-                        <BookmarkCard
-                          key={bookmark.id}
-                          bookmark={bookmark}
-                          compact={compactMode}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onToggleFavorite={handleToggleFavorite}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Old Bookmarks Section */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Star className="h-5 w-5" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Bookmarks you haven't visited in a while - rediscover them!</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      Forgotten Bookmarks
-                    </CardTitle>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Not visited in:</span>
-                      <Select value={oldBookmarksDays} onValueChange={setOldBookmarksDays}>
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="7">7 days</SelectItem>
-                          <SelectItem value="30">30 days</SelectItem>
-                          <SelectItem value="100">100 days</SelectItem>
-                          <SelectItem value="365">365 days</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-6">
+                    {smartCollections.map((collection) => (
+                      <CollectionCard
+                        key={collection.id}
+                        collection={collection}
+                        compactMode={compactMode}
+                        isExpanded={expandedCollections.has(collection.id)}
+                        onToggleExpanded={(isExpanded) => updateExpandedCollections(collection.id, isExpanded)}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onToggleFavorite={handleToggleFavorite}
+                        onDeleteCollection={deleteSmartCollection}
+                        onEditCollection={handleEditCollection}
+                      />
+                    ))}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {selectedBookmarks.length > 0 && (
-                    <div className="mb-4">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            onClick={handleBulkDeleteSelected}
-                            variant="destructive"
-                            size="sm"
-                            className="gap-2"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete {selectedBookmarks.length} Selected
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Delete all selected bookmarks permanently</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  )}
-                  
-                  {oldBookmarks.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No bookmarks older than {oldBookmarksDays} days found.
-                    </p>
-                  ) : (
-                    <BookmarkTable
-                      bookmarks={oldBookmarks}
-                      selectedBookmarks={selectedBookmarks}
-                      onSelectionChange={setSelectedBookmarks}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onToggleFavorite={handleToggleFavorite}
-                    />
-                  )}
                 </CardContent>
               </Card>
+            )}
 
-              {/* Random Bookmark Section */}
-              {randomBookmark && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Shuffle className="h-5 w-5" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>A randomly selected bookmark from your collection</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      Random Bookmark
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="max-w-md">
+            {/* Recent Bookmarks Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Clock className="h-5 w-5" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Your most recently saved bookmarks</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  Recent Bookmarks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {recentBookmarks.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400">No bookmarks yet.</p>
+                ) : (
+                  <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+                    {recentBookmarks.map((bookmark) => (
                       <BookmarkCard
-                        bookmark={randomBookmark}
+                        key={bookmark.id}
+                        bookmark={bookmark}
                         compact={compactMode}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleFavorite={handleToggleFavorite}
                       />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Old Bookmarks Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Star className="h-5 w-5" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Bookmarks you haven't visited in a while - rediscover them!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    Forgotten Bookmarks
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Not visited in:</span>
+                    <Select value={oldBookmarksDays} onValueChange={setOldBookmarksDays}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">7 days</SelectItem>
+                        <SelectItem value="30">30 days</SelectItem>
+                        <SelectItem value="100">100 days</SelectItem>
+                        <SelectItem value="365">365 days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {selectedBookmarks.length > 0 && (
+                  <div className="mb-4">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={handleBulkDeleteSelected}
+                          variant="destructive"
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete {selectedBookmarks.length} Selected
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete all selected bookmarks permanently</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                )}
+                
+                {oldBookmarks.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No bookmarks older than {oldBookmarksDays} days found.
+                  </p>
+                ) : (
+                  <BookmarkTable
+                    bookmarks={oldBookmarks}
+                    selectedBookmarks={selectedBookmarks}
+                    onSelectionChange={setSelectedBookmarks}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Random Bookmark Section */}
+            {randomBookmark && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Shuffle className="h-5 w-5" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>A randomly selected bookmark from your collection</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    Random Bookmark
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="max-w-md">
+                    <BookmarkCard
+                      bookmark={randomBookmark}
+                      compact={compactMode}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </main>
 
         <BookmarkDialog
