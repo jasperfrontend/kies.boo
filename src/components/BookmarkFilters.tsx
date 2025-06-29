@@ -30,37 +30,6 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={filter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilter('all')}
-                >
-                  All <Badge variant="secondary" className="ml-2">{totalCount}</Badge>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Show all bookmarks</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={filter === 'favorites' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFilter('favorites')}
-                >
-                  Favorites <Badge variant="secondary" className="ml-2">{favoriteCount}</Badge>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Show only favorite bookmarks</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className="flex items-center space-x-2">
             {selectedBookmarks.length > 0 && onBulkDelete && (
               <Tooltip>
                 <TooltipTrigger asChild>
