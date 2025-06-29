@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -6,6 +5,9 @@ import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { useNavigate } from 'react-router-dom';
+import { TooltipProvider } from '@chakra-ui/react';
+import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
+import { useBookmarkImport } from '@/hooks/useBookmarkImport';
 
 interface Bookmark {
   id: string;
@@ -26,7 +28,8 @@ export const Dashboard: React.FC = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showFavorites, setShowFavorites] = useState(false);
-
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const { importBookmarks } = useBookmarkImport();
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -71,6 +74,12 @@ export const Dashboard: React.FC = () => {
     setEditingBookmark(null);
   };
 
+  const handleImportBookmarks = async (bookmarks: any[]): Promise<void> => {
+    await importBookmarks(bookmarks);
+    fetchBookmarks(); // Refresh the bookmarks list
+    setIsImportDialogOpen(false);
+  };
+
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -89,45 +98,56 @@ export const Dashboard: React.FC = () => {
   const favoritesCount = bookmarks.filter(b => b.is_favorite).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header 
-        onAddBookmark={() => setIsDialogOpen(true)}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        compactMode={compactMode}
-        onCompactModeChange={setCompactMode}
-        showFavorites={showFavorites}
-        onShowFavoritesChange={setShowFavorites}
-        bookmarkCount={bookmarks.length}
-        favoritesCount={favoritesCount}
-      />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <BookmarkDisplay
-          bookmarks={filteredBookmarks}
-          viewMode={viewMode}
-          compactMode={compactMode}
-          loading={loading}
+    <TooltipProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header 
+          onAddBookmark={() => setIsDialogOpen(true)}
           searchQuery={searchQuery}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onToggleFavorite={handleToggleFavorite}
+          onSearchChange={setSearchQuery}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          compactMode={compactMode}
+          onCompactModeChange={setCompactMode}
+          showFavorites={showFavorites}
+          onShowFavoritesChange={setShowFavorites}
+          bookmarkCount={bookmarks.length}
+          favoritesCount={favoritesCount}
+          onImportBookmarks={() => setIsImportDialogOpen(true)}
         />
-      </main>
+        
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <BookmarkDisplay
+            bookmarks={filteredBookmarks}
+            viewMode={viewMode}
+            compactMode={compactMode}
+            loading={loading}
+            searchQuery={searchQuery}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onToggleFavorite={handleToggleFavorite}
+          />
+        </main>
 
-      <BookmarkDialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            setEditingBookmark(null);
-          }
-        }}
-        bookmark={editingBookmark}
-        onSave={handleBookmarkSave}
-      />
-    </div>
+        <BookmarkDialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setEditingBookmark(null);
+            }
+          }}
+          bookmark={editingBookmark}
+          onSave={handleBookmarkSave}
+        />
+
+        <BookmarkImportDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
+          onImport={handleImportBookmarks}
+        />
+      </div>
+    </TooltipProvider>
   );
 };
+
+export default Dashboard;
