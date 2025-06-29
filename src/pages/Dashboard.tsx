@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -5,7 +6,6 @@ import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { useNavigate } from 'react-router-dom';
-import { TooltipProvider } from '@chakra-ui/react';
 import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
 import { useBookmarkImport } from '@/hooks/useBookmarkImport';
 
@@ -98,55 +98,53 @@ export const Dashboard: React.FC = () => {
   const favoritesCount = bookmarks.filter(b => b.is_favorite).length;
 
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header 
-          onAddBookmark={() => setIsDialogOpen(true)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header 
+        onAddBookmark={() => setIsDialogOpen(true)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        compactMode={compactMode}
+        onCompactModeChange={setCompactMode}
+        showFavorites={showFavorites}
+        onShowFavoritesChange={setShowFavorites}
+        bookmarkCount={bookmarks.length}
+        favoritesCount={favoritesCount}
+        onImportBookmarks={() => setIsImportDialogOpen(true)}
+      />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BookmarkDisplay
+          bookmarks={filteredBookmarks}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
           compactMode={compactMode}
-          onCompactModeChange={setCompactMode}
-          showFavorites={showFavorites}
-          onShowFavoritesChange={setShowFavorites}
-          bookmarkCount={bookmarks.length}
-          favoritesCount={favoritesCount}
-          onImportBookmarks={() => setIsImportDialogOpen(true)}
+          loading={loading}
+          searchQuery={searchQuery}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleFavorite={handleToggleFavorite}
         />
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <BookmarkDisplay
-            bookmarks={filteredBookmarks}
-            viewMode={viewMode}
-            compactMode={compactMode}
-            loading={loading}
-            searchQuery={searchQuery}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        </main>
+      </main>
 
-        <BookmarkDialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setEditingBookmark(null);
-            }
-          }}
-          bookmark={editingBookmark}
-          onSave={handleBookmarkSave}
-        />
+      <BookmarkDialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setEditingBookmark(null);
+          }
+        }}
+        bookmark={editingBookmark}
+        onSave={handleBookmarkSave}
+      />
 
-        <BookmarkImportDialog
-          open={isImportDialogOpen}
-          onOpenChange={setIsImportDialogOpen}
-          onImport={handleImportBookmarks}
-        />
-      </div>
-    </TooltipProvider>
+      <BookmarkImportDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onImport={handleImportBookmarks}
+      />
+    </div>
   );
 };
 

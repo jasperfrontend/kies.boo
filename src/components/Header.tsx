@@ -23,6 +23,7 @@ interface HeaderProps {
   onShowFavoritesChange?: (show: boolean) => void;
   bookmarkCount?: number;
   favoritesCount?: number;
+  onImportBookmarks?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -36,7 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
   showFavorites,
   onShowFavoritesChange,
   bookmarkCount = 0,
-  favoritesCount = 0
+  favoritesCount = 0,
+  onImportBookmarks
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -88,6 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
                 compactMode={compactMode}
                 onCompactModeChange={onCompactModeChange}
                 onAddBookmark={onAddBookmark}
+                onImportBookmarks={onImportBookmarks}
               />
             </div>
           )}
