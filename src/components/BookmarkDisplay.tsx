@@ -3,7 +3,9 @@ import React from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
+import { PaginationControls } from '@/components/PaginationControls';
 import { useTipsVisibility } from '@/hooks/useTipsVisibility';
+import { usePagination } from '@/hooks/usePagination';
 import { Info, X } from 'lucide-react';
 
 interface Bookmark {
@@ -45,6 +47,21 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   onToggleFavorite
 }) => {
   const { showTips, toggleTips } = useTipsVisibility();
+  const {
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    startIndex,
+    endIndex,
+    paginatedItems,
+    goToPage,
+    changeItemsPerPage,
+  } = usePagination({
+    totalItems: bookmarks.length,
+    initialItemsPerPage: 20,
+  });
+
+  const displayedBookmarks = paginatedItems(bookmarks);
 
   if (loading) {
     return (
@@ -66,6 +83,18 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Top pagination controls */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={bookmarks.length}
+        onPageChange={goToPage}
+        onItemsPerPageChange={changeItemsPerPage}
+        startIndex={startIndex}
+        endIndex={endIndex}
+      />
+
       {viewMode === 'table' && (
         <BookmarkFilters
           filter="all"
@@ -102,7 +131,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
 
       {viewMode === 'grid' ? (
         <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {bookmarks.map((bookmark) => (
+          {displayedBookmarks.map((bookmark) => (
             <BookmarkCard
               key={bookmark.id}
               bookmark={bookmark}
@@ -115,7 +144,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
         </div>
       ) : (
         <BookmarkTable
-          bookmarks={bookmarks}
+          bookmarks={displayedBookmarks}
           selectedBookmarks={selectedBookmarks}
           onSelectionChange={onSelectionChange}
           onEdit={onEdit}
@@ -123,6 +152,18 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
           onToggleFavorite={onToggleFavorite}
         />
       )}
+
+      {/* Bottom pagination controls */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={bookmarks.length}
+        onPageChange={goToPage}
+        onItemsPerPageChange={changeItemsPerPage}
+        startIndex={startIndex}
+        endIndex={endIndex}
+      />
     </div>
   );
 };
