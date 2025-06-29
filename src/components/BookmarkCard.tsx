@@ -275,9 +275,24 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
               
               <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>Added: {formatDate(bookmark.created_at)}</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>{formatDate(bookmark.created_at)}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Created on {formatDate(bookmark.created_at)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
                   {bookmark.last_visited_at && (
-                    <span>Last visited: {formatDate(bookmark.last_visited_at)}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>{formatDate(bookmark.last_visited_at)}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Last visited on {formatDate(bookmark.last_visited_at)}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </div>
               </div>
