@@ -6,8 +6,6 @@ import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
 import { useNavigate } from 'react-router-dom';
-import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
-import { useBookmarkImport } from '@/hooks/useBookmarkImport';
 
 interface Bookmark {
   id: string;
@@ -21,15 +19,13 @@ interface Bookmark {
 }
 
 export const Dashboard: React.FC = () => {
-  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave, fetchBookmarks } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showFavorites, setShowFavorites] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const { importBookmarks } = useBookmarkImport();
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -74,12 +70,6 @@ export const Dashboard: React.FC = () => {
     setEditingBookmark(null);
   };
 
-  const handleImportBookmarks = async (bookmarks: any[]): Promise<void> => {
-    await importBookmarks(bookmarks);
-    fetchBookmarks(); // Refresh the bookmarks list
-    setIsImportDialogOpen(false);
-  };
-
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -111,7 +101,6 @@ export const Dashboard: React.FC = () => {
         onShowFavoritesChange={setShowFavorites}
         bookmarkCount={bookmarks.length}
         favoritesCount={favoritesCount}
-        onImportBookmarks={() => setIsImportDialogOpen(true)}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -137,12 +126,6 @@ export const Dashboard: React.FC = () => {
         }}
         bookmark={editingBookmark}
         onSave={handleBookmarkSave}
-      />
-
-      <BookmarkImportDialog
-        open={isImportDialogOpen}
-        onOpenChange={setIsImportDialogOpen}
-        onImport={handleImportBookmarks}
       />
     </div>
   );

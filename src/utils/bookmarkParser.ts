@@ -1,3 +1,4 @@
+
 interface ParsedBookmark {
   title: string;
   url: string;
@@ -38,17 +39,20 @@ export class BookmarkParser {
         const anchor = child.querySelector('A');
         
         if (h3) {
-          // This is a folder
+          // This is a folder - get the folder name
           const folderName = h3.textContent?.trim() || '';
           const newPath = [...currentPath, folderName];
           
-          // Look for the next DL element that contains this folder's bookmarks
-          let nextElement = children[i + 1];
-          if (nextElement && nextElement.tagName === 'DL') {
-            this.parseBookmarkContainer(nextElement, newPath, bookmarks);
+          // Look for the next sibling DL element that contains this folder's bookmarks
+          let nextSibling = children[i + 1];
+          if (nextSibling && nextSibling.tagName === 'DL') {
+            // Parse the nested bookmarks with the updated path
+            this.parseBookmarkContainer(nextSibling, newPath, bookmarks);
+            // Skip the DL element in the next iteration since we just processed it
+            i++;
           }
         } else if (anchor) {
-          // This is a bookmark
+          // This is a bookmark at the current level
           const bookmark = this.parseBookmarkAnchor(anchor, currentPath);
           if (bookmark) {
             bookmarks.push(bookmark);
@@ -66,6 +70,7 @@ export class BookmarkParser {
     const title = anchor.textContent?.trim();
     const addDate = anchor.getAttribute('ADD_DATE');
     const icon = anchor.getAttribute('ICON');
+    const iconUri = anchor.getAttribute('ICON_URI');
 
     if (!href || !title) {
       return null;
@@ -78,16 +83,14 @@ export class BookmarkParser {
       createdAt = new Date(timestamp).toISOString();
     }
 
-    // Process favicon
+    // Process favicon - prefer ICON over ICON_URI if both exist
     let faviconUrl = undefined;
-    if (icon) {
-      if (icon.startsWith('data:')) {
-        // Keep data URI as is
-        faviconUrl = icon;
-      } else if (icon.startsWith('http')) {
-        // Keep external URL as is
-        faviconUrl = icon;
-      }
+    if (icon && icon.startsWith('data:')) {
+      // Use data URI from ICON attribute
+      faviconUrl = icon;
+    } else if (iconUri) {
+      // Use external URL from ICON_URI attribute
+      faviconUrl = iconUri;
     }
     
     // Fallback to Google favicon service if no icon found

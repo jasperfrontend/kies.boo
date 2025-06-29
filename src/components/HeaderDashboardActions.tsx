@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Grid3X3, Table, Star, Maximize2, Minimize2, Upload } from 'lucide-react';
+import { Plus, Grid3X3, Table, Star, Maximize2, Minimize2 } from 'lucide-react';
 
 interface HeaderDashboardActionsProps {
   bookmarkCount: number;
@@ -14,7 +14,6 @@ interface HeaderDashboardActionsProps {
   compactMode?: boolean;
   onCompactModeChange?: (compact: boolean) => void;
   onAddBookmark?: () => void;
-  onImportBookmarks?: () => void;
 }
 
 export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
@@ -26,8 +25,7 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
   onViewModeChange,
   compactMode,
   onCompactModeChange,
-  onAddBookmark,
-  onImportBookmarks
+  onAddBookmark
 }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
@@ -84,13 +82,6 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
               <Table className="h-4 w-4" />
             </Button>
           </div>
-        )}
-
-        {onImportBookmarks && (
-          <Button variant="outline" size="sm" className="gap-2" onClick={onImportBookmarks}>
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Import</span>
-          </Button>
         )}
 
         <Button size="sm" className="gap-2" onClick={onAddBookmark}>
