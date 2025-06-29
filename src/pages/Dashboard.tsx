@@ -66,7 +66,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleBookmarkSave = async (bookmark: Bookmark) => {
-    await handleSave(bookmark);
+    handleSave(bookmark);
     setIsDialogOpen(false);
     setEditingBookmark(null);
   };
@@ -76,7 +76,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleBulkDeleteClick = async () => {
-    await handleBulkDelete(selectedBookmarks);
+    handleBulkDelete(selectedBookmarks);
     setSelectedBookmarks([]);
   };
 
