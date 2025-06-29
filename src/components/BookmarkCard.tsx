@@ -39,20 +39,37 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  console.log('🃏 BookmarkCard rendered for:', bookmark.id, bookmark.title);
+  console.log('🃏 onUpdateLastVisited available:', !!onUpdateLastVisited);
+
   const handleTagClick = (tag: string) => {
     navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
   const handleDoubleClick = () => {
+    console.log('🖱️ CARD: Double-click detected on card for bookmark:', bookmark.id, bookmark.title);
+    console.log('🖱️ CARD: onUpdateLastVisited available:', !!onUpdateLastVisited);
+    
     if (onUpdateLastVisited) {
+      console.log('🖱️ CARD: Calling onUpdateLastVisited for bookmark:', bookmark.id);
       onUpdateLastVisited(bookmark.id);
+    } else {
+      console.warn('⚠️ CARD: onUpdateLastVisited not available - click tracking skipped');
     }
+    
+    console.log('🖱️ CARD: Opening URL in new tab:', bookmark.url);
     window.open(bookmark.url, '_blank', 'noopener,noreferrer');
   };
 
   const handleExternalLinkClick = () => {
+    console.log('🖱️ CARD: External link clicked for bookmark:', bookmark.id, bookmark.title);
+    console.log('🖱️ CARD: onUpdateLastVisited available:', !!onUpdateLastVisited);
+    
     if (onUpdateLastVisited) {
+      console.log('🖱️ CARD: Calling onUpdateLastVisited for bookmark:', bookmark.id);
       onUpdateLastVisited(bookmark.id);
+    } else {
+      console.warn('⚠️ CARD: onUpdateLastVisited not available - click tracking skipped');
     }
   };
 
