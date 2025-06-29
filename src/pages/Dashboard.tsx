@@ -5,7 +5,6 @@ import { useCompactMode } from '@/hooks/useCompactMode';
 import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
-import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
@@ -25,7 +24,6 @@ export const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
-  const [showApiKeys, setShowApiKeys] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showFavorites, setShowFavorites] = useState(false);
 
@@ -73,10 +71,6 @@ export const Dashboard: React.FC = () => {
     setEditingBookmark(null);
   };
 
-  const handleApiKeysClick = () => {
-    setShowApiKeys(!showApiKeys);
-  };
-
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -100,8 +94,6 @@ export const Dashboard: React.FC = () => {
         onAddBookmark={() => setIsDialogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onApiKeysClick={handleApiKeysClick}
-        showApiKeys={showApiKeys}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         compactMode={compactMode}
@@ -113,20 +105,16 @@ export const Dashboard: React.FC = () => {
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showApiKeys ? (
-          <ApiKeyManager />
-        ) : (
-          <BookmarkDisplay
-            bookmarks={filteredBookmarks}
-            viewMode={viewMode}
-            compactMode={compactMode}
-            loading={loading}
-            searchQuery={searchQuery}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        )}
+        <BookmarkDisplay
+          bookmarks={filteredBookmarks}
+          viewMode={viewMode}
+          compactMode={compactMode}
+          loading={loading}
+          searchQuery={searchQuery}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleFavorite={handleToggleFavorite}
+        />
       </main>
 
       <BookmarkDialog
