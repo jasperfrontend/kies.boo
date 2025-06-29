@@ -18,6 +18,7 @@ interface Bookmark {
   tags: string[];
   is_favorite: boolean;
   created_at: string;
+  last_visited_at?: string;
 }
 
 interface BookmarkTableProps {
@@ -27,6 +28,7 @@ interface BookmarkTableProps {
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onUpdateLastVisited?: (id: string) => void;
 }
 
 export const BookmarkTable: React.FC<BookmarkTableProps> = ({
@@ -35,7 +37,8 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
   onSelectionChange,
   onEdit,
   onDelete,
-  onToggleFavorite
+  onToggleFavorite,
+  onUpdateLastVisited
 }) => {
   const navigate = useNavigate();
 
@@ -44,7 +47,22 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
   };
 
   const handleRowDoubleClick = (bookmark: Bookmark) => {
+    if (onUpdateLastVisited) {
+      onUpdateLastVisited(bookmark.id);
+    }
     window.open(bookmark.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleUrlClick = (bookmark: Bookmark) => {
+    if (onUpdateLastVisited) {
+      onUpdateLastVisited(bookmark.id);
+    }
+  };
+
+  const handleExternalLinkClick = (bookmark: Bookmark) => {
+    if (onUpdateLastVisited) {
+      onUpdateLastVisited(bookmark.id);
+    }
   };
 
   const handleSelectAll = (checked: boolean) => {
@@ -92,7 +110,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead className="w-40">Date Added</TableHead>
+              <TableHead className="w-40">Last Visited</TableHead>
               <TableHead className="w-32">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -124,9 +142,9 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                 </TableCell>
                 <TableCell>
                   <Tooltip>
-                    <Tooltip>
+                    <TooltipTrigger asChild>
                       <div className="font-medium">{bookmark.title}</div>
-                    </Tooltip>
+                    </TooltipTrigger>
                     <TooltipContent>
                       <p>Double-click row to open link in new tab</p>
                     </TooltipContent>
@@ -136,6 +154,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                       href={bookmark.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => handleUrlClick(bookmark)}
                       className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                     >
                       {bookmark.url}
@@ -168,9 +187,16 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(bookmark.created_at)}
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground">
+                        {bookmark.last_visited_at ? formatDate(bookmark.last_visited_at) : 'Never'}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Added: {formatDate(bookmark.created_at)}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-1">
@@ -215,6 +241,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => handleExternalLinkClick(bookmark)}
                           className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <ExternalLink className="h-4 w-4" />

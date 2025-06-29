@@ -76,6 +76,7 @@ export type Database = {
           favicon_url: string | null
           id: string
           is_favorite: boolean | null
+          last_visited_at: string | null
           tags: string[] | null
           title: string
           updated_at: string
@@ -88,6 +89,7 @@ export type Database = {
           favicon_url?: string | null
           id?: string
           is_favorite?: boolean | null
+          last_visited_at?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
@@ -100,6 +102,7 @@ export type Database = {
           favicon_url?: string | null
           id?: string
           is_favorite?: boolean | null
+          last_visited_at?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string

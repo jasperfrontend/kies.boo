@@ -17,6 +17,7 @@ interface Bookmark {
   tags: string[];
   is_favorite: boolean;
   created_at: string;
+  last_visited_at?: string;
 }
 
 interface BookmarkCardProps {
@@ -25,6 +26,7 @@ interface BookmarkCardProps {
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onUpdateLastVisited?: (id: string) => void;
 }
 
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
@@ -32,7 +34,8 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   compact = false,
   onEdit,
   onDelete,
-  onToggleFavorite
+  onToggleFavorite,
+  onUpdateLastVisited
 }) => {
   const navigate = useNavigate();
 
@@ -41,7 +44,16 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   };
 
   const handleDoubleClick = () => {
+    if (onUpdateLastVisited) {
+      onUpdateLastVisited(bookmark.id);
+    }
     window.open(bookmark.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleExternalLinkClick = () => {
+    if (onUpdateLastVisited) {
+      onUpdateLastVisited(bookmark.id);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -91,6 +103,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                       href={bookmark.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={handleExternalLinkClick}
                       className="inline-flex items-center justify-center h-7 w-7 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <ExternalLink className="h-3 w-3" />
@@ -248,6 +261,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                       href={bookmark.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={handleExternalLinkClick}
                       className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <ExternalLink className="h-4 w-4" />
@@ -260,9 +274,12 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
               </div>
               
               <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDate(bookmark.created_at)}
-                </p>
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                  <span>Added: {formatDate(bookmark.created_at)}</span>
+                  {bookmark.last_visited_at && (
+                    <span>Last visited: {formatDate(bookmark.last_visited_at)}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

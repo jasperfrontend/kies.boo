@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
@@ -25,10 +26,11 @@ interface Bookmark {
   tags: string[];
   is_favorite: boolean;
   created_at: string;
+  last_visited_at?: string;
 }
 
 const Hub: React.FC = () => {
-  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, fetchBookmarks } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited, fetchBookmarks } = useBookmarks();
   const { smartCollections, loading: collectionsLoading, deleteSmartCollection, updateSmartCollection } = useSmartCollections(bookmarks);
   const { compactMode, setCompactMode } = useCompactMode();
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
@@ -89,16 +91,26 @@ const Hub: React.FC = () => {
       .slice(0, 5);
   }, [bookmarks]);
 
-  // Get old bookmarks based on selected days
-  const oldBookmarks = useMemo(() => {
+  // Get forgotten bookmarks based on last_visited_at instead of created_at
+  const forgottenBookmarks = useMemo(() => {
     const days = parseInt(oldBookmarksDays);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
     
-    return bookmarks.filter(bookmark => {
-      const bookmarkDate = new Date(bookmark.created_at);
-      return bookmarkDate < cutoffDate;
-    });
+    return bookmarks
+      .filter(bookmark => {
+        // If never visited, use created_at date
+        const lastVisitedDate = bookmark.last_visited_at 
+          ? new Date(bookmark.last_visited_at) 
+          : new Date(bookmark.created_at);
+        return lastVisitedDate < cutoffDate;
+      })
+      .sort((a, b) => {
+        const aDate = a.last_visited_at ? new Date(a.last_visited_at) : new Date(a.created_at);
+        const bDate = b.last_visited_at ? new Date(b.last_visited_at) : new Date(b.created_at);
+        return aDate.getTime() - bDate.getTime(); // Oldest first
+      })
+      .slice(0, 12); // Limit to 12 bookmarks
   }, [bookmarks, oldBookmarksDays]);
 
   // Get one random bookmark
@@ -264,6 +276,7 @@ const Hub: React.FC = () => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         onToggleFavorite={handleToggleFavorite}
+                        onUpdateLastVisited={handleUpdateLastVisited}
                       />
                     ))}
                   </div>
@@ -271,7 +284,7 @@ const Hub: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Old Bookmarks Section */}
+            {/* Forgotten Bookmarks Section */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -324,18 +337,19 @@ const Hub: React.FC = () => {
                   </div>
                 )}
                 
-                {oldBookmarks.length === 0 ? (
+                {forgottenBookmarks.length === 0 ? (
                   <p className="text-gray-500 dark:text-gray-400">
-                    No bookmarks older than {oldBookmarksDays} days found.
+                    No bookmarks haven't been visited in {oldBookmarksDays} days.
                   </p>
                 ) : (
                   <BookmarkTable
-                    bookmarks={oldBookmarks}
+                    bookmarks={forgottenBookmarks}
                     selectedBookmarks={selectedBookmarks}
                     onSelectionChange={setSelectedBookmarks}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onToggleFavorite={handleToggleFavorite}
+                    onUpdateLastVisited={handleUpdateLastVisited}
                   />
                 )}
               </CardContent>
@@ -365,6 +379,7 @@ const Hub: React.FC = () => {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onToggleFavorite={handleToggleFavorite}
+                      onUpdateLastVisited={handleUpdateLastVisited}
                     />
                   </div>
                 </CardContent>

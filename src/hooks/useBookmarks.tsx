@@ -13,6 +13,7 @@ interface Bookmark {
   tags: string[];
   is_favorite: boolean;
   created_at: string;
+  last_visited_at?: string;
 }
 
 const BOOKMARKS_QUERY_KEY = 'bookmarks';
@@ -221,6 +222,27 @@ export const useBookmarks = () => {
     }
   });
 
+  // Update last visited mutation
+  const updateLastVisitedMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('bookmarks')
+        .update({ last_visited_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating last visited:', error);
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
+    },
+    onError: (error) => {
+      console.error('Error updating last visited:', error);
+    }
+  });
+
   return {
     bookmarks,
     loading: loading || saveMutation.isPending || deleteMutation.isPending || bulkDeleteMutation.isPending || toggleFavoriteMutation.isPending,
@@ -228,6 +250,7 @@ export const useBookmarks = () => {
     handleSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => saveMutation.mutate(bookmarkData),
     handleDelete: (id: string) => deleteMutation.mutate(id),
     handleBulkDelete: (bookmarkIds: string[]) => bulkDeleteMutation.mutate(bookmarkIds),
-    handleToggleFavorite: (id: string, isFavorite: boolean) => toggleFavoriteMutation.mutate({ id, isFavorite })
+    handleToggleFavorite: (id: string, isFavorite: boolean) => toggleFavoriteMutation.mutate({ id, isFavorite }),
+    handleUpdateLastVisited: (id: string) => updateLastVisitedMutation.mutate(id)
   };
 };
