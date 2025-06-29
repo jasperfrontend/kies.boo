@@ -26,6 +26,7 @@ export const Dashboard: React.FC = () => {
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showFavorites, setShowFavorites] = useState(false);
+  const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -70,6 +71,10 @@ export const Dashboard: React.FC = () => {
     setEditingBookmark(null);
   };
 
+  const handleSelectionChange = (bookmarkIds: string[]) => {
+    setSelectedBookmarks(bookmarkIds);
+  };
+
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +115,8 @@ export const Dashboard: React.FC = () => {
           compactMode={compactMode}
           loading={loading}
           searchQuery={searchQuery}
+          selectedBookmarks={selectedBookmarks}
+          onSelectionChange={handleSelectionChange}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
