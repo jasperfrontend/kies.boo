@@ -2,6 +2,7 @@
 import React from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
+import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { useTipsVisibility } from '@/hooks/useTipsVisibility';
 import { Info, X } from 'lucide-react';
 
@@ -24,6 +25,7 @@ interface BookmarkDisplayProps {
   searchQuery: string;
   selectedBookmarks?: string[];
   onSelectionChange?: (bookmarkIds: string[]) => void;
+  onBulkDelete?: () => void;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
@@ -37,6 +39,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   searchQuery,
   selectedBookmarks = [],
   onSelectionChange = () => {},
+  onBulkDelete,
   onEdit,
   onDelete,
   onToggleFavorite
@@ -63,6 +66,20 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
 
   return (
     <div className="space-y-4">
+      {viewMode === 'table' && (
+        <BookmarkFilters
+          filter="all"
+          setFilter={() => {}}
+          viewMode={viewMode}
+          setViewMode={() => {}}
+          totalCount={bookmarks.length}
+          favoriteCount={bookmarks.filter(b => b.is_favorite).length}
+          onBookmarksAdded={() => {}}
+          selectedBookmarks={selectedBookmarks}
+          onBulkDelete={onBulkDelete}
+        />
+      )}
+
       {showTips && (
         <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />

@@ -19,7 +19,7 @@ interface Bookmark {
 }
 
 export const Dashboard: React.FC = () => {
-  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -75,6 +75,11 @@ export const Dashboard: React.FC = () => {
     setSelectedBookmarks(bookmarkIds);
   };
 
+  const handleBulkDeleteClick = async () => {
+    await handleBulkDelete(selectedBookmarks);
+    setSelectedBookmarks([]);
+  };
+
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -117,6 +122,7 @@ export const Dashboard: React.FC = () => {
           searchQuery={searchQuery}
           selectedBookmarks={selectedBookmarks}
           onSelectionChange={handleSelectionChange}
+          onBulkDelete={handleBulkDeleteClick}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
