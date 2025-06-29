@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
@@ -48,12 +49,6 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   onToggleFavorite,
   onUpdateLastVisited
 }) => {
-  console.log('📺 BookmarkDisplay rendered with:');
-  console.log('📺 - bookmarks count:', bookmarks.length);
-  console.log('📺 - viewMode:', viewMode);
-  console.log('📺 - onUpdateLastVisited prop available:', !!onUpdateLastVisited);
-  console.log('📺 - onUpdateLastVisited function type:', typeof onUpdateLastVisited);
-
   const { showTips, toggleTips } = useTipsVisibility();
   const {
     currentPage,
@@ -70,7 +65,6 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   });
 
   const displayedBookmarks = paginatedItems(bookmarks);
-  console.log('📺 Displayed bookmarks after pagination:', displayedBookmarks.length);
 
   if (loading) {
     return (
@@ -140,34 +134,28 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
 
       {viewMode === 'grid' ? (
         <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {displayedBookmarks.map((bookmark) => {
-            console.log('📺 GRID: Rendering BookmarkCard for:', bookmark.id, 'with onUpdateLastVisited:', !!onUpdateLastVisited);
-            return (
-              <BookmarkCard
-                key={bookmark.id}
-                bookmark={bookmark}
-                compact={compactMode}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onToggleFavorite={onToggleFavorite}
-                onUpdateLastVisited={onUpdateLastVisited}
-              />
-            );
-          })}
+          {displayedBookmarks.map((bookmark) => (
+            <BookmarkCard
+              key={bookmark.id}
+              bookmark={bookmark}
+              compact={compactMode}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggleFavorite={onToggleFavorite}
+              onUpdateLastVisited={onUpdateLastVisited}
+            />
+          ))}
         </div>
       ) : (
-        <>
-          {console.log('📺 TABLE: Rendering BookmarkTable with onUpdateLastVisited:', !!onUpdateLastVisited)}
-          <BookmarkTable
-            bookmarks={displayedBookmarks}
-            selectedBookmarks={selectedBookmarks}
-            onSelectionChange={onSelectionChange}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleFavorite={onToggleFavorite}
-            onUpdateLastVisited={onUpdateLastVisited}
-          />
-        </>
+        <BookmarkTable
+          bookmarks={displayedBookmarks}
+          selectedBookmarks={selectedBookmarks}
+          onSelectionChange={onSelectionChange}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggleFavorite={onToggleFavorite}
+          onUpdateLastVisited={onUpdateLastVisited}
+        />
       )}
 
       {/* Bottom pagination controls */}

@@ -42,49 +42,26 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  console.log('📋 BookmarkTable rendered with:', bookmarks.length, 'bookmarks');
-  console.log('📋 onUpdateLastVisited function available:', !!onUpdateLastVisited);
-
   const handleTagClick = (tag: string) => {
     navigate(`/search?q=${encodeURIComponent(tag)}`);
   };
 
   const handleRowDoubleClick = (bookmark: Bookmark) => {
-    console.log('🖱️ TABLE: Double-click detected on row for bookmark:', bookmark.id, bookmark.title);
-    console.log('🖱️ TABLE: onUpdateLastVisited available:', !!onUpdateLastVisited);
-    
     if (onUpdateLastVisited) {
-      console.log('🖱️ TABLE: Calling onUpdateLastVisited for bookmark:', bookmark.id);
       onUpdateLastVisited(bookmark.id);
-    } else {
-      console.warn('⚠️ TABLE: onUpdateLastVisited not available - click tracking skipped');
     }
-    
-    console.log('🖱️ TABLE: Opening URL in new tab:', bookmark.url);
     window.open(bookmark.url, '_blank', 'noopener,noreferrer');
   };
 
   const handleUrlClick = (bookmark: Bookmark) => {
-    console.log('🖱️ TABLE: URL link clicked for bookmark:', bookmark.id, bookmark.title);
-    console.log('🖱️ TABLE: onUpdateLastVisited available:', !!onUpdateLastVisited);
-    
     if (onUpdateLastVisited) {
-      console.log('🖱️ TABLE: Calling onUpdateLastVisited for bookmark:', bookmark.id);
       onUpdateLastVisited(bookmark.id);
-    } else {
-      console.warn('⚠️ TABLE: onUpdateLastVisited not available - click tracking skipped');
     }
   };
 
   const handleExternalLinkClick = (bookmark: Bookmark) => {
-    console.log('🖱️ TABLE: External link button clicked for bookmark:', bookmark.id, bookmark.title);
-    console.log('🖱️ TABLE: onUpdateLastVisited available:', !!onUpdateLastVisited);
-    
     if (onUpdateLastVisited) {
-      console.log('🖱️ TABLE: Calling onUpdateLastVisited for bookmark:', bookmark.id);
       onUpdateLastVisited(bookmark.id);
-    } else {
-      console.warn('⚠️ TABLE: onUpdateLastVisited not available - click tracking skipped');
     }
   };
 

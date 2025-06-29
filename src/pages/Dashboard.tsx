@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -27,8 +28,6 @@ export const Dashboard: React.FC = () => {
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
-
-  console.log('🏠 DASHBOARD: handleUpdateLastVisited function available:', !!handleUpdateLastVisited);
 
   // Debounced redirect to search when searchQuery changes
   useEffect(() => {
