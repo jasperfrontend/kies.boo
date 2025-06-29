@@ -9,66 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      api_keys: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          key_hash: string
-          last_used_at: string | null
-          name: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          key_hash: string
-          last_used_at?: string | null
-          name: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          key_hash?: string
-          last_used_at?: string | null
-          name?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      bookmark_categories: {
-        Row: {
-          bookmark_id: string
-          category_id: string
-        }
-        Insert: {
-          bookmark_id: string
-          category_id: string
-        }
-        Update: {
-          bookmark_id?: string
-          category_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookmark_categories_bookmark_id_fkey"
-            columns: ["bookmark_id"]
-            isOneToOne: false
-            referencedRelation: "bookmarks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookmark_categories_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       bookmarks: {
         Row: {
           created_at: string
@@ -111,48 +51,24 @@ export type Database = {
         }
         Relationships: []
       }
-      categories: {
-        Row: {
-          color: string | null
-          created_at: string
-          id: string
-          name: string
-          user_id: string
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name: string
-          user_id: string
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       collection_bookmarks: {
         Row: {
-          bookmark_id: string
-          collection_id: string
+          bookmark_id: string | null
+          collection_id: string | null
           created_at: string
-          id: string
+          id: number
         }
         Insert: {
-          bookmark_id: string
-          collection_id: string
+          bookmark_id?: string | null
+          collection_id?: string | null
           created_at?: string
-          id?: string
+          id?: number
         }
         Update: {
-          bookmark_id?: string
-          collection_id?: string
+          bookmark_id?: string | null
+          collection_id?: string | null
           created_at?: string
-          id?: string
+          id?: number
         }
         Relationships: [
           {
@@ -215,10 +131,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      validate_api_key: {
-        Args: { api_key: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
