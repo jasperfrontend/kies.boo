@@ -54,19 +54,14 @@ export const useBookmarkImport = () => {
         user_id: user.id,
       }));
 
-      // Insert bookmarks in batches
-      const batchSize = 50;
-      for (let i = 0; i < bookmarksToInsert.length; i += batchSize) {
-        const batch = bookmarksToInsert.slice(i, i + batchSize);
-        
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert(batch);
+      // Insert all bookmarks at once instead of in batches to avoid UI flickering
+      const { error } = await supabase
+        .from('bookmarks')
+        .insert(bookmarksToInsert);
 
-        if (error) {
-          console.error('Batch import error:', error);
-          throw new Error(`Failed to import batch: ${error.message}`);
-        }
+      if (error) {
+        console.error('Import error:', error);
+        throw new Error(`Failed to import bookmarks: ${error.message}`);
       }
 
       const skippedCount = bookmarks.length - newBookmarks.length;

@@ -51,9 +51,9 @@ export const BookmarkImporter: React.FC<BookmarkImporterProps> = ({ onImport }) 
     try {
       // Read file content
       const content = await file.text();
+      setProgress(25);
       
       // Parse bookmarks
-      setProgress(25);
       const parsedBookmarks = BookmarkParser.parseBookmarksFile(content);
       
       if (parsedBookmarks.length === 0) {
@@ -68,38 +68,33 @@ export const BookmarkImporter: React.FC<BookmarkImporterProps> = ({ onImport }) 
 
       setProgress(50);
 
-      // Import bookmarks in batches
-      const batchSize = 10;
-      let successful = 0;
-      let failed = 0;
-      const errors: string[] = [];
-
-      for (let i = 0; i < parsedBookmarks.length; i += batchSize) {
-        const batch = parsedBookmarks.slice(i, i + batchSize);
+      // Import all bookmarks at once to avoid UI flickering
+      try {
+        await onImport(parsedBookmarks);
         
-        try {
-          await onImport(batch);
-          successful += batch.length;
-        } catch (error) {
-          failed += batch.length;
-          errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
+        setImportResults({
+          total: parsedBookmarks.length,
+          successful: parsedBookmarks.length,
+          failed: 0,
+          errors: []
+        });
 
-        setProgress(50 + (i / parsedBookmarks.length) * 50);
-      }
+        setProgress(100);
 
-      setImportResults({
-        total: parsedBookmarks.length,
-        successful,
-        failed,
-        errors
-      });
-
-      if (successful > 0) {
         toast({
           title: "Import completed",
-          description: `Successfully imported ${successful} out of ${parsedBookmarks.length} bookmarks.`,
+          description: `Successfully imported ${parsedBookmarks.length} bookmarks with folder tags.`,
         });
+
+      } catch (error) {
+        setImportResults({
+          total: parsedBookmarks.length,
+          successful: 0,
+          failed: parsedBookmarks.length,
+          errors: [error instanceof Error ? error.message : 'Unknown error']
+        });
+
+        throw error;
       }
 
     } catch (error) {
@@ -111,7 +106,6 @@ export const BookmarkImporter: React.FC<BookmarkImporterProps> = ({ onImport }) 
       });
     } finally {
       setImporting(false);
-      setProgress(0);
     }
   };
 
@@ -143,6 +137,7 @@ export const BookmarkImporter: React.FC<BookmarkImporterProps> = ({ onImport }) 
           </div>
           <p className="text-sm text-muted-foreground">
             Export your bookmarks from Firefox, Chrome, or Edge as an HTML file and select it here.
+            Folders will be imported as tags.
           </p>
         </div>
 
