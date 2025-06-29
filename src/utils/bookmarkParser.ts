@@ -30,10 +30,10 @@ export class BookmarkParser {
     // Step 3: Find the PERSONAL_TOOLBAR_FOLDER and process its contents
     const toolbarFolder = doc.querySelector('H3[PERSONAL_TOOLBAR_FOLDER="true"]');
     if (toolbarFolder) {
-      // Look for the DL that follows this H3
-      let nextSibling = toolbarFolder.parentElement?.nextElementSibling;
-      if (nextSibling && nextSibling.tagName === 'DL') {
-        this.parseToolbarFolder(nextSibling, bookmarks);
+      const parentDT = toolbarFolder.parentElement;
+      const nestedDL = parentDT?.querySelector('DL');
+      if (nestedDL) {
+        this.parseToolbarFolder(nestedDL, bookmarks);
       }
     }
 

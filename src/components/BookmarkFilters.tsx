@@ -20,8 +20,6 @@ interface BookmarkFiltersProps {
 export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
   filter,
   setFilter,
-  viewMode,
-  setViewMode,
   totalCount,
   favoriteCount,
   selectedBookmarks = [],
@@ -84,37 +82,6 @@ export const BookmarkFilters: React.FC<BookmarkFiltersProps> = ({
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Grid view - show bookmarks as cards</p>
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={viewMode === 'table' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('table')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Table view - show bookmarks in a compact list</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
       </div>
     </TooltipProvider>
   );
