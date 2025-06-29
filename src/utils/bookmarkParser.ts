@@ -11,17 +11,54 @@ interface ParsedBookmark {
 
 export class BookmarkParser {
   static parseBookmarksFile(htmlContent: string): ParsedBookmark[] {
+    // Step 1: Clean up the HTML by removing all <p> tags
+    const cleanedContent = htmlContent.replace(/<\/?p>/gi, '');
+    
     const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const doc = parser.parseFromString(cleanedContent, 'text/html');
     const bookmarks: ParsedBookmark[] = [];
 
-    // Find the main DL element that contains all bookmarks
-    const mainDL = doc.querySelector('DL');
-    if (mainDL) {
-      this.parseBookmarkContainer(mainDL, [], bookmarks);
+    // Step 2: Extract bookmarks directly under the first H1 and first DL
+    const firstH1 = doc.querySelector('H1');
+    if (firstH1) {
+      const firstDL = firstH1.nextElementSibling;
+      if (firstDL && firstDL.tagName === 'DL') {
+        this.extractDirectBookmarks(firstDL, [], bookmarks);
+      }
+    }
+
+    // Step 3: Find the PERSONAL_TOOLBAR_FOLDER and process its contents
+    const toolbarFolder = doc.querySelector('H3[PERSONAL_TOOLBAR_FOLDER="true"]');
+    if (toolbarFolder) {
+      // Look for the DL that follows this H3
+      let nextSibling = toolbarFolder.parentElement?.nextElementSibling;
+      if (nextSibling && nextSibling.tagName === 'DL') {
+        this.parseToolbarFolder(nextSibling, bookmarks);
+      }
     }
 
     return bookmarks;
+  }
+
+  private static extractDirectBookmarks(dlElement: Element, currentPath: string[], bookmarks: ParsedBookmark[]): void {
+    const dtElements = dlElement.querySelectorAll(':scope > DT');
+    
+    for (const dt of dtElements) {
+      const anchor = dt.querySelector('A');
+      const h3 = dt.querySelector('H3');
+      
+      if (anchor && !h3) {
+        // This is a direct bookmark (not in a folder)
+        const bookmark = this.parseBookmarkAnchor(anchor, currentPath);
+        if (bookmark) {
+          bookmarks.push(bookmark);
+        }
+      }
+    }
+  }
+
+  private static parseToolbarFolder(dlElement: Element, bookmarks: ParsedBookmark[]): void {
+    this.parseBookmarkContainer(dlElement, [], bookmarks);
   }
 
   private static parseBookmarkContainer(
@@ -29,34 +66,40 @@ export class BookmarkParser {
     currentPath: string[], 
     bookmarks: ParsedBookmark[]
   ): void {
-    const children = Array.from(dlElement.children);
+    const dtElements = dlElement.querySelectorAll(':scope > DT');
     
-    for (let i = 0; i < children.length; i++) {
-      const child = children[i];
+    for (let i = 0; i < dtElements.length; i++) {
+      const dt = dtElements[i];
+      const h3 = dt.querySelector('H3');
+      const anchor = dt.querySelector('A');
       
-      if (child.tagName === 'DT') {
-        const h3 = child.querySelector('H3');
-        const anchor = child.querySelector('A');
+      if (h3 && !h3.hasAttribute('PERSONAL_TOOLBAR_FOLDER')) {
+        // This is a folder (but not the personal toolbar folder)
+        const folderName = h3.textContent?.trim() || '';
+        const newPath = [...currentPath, folderName];
         
-        if (h3) {
-          // This is a folder - get the folder name
-          const folderName = h3.textContent?.trim() || '';
-          const newPath = [...currentPath, folderName];
-          
-          // Look for the next sibling DL element that contains this folder's bookmarks
-          let nextSibling = children[i + 1];
-          if (nextSibling && nextSibling.tagName === 'DL') {
+        // Look for the next sibling DL element that contains this folder's bookmarks
+        const nextDT = dtElements[i + 1];
+        if (nextDT) {
+          const nestedDL = nextDT.querySelector('DL');
+          if (nestedDL) {
             // Parse the nested bookmarks with the updated path
-            this.parseBookmarkContainer(nextSibling, newPath, bookmarks);
-            // Skip the DL element in the next iteration since we just processed it
+            this.parseBookmarkContainer(nestedDL, newPath, bookmarks);
+            // Skip the next DT since we just processed it
             i++;
           }
-        } else if (anchor) {
-          // This is a bookmark at the current level
-          const bookmark = this.parseBookmarkAnchor(anchor, currentPath);
-          if (bookmark) {
-            bookmarks.push(bookmark);
+        } else {
+          // Check if there's a DL directly after this DT
+          let nextSibling = dt.nextElementSibling;
+          if (nextSibling && nextSibling.tagName === 'DL') {
+            this.parseBookmarkContainer(nextSibling, newPath, bookmarks);
           }
+        }
+      } else if (anchor) {
+        // This is a bookmark at the current level
+        const bookmark = this.parseBookmarkAnchor(anchor, currentPath);
+        if (bookmark) {
+          bookmarks.push(bookmark);
         }
       }
     }
