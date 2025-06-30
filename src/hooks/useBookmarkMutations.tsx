@@ -40,6 +40,8 @@ export const useBookmarkMutations = () => {
     }) => {
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Starting bookmark save mutation with data:', { bookmarkData, collectionData });
+
       const isNew = !bookmarkData.id;
       
       const payload = {
@@ -53,12 +55,14 @@ export const useBookmarkMutations = () => {
 
       let result;
       if (isNew) {
+        console.log('Creating new bookmark with payload:', payload);
         result = await supabase
           .from('bookmarks')
           .insert([payload])
           .select('*')
           .single();
       } else {
+        console.log('Updating existing bookmark with payload:', payload);
         result = await supabase
           .from('bookmarks')
           .update(payload)
@@ -69,10 +73,12 @@ export const useBookmarkMutations = () => {
       }
 
       if (result.error) {
+        console.error('Bookmark save error:', result.error);
         throw result.error;
       }
 
       const bookmarkId = result.data.id;
+      console.log('Bookmark saved successfully with ID:', bookmarkId);
       
       // Handle tags separately
       if (!isNew) {
@@ -85,10 +91,12 @@ export const useBookmarkMutations = () => {
 
       // Handle smart collection assignment (for both new and existing bookmarks)
       if (collectionData) {
+        console.log('Processing collection data:', collectionData);
         let targetCollectionId = collectionData.collectionId;
 
         // Create new collection if needed
         if (collectionData.newCollectionTitle && !targetCollectionId) {
+          console.log('Creating new collection:', collectionData.newCollectionTitle);
           const { data: newCollection, error: collectionError } = await supabase
             .from('smart_collections')
             .insert({
@@ -105,10 +113,13 @@ export const useBookmarkMutations = () => {
           }
 
           targetCollectionId = newCollection.id;
+          console.log('New collection created with ID:', targetCollectionId);
         }
 
         // Add bookmark to collection
         if (targetCollectionId) {
+          console.log('Adding bookmark to collection:', { bookmarkId, targetCollectionId });
+          
           // For existing bookmarks, first check if the bookmark is already in this collection
           if (!isNew) {
             const { data: existingLink } = await supabase
@@ -117,6 +128,8 @@ export const useBookmarkMutations = () => {
               .eq('collection_id', targetCollectionId)
               .eq('bookmark_id', bookmarkId)
               .maybeSingle();
+
+            console.log('Existing link check result:', existingLink);
 
             // Only insert if the bookmark is not already in this collection
             if (!existingLink) {
@@ -130,7 +143,11 @@ export const useBookmarkMutations = () => {
               if (linkError) {
                 console.error('Error linking bookmark to collection:', linkError);
                 // Don't throw here - bookmark was saved successfully
+              } else {
+                console.log('Successfully linked existing bookmark to collection');
               }
+            } else {
+              console.log('Bookmark already in collection, skipping insert');
             }
           } else {
             // For new bookmarks, always add to collection
@@ -142,11 +159,15 @@ export const useBookmarkMutations = () => {
               });
 
             if (linkError) {
-              console.error('Error linking bookmark to collection:', linkError);
+              console.error('Error linking new bookmark to collection:', linkError);
               // Don't throw here - bookmark was saved successfully
+            } else {
+              console.log('Successfully linked new bookmark to collection');
             }
           }
         }
+      } else {
+        console.log('No collection data provided, skipping collection assignment');
       }
 
       return { data: result.data, isNew };

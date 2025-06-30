@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -31,13 +31,25 @@ export const BookmarkSmartCollectionField: React.FC<BookmarkSmartCollectionField
     !collection.id.startsWith('auto-')
   );
 
+  const handleValueChange = (value: string) => {
+    console.log('Select value changed to:', value);
+    if (value === "none") {
+      onCollectionChange(null);
+    } else {
+      onCollectionChange(value);
+    }
+  };
+
   return (
     <div className="grid gap-2">
       <Label htmlFor="smartCollection">Smart Collection (Optional)</Label>
       
       {!isCreatingNewCollection ? (
         <div className="flex gap-2">
-          <Select value={selectedCollectionId || "none"} onValueChange={(value) => onCollectionChange(value === "none" ? null : value)}>
+          <Select 
+            value={selectedCollectionId || "none"} 
+            onValueChange={handleValueChange}
+          >
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select a collection..." />
             </SelectTrigger>

@@ -95,10 +95,12 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTags(bookmark.tags);
       setIsFavorite(bookmark.is_favorite);
       setClipboardMessage('');
-      // Reset collection fields when editing existing bookmark
-      setSelectedCollectionId(null);
-      setNewCollectionTitle('');
-      setIsCreatingNewCollection(false);
+      // Reset collection fields when editing existing bookmark - but don't reset during the session
+      if (!selectedCollectionId && !isCreatingNewCollection) {
+        setSelectedCollectionId(null);
+        setNewCollectionTitle('');
+        setIsCreatingNewCollection(false);
+      }
     } else {
       setTitle('');
       setUrl('');
