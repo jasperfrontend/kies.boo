@@ -187,7 +187,7 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                     <h3 className="font-medium text-gray-900 dark:text-white truncate">{bookmark.title}</h3>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Double-click to open link in new tab</p>
+                    <p>{bookmark.title} - Double-click to open link</p>
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
