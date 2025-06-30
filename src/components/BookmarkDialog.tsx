@@ -222,15 +222,16 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       ...(bookmark?.id && { id: bookmark.id })
     };
 
-    // Prepare collection data - now for both new and existing bookmarks
-    const collectionData = isCreatingNewCollection 
-      ? { newCollectionTitle: newCollectionTitle.trim() }
-      : selectedCollectionId 
-        ? { collectionId: selectedCollectionId }
-        : undefined;
+    // Prepare collection data - fix the logic here
+    let collectionData = undefined;
+    
+    if (isCreatingNewCollection && newCollectionTitle.trim()) {
+      collectionData = { newCollectionTitle: newCollectionTitle.trim() };
+    } else if (selectedCollectionId) {
+      collectionData = { collectionId: selectedCollectionId };
+    }
 
-    console.log('Submitting bookmark data:', bookmarkData);
-    console.log('Collection data:', collectionData);
+    console.log('BookmarkDialog - About to call onSave with:', { bookmarkData, collectionData });
     
     onSave(bookmarkData, collectionData);
     onOpenChange(false);
