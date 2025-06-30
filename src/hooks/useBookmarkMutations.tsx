@@ -83,8 +83,8 @@ export const useBookmarkMutations = () => {
         await addTagsToBookmark(bookmarkId, bookmarkData.tags);
       }
 
-      // Handle smart collection assignment (only for new bookmarks)
-      if (isNew && collectionData) {
+      // Handle smart collection assignment (for both new and existing bookmarks)
+      if (collectionData) {
         let targetCollectionId = collectionData.collectionId;
 
         // Create new collection if needed
@@ -109,16 +109,42 @@ export const useBookmarkMutations = () => {
 
         // Add bookmark to collection
         if (targetCollectionId) {
-          const { error: linkError } = await supabase
-            .from('collection_bookmarks')
-            .insert({
-              collection_id: targetCollectionId,
-              bookmark_id: bookmarkId
-            });
+          // For existing bookmarks, first check if the bookmark is already in this collection
+          if (!isNew) {
+            const { data: existingLink } = await supabase
+              .from('collection_bookmarks')
+              .select('id')
+              .eq('collection_id', targetCollectionId)
+              .eq('bookmark_id', bookmarkId)
+              .maybeSingle();
 
-          if (linkError) {
-            console.error('Error linking bookmark to collection:', linkError);
-            // Don't throw here - bookmark was saved successfully
+            // Only insert if the bookmark is not already in this collection
+            if (!existingLink) {
+              const { error: linkError } = await supabase
+                .from('collection_bookmarks')
+                .insert({
+                  collection_id: targetCollectionId,
+                  bookmark_id: bookmarkId
+                });
+
+              if (linkError) {
+                console.error('Error linking bookmark to collection:', linkError);
+                // Don't throw here - bookmark was saved successfully
+              }
+            }
+          } else {
+            // For new bookmarks, always add to collection
+            const { error: linkError } = await supabase
+              .from('collection_bookmarks')
+              .insert({
+                collection_id: targetCollectionId,
+                bookmark_id: bookmarkId
+              });
+
+            if (linkError) {
+              console.error('Error linking bookmark to collection:', linkError);
+              // Don't throw here - bookmark was saved successfully
+            }
           }
         }
       }

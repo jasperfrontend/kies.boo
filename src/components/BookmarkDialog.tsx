@@ -16,16 +16,7 @@ import { BookmarkTagsField } from './BookmarkTagsField';
 import { BookmarkSmartCollectionField } from './BookmarkSmartCollectionField';
 import { useSmartCollections, ExtendedSmartCollection } from '@/hooks/useSmartCollections';
 import { useToast } from '@/hooks/use-toast';
-
-interface Bookmark {
-  id: string;
-  title: string;
-  url: string;
-  description?: string;
-  favicon_url?: string;
-  tags: string[];
-  is_favorite: boolean;
-}
+import type { Bookmark } from '@/types/smartCollections';
 
 interface BookmarkDialogProps {
   open: boolean;
@@ -229,7 +220,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       ...(bookmark?.id && { id: bookmark.id })
     };
 
-    // Prepare collection data
+    // Prepare collection data - now for both new and existing bookmarks
     const collectionData = isCreatingNewCollection 
       ? { newCollectionTitle: newCollectionTitle.trim() }
       : selectedCollectionId 
@@ -284,17 +275,15 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             onTagRemove={removeTag}
           />
 
-          {!bookmark && (
-            <BookmarkSmartCollectionField
-              smartCollections={smartCollections}
-              selectedCollectionId={selectedCollectionId}
-              onCollectionChange={setSelectedCollectionId}
-              newCollectionTitle={newCollectionTitle}
-              onNewCollectionTitleChange={setNewCollectionTitle}
-              isCreatingNewCollection={isCreatingNewCollection}
-              onToggleCreateNew={handleToggleCreateNew}
-            />
-          )}
+          <BookmarkSmartCollectionField
+            smartCollections={smartCollections}
+            selectedCollectionId={selectedCollectionId}
+            onCollectionChange={setSelectedCollectionId}
+            newCollectionTitle={newCollectionTitle}
+            onNewCollectionTitleChange={setNewCollectionTitle}
+            isCreatingNewCollection={isCreatingNewCollection}
+            onToggleCreateNew={handleToggleCreateNew}
+          />
         </div>
         
         <DialogFooter>
