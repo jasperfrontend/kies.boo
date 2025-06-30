@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ExternalLink, Heart, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -98,7 +99,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">
+              <TableHead className="w-8">
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={handleSelectAll}
@@ -110,8 +111,8 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead className="w-40">Last Visited</TableHead>
-              <TableHead className="w-32">Actions</TableHead>
+              <TableHead className="w-36">Last Visited</TableHead>
+              <TableHead className="w-16">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -189,7 +190,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                 <TableCell>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         {bookmark.last_visited_at ? formatDate(bookmark.last_visited_at) : 'Never'}
                       </div>
                     </TooltipTrigger>
@@ -199,59 +200,40 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   </Tooltip>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center space-x-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
-                          className={bookmark.is_favorite ? 'text-red-500' : 'text-gray-400'}
-                        >
-                          <Heart className={`h-4 w-4 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => onEdit(bookmark)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit bookmark</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => onDelete(bookmark.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete bookmark</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}>
+                        <Heart className={`h-4 w-4 mr-2 ${bookmark.is_favorite ? 'fill-current text-red-500' : 'text-gray-400'}`} />
+                        {bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit(bookmark)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit bookmark
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleExternalLinkClick(bookmark)}>
                         <a
                           href={bookmark.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={() => handleExternalLinkClick(bookmark)}
-                          className="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          className="flex items-center w-full"
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Open link in new tab
                         </a>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Open link in new tab</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onDelete(bookmark.id)} className="text-red-600 dark:text-red-400">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete bookmark
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
