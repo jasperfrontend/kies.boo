@@ -1,4 +1,5 @@
 
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -281,10 +282,14 @@ export const useBookmarkMutations = () => {
     handleSave: (
       bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
       collectionData?: CollectionData
-    ) => saveMutation.mutate({ bookmarkData, collectionData }),
+    ) => {
+      console.log('handleSave called with:', { bookmarkData, collectionData });
+      saveMutation.mutate({ bookmarkData, collectionData });
+    },
     handleDelete: (id: string) => deleteMutation.mutate(id),
     handleBulkDelete: (bookmarkIds: string[]) => bulkDeleteMutation.mutate(bookmarkIds),
     handleToggleFavorite: (id: string, isFavorite: boolean) => toggleFavoriteMutation.mutate({ id, isFavorite }),
     isLoading: saveMutation.isPending || deleteMutation.isPending || bulkDeleteMutation.isPending || toggleFavoriteMutation.isPending
   };
 };
+
