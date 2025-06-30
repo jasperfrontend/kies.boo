@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -29,10 +30,14 @@ export const Dashboard: React.FC = () => {
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // Immediate redirect to search when searchQuery changes
+  // Debounced redirect to search when searchQuery changes
   useEffect(() => {
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const timeoutId = setTimeout(() => {
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [searchQuery, navigate]);
 

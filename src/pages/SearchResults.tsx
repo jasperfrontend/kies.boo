@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBookmarks } from '@/hooks/useBookmarks';
@@ -32,10 +33,14 @@ const SearchResults: React.FC = () => {
     setSearchQuery(query);
   }, [query]);
 
-  // Handle search query changes
+  // Handle search query changes with debounce
   useEffect(() => {
     if (searchQuery.trim() && searchQuery !== query) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const timeoutId = setTimeout(() => {
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [searchQuery, query, navigate]);
 
