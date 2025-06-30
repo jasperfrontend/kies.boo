@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { ExternalLink, Heart, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { ExternalLink, Heart, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -107,11 +107,10 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   {...(isIndeterminate && { 'data-state': 'indeterminate' })}
                 />
               </TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="w-48">Tags</TableHead>
-              <TableHead className="w-36">Last Visit</TableHead>
-              <TableHead className="w-16">Actions</TableHead>
+              <TableHead>Bookmark</TableHead>
+              <TableHead className="w-1/5">Tags</TableHead>
+              <TableHead className="w-28">Last Visit</TableHead>
+              <TableHead className="w-16"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,7 +130,11 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                 <TableCell>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="font-medium">{bookmark.title}</div>
+                      <div>
+                        <p className="font-medium">{bookmark.title}</p>
+                        {bookmark.description && (
+                          <p className="text-sm text-muted-foreground">{bookmark.description}</p>
+                        )}  </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Double-click row to open link in new tab</p>
@@ -149,11 +152,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                     </a>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="text-sm text-muted-foreground max-w-xs truncate">
-                    {bookmark.description}
-                  </div>
-                </TableCell>
+
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {bookmark.tags.map((tag, index) => (
@@ -190,7 +189,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
