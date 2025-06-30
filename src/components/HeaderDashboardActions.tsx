@@ -84,12 +84,27 @@ export const HeaderDashboardActions: React.FC<HeaderDashboardActionsProps> = ({
           </div>
         )}
 
-        <Button size="sm" className="gap-2" onClick={onAddBookmark}>
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Add Bookmark</span>
-          <span className="sm:hidden">Add</span>
+        <Button 
+          size="sm" 
+          className="magical-add-button gap-2 relative overflow-hidden" 
+          onClick={onAddBookmark}
+        >
+          {/* Sparkle elements */}
+          <div className="sparkle"></div>
+          <div className="sparkle"></div>
+          <div className="sparkle"></div>
+          <div className="sparkle"></div>
+          <div className="sparkle"></div>
+          <div className="sparkle-star">✨</div>
+          <div className="sparkle-star">⭐</div>
+          <div className="sparkle-star">✨</div>
+          
+          <Plus className="h-4 w-4 relative z-10" />
+          <span className="hidden sm:inline relative z-10">Add Bookmark</span>
+          <span className="sm:hidden relative z-10">Add</span>
         </Button>
       </div>
     </div>
   );
 };
+
