@@ -1,4 +1,3 @@
-
 import { useBookmarkQueries } from './useBookmarkQueries';
 import { useBookmarkMutations } from './useBookmarkMutations';
 import { useBookmarkActions } from './useBookmarkActions';
@@ -15,6 +14,12 @@ interface Bookmark {
   last_visited_at?: string;
 }
 
+interface CollectionData {
+  collectionId?: string;
+  newCollectionTitle?: string;
+  removeFromCollection?: boolean;
+}
+
 export const useBookmarks = () => {
   const { bookmarks, loading: queryLoading } = useBookmarkQueries();
   const { handleSave, handleDelete, handleBulkDelete, handleToggleFavorite, isLoading: mutationLoading } = useBookmarkMutations();
@@ -24,7 +29,10 @@ export const useBookmarks = () => {
     bookmarks,
     loading: queryLoading || mutationLoading,
     fetchBookmarks,
-    handleSave,
+    handleSave: (
+      bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+      collectionData?: CollectionData
+    ) => handleSave(bookmarkData, collectionData),
     handleDelete,
     handleBulkDelete,
     handleToggleFavorite,

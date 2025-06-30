@@ -1,5 +1,3 @@
-
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +19,7 @@ interface Bookmark {
 interface CollectionData {
   collectionId?: string;
   newCollectionTitle?: string;
+  removeFromCollection?: boolean;
 }
 
 const BOOKMARKS_QUERY_KEY = 'bookmarks';
@@ -93,6 +92,23 @@ export const useBookmarkMutations = () => {
       // Handle smart collection assignment (for both new and existing bookmarks)
       if (collectionData) {
         console.log('Processing collection data:', collectionData);
+        
+        // First, remove from existing collection if needed
+        if (collectionData.removeFromCollection) {
+          console.log('Removing bookmark from existing collection(s)');
+          const { error: removeError } = await supabase
+            .from('collection_bookmarks')
+            .delete()
+            .eq('bookmark_id', bookmarkId);
+
+          if (removeError) {
+            console.error('Error removing from existing collections:', removeError);
+            // Don't throw here - we can continue with adding to new collection
+          } else {
+            console.log('Successfully removed from existing collections');
+          }
+        }
+
         let targetCollectionId = collectionData.collectionId;
 
         // Create new collection if needed
@@ -117,41 +133,22 @@ export const useBookmarkMutations = () => {
           console.log('New collection created with ID:', targetCollectionId);
         }
 
-        // Add bookmark to collection
+        // Add bookmark to collection (only if we have a target collection)
         if (targetCollectionId) {
           console.log('Adding bookmark to collection:', { bookmarkId, targetCollectionId });
           
-          // For existing bookmarks, first check if the bookmark is already in this collection
-          if (!isNew) {
-            const { data: existingLink } = await supabase
-              .from('collection_bookmarks')
-              .select('id')
-              .eq('collection_id', targetCollectionId)
-              .eq('bookmark_id', bookmarkId)
-              .maybeSingle();
+          // Check if bookmark is already in this collection (shouldn't happen after removal, but safety check)
+          const { data: existingLink } = await supabase
+            .from('collection_bookmarks')
+            .select('id')
+            .eq('collection_id', targetCollectionId)
+            .eq('bookmark_id', bookmarkId)
+            .maybeSingle();
 
-            console.log('Existing link check result:', existingLink);
+          console.log('Existing link check result:', existingLink);
 
-            // Only insert if the bookmark is not already in this collection
-            if (!existingLink) {
-              const { error: linkError } = await supabase
-                .from('collection_bookmarks')
-                .insert({
-                  collection_id: targetCollectionId,
-                  bookmark_id: bookmarkId
-                });
-
-              if (linkError) {
-                console.error('Error linking bookmark to collection:', linkError);
-                // Don't throw here - bookmark was saved successfully
-              } else {
-                console.log('Successfully linked existing bookmark to collection');
-              }
-            } else {
-              console.log('Bookmark already in collection, skipping insert');
-            }
-          } else {
-            // For new bookmarks, always add to collection
+          // Only insert if the bookmark is not already in this collection
+          if (!existingLink) {
             const { error: linkError } = await supabase
               .from('collection_bookmarks')
               .insert({
@@ -160,11 +157,13 @@ export const useBookmarkMutations = () => {
               });
 
             if (linkError) {
-              console.error('Error linking new bookmark to collection:', linkError);
+              console.error('Error linking bookmark to collection:', linkError);
               // Don't throw here - bookmark was saved successfully
             } else {
-              console.log('Successfully linked new bookmark to collection');
+              console.log('Successfully linked bookmark to collection');
             }
+          } else {
+            console.log('Bookmark already in collection, skipping insert');
           }
         }
       } else {
@@ -175,6 +174,7 @@ export const useBookmarkMutations = () => {
     },
     onSuccess: ({ isNew }) => {
       queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['smart_collections', user?.id] });
       toast({
         title: "Success",
         description: `Bookmark ${isNew ? 'created' : 'updated'} successfully`,
@@ -292,4 +292,3 @@ export const useBookmarkMutations = () => {
     isLoading: saveMutation.isPending || deleteMutation.isPending || bulkDeleteMutation.isPending || toggleFavoriteMutation.isPending
   };
 };
-

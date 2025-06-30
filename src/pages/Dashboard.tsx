@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -17,6 +16,12 @@ interface Bookmark {
   tags: string[];
   is_favorite: boolean;
   created_at: string;
+}
+
+interface CollectionData {
+  collectionId?: string;
+  newCollectionTitle?: string;
+  removeFromCollection?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
@@ -56,8 +61,12 @@ export const Dashboard: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleBookmarkSave = async (bookmark: Bookmark) => {
-    handleSave(bookmark);
+  const handleBookmarkSave = async (
+    bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+    collectionData?: CollectionData
+  ) => {
+    console.log('Dashboard handleBookmarkSave called with:', { bookmarkData, collectionData });
+    handleSave(bookmarkData, collectionData);
     setIsDialogOpen(false);
     setEditingBookmark(null);
   };
@@ -130,6 +139,7 @@ export const Dashboard: React.FC = () => {
           }
         }}
         bookmark={editingBookmark}
+        existingBookmarks={bookmarks}
         onSave={handleBookmarkSave}
       />
     </div>

@@ -62,8 +62,17 @@ const SearchResults: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleBookmarkSave = async (bookmark: Bookmark) => {
-    await handleSave(bookmark);
+  interface CollectionData {
+    collectionId?: string;
+    newCollectionTitle?: string;
+    removeFromCollection?: boolean;
+  }
+
+  const handleBookmarkSave = async (
+    bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+    collectionData?: CollectionData
+  ) => {
+    await handleSave(bookmarkData, collectionData);
     setIsDialogOpen(false);
     setEditingBookmark(null);
   };
@@ -221,6 +230,7 @@ const SearchResults: React.FC = () => {
           }
         }}
         bookmark={editingBookmark}
+        existingBookmarks={bookmarks}
         onSave={handleBookmarkSave}
       />
     </div>

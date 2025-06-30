@@ -16,14 +16,25 @@ import { BookmarkTagsField } from './BookmarkTagsField';
 import { BookmarkSmartCollectionField } from './BookmarkSmartCollectionField';
 import { useSmartCollections, ExtendedSmartCollection } from '@/hooks/useSmartCollections';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Bookmark } from '@/types/smartCollections';
+
+interface CollectionData {
+  collectionId?: string;
+  newCollectionTitle?: string;
+  removeFromCollection?: boolean;
+}
 
 interface BookmarkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bookmark?: Bookmark | null;
   existingBookmarks?: Bookmark[];
-  onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, collectionData?: { collectionId?: string; newCollectionTitle?: string }) => void;
+  onSave: (
+    bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+    collectionData?: CollectionData
+  ) => void;
 }
 
 export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
@@ -46,9 +57,12 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [newCollectionTitle, setNewCollectionTitle] = useState('');
   const [isCreatingNewCollection, setIsCreatingNewCollection] = useState(false);
+  const [currentCollectionId, setCurrentCollectionId] = useState<string | null>(null);
+  const [loadingCurrentCollection, setLoadingCurrentCollection] = useState(false);
 
   const { smartCollections } = useSmartCollections(existingBookmarks);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const isValidUrl = (string: string) => {
     try {
@@ -87,37 +101,88 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     }
   };
 
+  // Function to get current collection for a bookmark
+  const getCurrentCollection = async (bookmarkId: string) => {
+    if (!user) return null;
+    
+    setLoadingCurrentCollection(true);
+    try {
+      const { data, error } = await supabase
+        .from('collection_bookmarks')
+        .select(`
+          collection_id,
+          smart_collections (
+            id,
+            title,
+            type
+          )
+        `)
+        .eq('bookmark_id', bookmarkId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching current collection:', error);
+        return null;
+      }
+
+      return data?.smart_collections ? {
+        id: data.smart_collections.id,
+        title: data.smart_collections.title,
+        type: data.smart_collections.type
+      } : null;
+    } catch (error) {
+      console.error('Error in getCurrentCollection:', error);
+      return null;
+    } finally {
+      setLoadingCurrentCollection(false);
+    }
+  };
+
   useEffect(() => {
-    if (bookmark) {
-      setTitle(bookmark.title);
-      setUrl(bookmark.url);
-      setDescription(bookmark.description || '');
-      setTags(bookmark.tags);
-      setIsFavorite(bookmark.is_favorite);
-      setClipboardMessage('');
-      // Reset collection fields when editing existing bookmark - but don't reset during the session
-      if (!selectedCollectionId && !isCreatingNewCollection) {
-        setSelectedCollectionId(null);
+    const setupDialog = async () => {
+      if (bookmark) {
+        setTitle(bookmark.title);
+        setUrl(bookmark.url);
+        setDescription(bookmark.description || '');
+        setTags(bookmark.tags);
+        setIsFavorite(bookmark.is_favorite);
+        setClipboardMessage('');
+        
+        // Get current collection for existing bookmark
+        const currentCollection = await getCurrentCollection(bookmark.id);
+        if (currentCollection) {
+          setCurrentCollectionId(currentCollection.id);
+          setSelectedCollectionId(currentCollection.id);
+        } else {
+          setCurrentCollectionId(null);
+          setSelectedCollectionId(null);
+        }
+        
         setNewCollectionTitle('');
         setIsCreatingNewCollection(false);
+      } else {
+        setTitle('');
+        setUrl('');
+        setDescription('');
+        setTags([]);
+        setTagInput('');
+        setIsFavorite(false);
+        setClipboardMessage('');
+        setSelectedCollectionId(null);
+        setCurrentCollectionId(null);
+        setNewCollectionTitle('');
+        setIsCreatingNewCollection(false);
+        
+        if (open) {
+          checkClipboard();
+        }
       }
-    } else {
-      setTitle('');
-      setUrl('');
-      setDescription('');
-      setTags([]);
-      setTagInput('');
-      setIsFavorite(false);
-      setClipboardMessage('');
-      setSelectedCollectionId(null);
-      setNewCollectionTitle('');
-      setIsCreatingNewCollection(false);
-      
-      if (open) {
-        checkClipboard();
-      }
+    };
+
+    if (open) {
+      setupDialog();
     }
-  }, [bookmark, open]);
+  }, [bookmark, open, user]);
 
   const parseUrlTitle = async (inputUrl: string) => {
     if (!inputUrl || isParsingTitle) return;
@@ -188,10 +253,15 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const handleToggleCreateNew = () => {
     setIsCreatingNewCollection(!isCreatingNewCollection);
     if (!isCreatingNewCollection) {
-      setSelectedCollectionId(null);
+      setSelectedCollectionId(currentCollectionId); // Reset to current collection
     } else {
       setNewCollectionTitle('');
     }
+  };
+
+  const handleCollectionChange = (collectionId: string | null) => {
+    setSelectedCollectionId(collectionId);
+    console.log('Collection changed to:', collectionId);
   };
 
   const handleSave = () => {
@@ -222,20 +292,45 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       ...(bookmark?.id && { id: bookmark.id })
     };
 
-    // Prepare collection data - fix the logic here
-    let collectionData = undefined;
+    // Prepare collection data with logic for changing collections
+    let collectionData: CollectionData | undefined = undefined;
     
     if (isCreatingNewCollection && newCollectionTitle.trim()) {
-      collectionData = { newCollectionTitle: newCollectionTitle.trim() };
-    } else if (selectedCollectionId) {
-      collectionData = { collectionId: selectedCollectionId };
+      collectionData = { 
+        newCollectionTitle: newCollectionTitle.trim(),
+        removeFromCollection: currentCollectionId !== null // Remove from current if exists
+      };
+    } else if (selectedCollectionId === "none") {
+      // User selected "No collection"
+      collectionData = { 
+        removeFromCollection: true 
+      };
+    } else if (selectedCollectionId && selectedCollectionId !== currentCollectionId) {
+      // User selected a different collection
+      collectionData = { 
+        collectionId: selectedCollectionId,
+        removeFromCollection: currentCollectionId !== null // Remove from current if exists
+      };
+    } else if (selectedCollectionId === currentCollectionId) {
+      // No change needed
+      collectionData = undefined;
     }
 
-    console.log('BookmarkDialog - About to call onSave with:', { bookmarkData, collectionData });
+    console.log('BookmarkDialog - About to call onSave with:', { 
+      bookmarkData, 
+      collectionData, 
+      currentCollectionId, 
+      selectedCollectionId 
+    });
     
     onSave(bookmarkData, collectionData);
     onOpenChange(false);
   };
+
+  // Get current collection info for display
+  const currentCollection = currentCollectionId 
+    ? smartCollections.find(c => c.id === currentCollectionId)
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -281,11 +376,13 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
           <BookmarkSmartCollectionField
             smartCollections={smartCollections}
             selectedCollectionId={selectedCollectionId}
-            onCollectionChange={setSelectedCollectionId}
+            onCollectionChange={handleCollectionChange}
             newCollectionTitle={newCollectionTitle}
             onNewCollectionTitleChange={setNewCollectionTitle}
             isCreatingNewCollection={isCreatingNewCollection}
             onToggleCreateNew={handleToggleCreateNew}
+            currentCollection={currentCollection}
+            loadingCurrentCollection={loadingCurrentCollection}
           />
         </div>
         
