@@ -107,10 +107,9 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                   {...(isIndeterminate && { 'data-state': 'indeterminate' })}
                 />
               </TableHead>
-              <TableHead className="w-8"></TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Tags</TableHead>
+              <TableHead className="w-48">Tags</TableHead>
               <TableHead className="w-36">Last Visit</TableHead>
               <TableHead className="w-16">Actions</TableHead>
             </TableRow>
@@ -128,18 +127,6 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                     onCheckedChange={(checked) => handleSelectBookmark(bookmark.id, checked as boolean)}
                     aria-label={`Select ${bookmark.title}`}
                   />
-                </TableCell>
-                <TableCell>
-                  {bookmark.favicon_url && (
-                    <img 
-                      src={bookmark.favicon_url} 
-                      alt="" 
-                      className="w-4 h-4"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
                 </TableCell>
                 <TableCell>
                   <Tooltip>

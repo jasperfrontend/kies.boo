@@ -44,11 +44,11 @@ const TagManagement: React.FC = () => {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/')}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
+            Back to Dashboard
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Tag Management
