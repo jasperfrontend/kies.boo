@@ -17,7 +17,6 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
   variant = 'default'
 }) => {
   const { 
-    showTips, 
     currentTip, 
     currentTipIndex, 
     totalTips, 
@@ -28,9 +27,9 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
     allTipsDismissed
   } = useTipsSystem();
 
-  const { toggleTips } = useTipsVisibility();
+  const { showTips, toggleTips } = useTipsVisibility();
 
-  if (!showTips || !currentTip || allTipsDismissed) {
+  if (!showTips || !currentTip) {
     return null;
   }
 
