@@ -84,7 +84,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM d, yyyy • h:mm a');
+      return format(new Date(dateString), "d MMM ''yy - HH:mm");
     } catch (error) {
       return 'Invalid date';
     }
@@ -111,7 +111,7 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
               <TableHead>Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Tags</TableHead>
-              <TableHead className="w-36">Last Visited</TableHead>
+              <TableHead className="w-36">Last Visit</TableHead>
               <TableHead className="w-16">Actions</TableHead>
             </TableRow>
           </TableHeader>
