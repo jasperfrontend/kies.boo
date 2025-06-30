@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
+import { useViewMode } from '@/hooks/useViewMode';
 import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
@@ -21,10 +22,10 @@ interface Bookmark {
 export const Dashboard: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
+  const { viewMode, setViewMode } = useViewMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
