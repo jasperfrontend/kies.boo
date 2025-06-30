@@ -11,6 +11,7 @@ import { Dashboard } from "./pages/Dashboard";
 import Hub from "./pages/Hub";
 import SearchResults from "./pages/SearchResults";
 import UserProfile from "./pages/UserProfile";
+import TagManagement from "./pages/TagManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,14 @@ const AppContent = () => (
       element={
         <ProtectedRoute>
           <UserProfile />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/tags" 
+      element={
+        <ProtectedRoute>
+          <TagManagement />
         </ProtectedRoute>
       } 
     />
