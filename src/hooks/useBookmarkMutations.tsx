@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,13 +32,12 @@ export const useBookmarkMutations = () => {
 
   // Save bookmark mutation with optional collection handling
   const saveMutation = useMutation({
-    mutationFn: async ({ 
-      bookmarkData, 
-      collectionData 
-    }: { 
+    mutationFn: async (params: { 
       bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
       collectionData?: CollectionData 
     }) => {
+      const { bookmarkData, collectionData } = params;
+      
       if (!user) throw new Error('User not authenticated');
 
       console.log('Starting bookmark save mutation with data:', { bookmarkData, collectionData });
