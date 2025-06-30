@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Info, X, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
 import { useTipsSystem } from '@/hooks/useTipsSystem';
+import { useTipsVisibility } from '@/hooks/useTipsVisibility';
 
 interface TipDisplayProps {
   className?: string;
@@ -23,15 +24,22 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
     hasMultipleTips,
     nextTip, 
     previousTip,
-    markTipAsShown
+    markTipAsShown,
+    allTipsDismissed
   } = useTipsSystem();
 
-  if (!showTips || !currentTip) {
+  const { toggleTips } = useTipsVisibility();
+
+  if (!showTips || !currentTip || allTipsDismissed) {
     return null;
   }
 
   const handleDismissTip = () => {
     markTipAsShown(currentTip.id);
+  };
+
+  const handleDisableTips = () => {
+    toggleTips(false);
   };
 
   if (variant === 'compact') {
@@ -90,7 +98,21 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
                   <X className="h-3 w-3" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Dismiss tip</TooltipContent>
+              <TooltipContent>Dismiss this tip</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDisableTips}
+                  className="h-6 w-6 p-0 text-blue-500 hover:text-red-600"
+                >
+                  <EyeOff className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Turn off all tips</TooltipContent>
             </Tooltip>
           </div>
         )}
@@ -157,7 +179,21 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
                 <X className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Dismiss tip</TooltipContent>
+            <TooltipContent>Dismiss this tip</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDisableTips}
+                className="h-8 w-8 p-0 text-blue-500 hover:text-red-600"
+              >
+                <EyeOff className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Turn off all tips</TooltipContent>
           </Tooltip>
         </div>
       )}

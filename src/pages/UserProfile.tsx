@@ -14,7 +14,7 @@ import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { showTips, toggleTips } = useTipsVisibility();
-  const { resetShownTips, shownTips } = useTipsSystem();
+  const { resetShownTips, shownTips, allTipsDismissed, currentContext } = useTipsSystem();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { importBookmarks } = useBookmarkImport();
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -119,6 +119,11 @@ const UserProfile: React.FC = () => {
                         </Label>
                         <p className="text-xs text-blue-700 dark:text-blue-300">
                           Show all tips again, including ones you've dismissed ({shownTips.size} dismissed)
+                          {allTipsDismissed && (
+                            <span className="block mt-1 text-green-600 dark:text-green-400 font-medium">
+                              ✓ All tips dismissed for this page
+                            </span>
+                          )}
                         </p>
                       </div>
                       <Button

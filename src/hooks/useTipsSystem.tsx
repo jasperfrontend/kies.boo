@@ -118,6 +118,13 @@ export const useTipsSystem = () => {
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
 
+  // Reset tip index when tips are turned off and back on
+  useEffect(() => {
+    if (showTips) {
+      setCurrentTipIndex(0);
+    }
+  }, [showTips]);
+
   // Determine current page context
   const currentContext: PageContext = useMemo(() => {
     const path = location.pathname;
@@ -129,20 +136,23 @@ export const useTipsSystem = () => {
     return 'dashboard'; // Default fallback
   }, [location.pathname]);
 
-  // Filter tips relevant to current context
+  // Filter tips relevant to current context AND exclude dismissed tips
+  // Only return tips if showTips is true
   const contextualTips = useMemo(() => {
+    if (!showTips) return [];
     return tipsData.tips.filter(tip => 
-      tip.contexts.includes(currentContext)
+      tip.contexts.includes(currentContext) && !shownTips.has(tip.id)
     );
-  }, [currentContext]);
+  }, [currentContext, shownTips, showTips]);
 
-  // Get current tip
+  // Get current tip - handle case where all tips are dismissed OR tips are disabled
   const currentTip = useMemo(() => {
-    if (contextualTips.length === 0) return null;
-    return contextualTips[currentTipIndex % contextualTips.length];
-  }, [contextualTips, currentTipIndex]);
+    if (!showTips || contextualTips.length === 0) return null;
+    const safeIndex = currentTipIndex % contextualTips.length;
+    return contextualTips[safeIndex];
+  }, [contextualTips, currentTipIndex, showTips]);
 
-  // Rotate tips automatically
+  // Rotate tips automatically, but only if there are available tips
   useEffect(() => {
     if (!showTips || contextualTips.length <= 1) return;
 
@@ -153,11 +163,30 @@ export const useTipsSystem = () => {
     return () => clearInterval(interval);
   }, [showTips, contextualTips.length]);
 
+  // Reset tip index when contextual tips change (e.g., when tips are dismissed)
+  useEffect(() => {
+    if (contextualTips.length > 0 && currentTipIndex >= contextualTips.length) {
+      setCurrentTipIndex(0);
+    }
+  }, [contextualTips.length, currentTipIndex]);
+
   // Mark tip as shown and persist to localStorage
   const markTipAsShown = (tipId: string) => {
     const newShownTips = new Set([...shownTips, tipId]);
     setShownTips(newShownTips);
     localStorage.setItem(SHOWN_TIPS_KEY, JSON.stringify([...newShownTips]));
+    
+    // Reset tip index if we dismissed the current tip and there are still tips left
+    const remainingTips = tipsData.tips.filter(tip => 
+      tip.contexts.includes(currentContext) && !newShownTips.has(tip.id)
+    );
+    
+    if (remainingTips.length > 0) {
+      // If current index is now out of bounds, reset to 0
+      if (currentTipIndex >= remainingTips.length) {
+        setCurrentTipIndex(0);
+      }
+    }
   };
 
   // Reset shown tips (useful for debugging or user preference)
@@ -196,13 +225,14 @@ export const useTipsSystem = () => {
     currentContext,
     contextualTips,
     totalTips: contextualTips.length,
-    currentTipIndex: currentTipIndex % contextualTips.length,
+    currentTipIndex: contextualTips.length > 0 ? currentTipIndex % contextualTips.length : 0,
     shownTips,
     markTipAsShown,
     resetShownTips,
     getRandomTip,
     nextTip,
     previousTip,
-    hasMultipleTips: contextualTips.length > 1
+    hasMultipleTips: contextualTips.length > 1,
+    allTipsDismissed: contextualTips.length === 0
   };
 };
