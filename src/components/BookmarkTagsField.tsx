@@ -11,6 +11,7 @@ interface BookmarkTagsFieldProps {
   onTagInputChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent) => void;
   onTagRemove: (tag: string) => void;
+  onTagAddDirect?: (tagName: string) => void; // New prop for direct tag addition
 }
 
 export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
@@ -18,7 +19,8 @@ export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
   tagInput,
   onTagInputChange,
   onTagAdd,
-  onTagRemove
+  onTagRemove,
+  onTagAddDirect
 }) => {
   const { tags: allUserTags } = useTags();
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -70,8 +72,15 @@ export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
         e.preventDefault();
         const selectedTag = suggestions[selectedSuggestionIndex];
         if (selectedTag) {
-          // Add the selected tag directly
-          addTagDirectly(selectedTag.name);
+          // Use direct tag addition if available, otherwise fallback to normal flow
+          if (onTagAddDirect) {
+            onTagAddDirect(selectedTag.name);
+          } else {
+            onTagInputChange(selectedTag.name);
+            // Wait for next tick then add tag
+            setTimeout(() => onTagAdd(e), 0);
+          }
+          setShowSuggestions(false);
         }
       } else {
         onTagAdd(e);
@@ -85,28 +94,21 @@ export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
     setShowSuggestions(value.trim().length > 0 && suggestions.length > 0);
   };
 
-  // Helper function to add a tag directly without going through the input
-  const addTagDirectly = (tagName: string) => {
-    if (tagName.trim() && !tags.includes(tagName.trim())) {
-      // Temporarily update the input to the selected tag name
+  const handleSuggestionClick = (tagName: string) => {
+    if (onTagAddDirect) {
+      // Use the direct addition method if available
+      onTagAddDirect(tagName);
+    } else {
+      // Fallback to the old method
       onTagInputChange(tagName);
       setShowSuggestions(false);
-      
-      // Use requestAnimationFrame to ensure the state update has been processed
-      requestAnimationFrame(() => {
-        const mockEvent = {
-          key: 'Enter',
-          preventDefault: () => {}
-        } as React.KeyboardEvent;
-        onTagAdd(mockEvent);
-      });
-    } else {
-      setShowSuggestions(false);
+      const mockEvent = {
+        key: 'Enter',
+        preventDefault: () => {}
+      } as React.KeyboardEvent;
+      setTimeout(() => onTagAdd(mockEvent), 0);
     }
-  };
-
-  const handleSuggestionClick = (tagName: string) => {
-    addTagDirectly(tagName);
+    setShowSuggestions(false);
   };
 
   const handleInputFocus = () => {

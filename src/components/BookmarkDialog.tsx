@@ -315,6 +315,14 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     }
   };
 
+  // New function for direct tag addition from suggestions
+  const handleAddTagDirect = (tagName: string) => {
+    if (tagName.trim() && !tags.includes(tagName.trim())) {
+      setTags([...tags, tagName.trim()]);
+      setTagInput('');
+    }
+  };
+
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
@@ -443,6 +451,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             tagInput={tagInput}
             onTagInputChange={setTagInput}
             onTagAdd={handleAddTag}
+            onTagAddDirect={handleAddTagDirect}
             onTagRemove={removeTag}
           />
 
