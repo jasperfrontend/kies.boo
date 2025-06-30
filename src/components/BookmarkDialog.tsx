@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -8,14 +9,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
 import { TitleExtractor } from '@/utils/titleExtractor';
 import { BookmarkUrlField } from './BookmarkUrlField';
 import { BookmarkTitleField } from './BookmarkTitleField';
 import { BookmarkFormFields } from './BookmarkFormFields';
+import { BookmarkTagsField } from './BookmarkTagsField';
 
 interface Bookmark {
   id: string;
@@ -56,7 +54,6 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       new URL(string);
       return true;
     } catch (_) {
-      // Try with https:// prefix
       try {
         new URL('https://' + string);
         return string.includes('.') && !string.includes(' ');
@@ -78,12 +75,10 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
         setUrl(cleanUrl);
         setClipboardMessage('URL in your clipboard detected and prefilled for you');
         
-        // Auto-hide the message after 4 seconds
         setTimeout(() => {
           setClipboardMessage('');
         }, 4000);
 
-        // Auto-parse title for the clipboard URL
         parseUrlTitle(cleanUrl);
       }
     } catch (error) {
@@ -98,7 +93,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setDescription(bookmark.description || '');
       setTags(bookmark.tags);
       setIsFavorite(bookmark.is_favorite);
-      setClipboardMessage(''); // Clear clipboard message when editing
+      setClipboardMessage('');
     } else {
       setTitle('');
       setUrl('');
@@ -108,7 +103,6 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setIsFavorite(false);
       setClipboardMessage('');
       
-      // Only check clipboard for new bookmarks
       if (open) {
         checkClipboard();
       }
@@ -118,7 +112,6 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const parseUrlTitle = async (inputUrl: string) => {
     if (!inputUrl || isParsingTitle) return;
     
-    // Basic URL validation
     let validUrl = inputUrl.trim();
     if (!validUrl.startsWith('http://') && !validUrl.startsWith('https://')) {
       validUrl = 'https://' + validUrl;
@@ -127,7 +120,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     try {
       new URL(validUrl);
     } catch {
-      return; // Invalid URL, don't parse
+      return;
     }
 
     setIsParsingTitle(true);
@@ -136,12 +129,10 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       const result = await TitleExtractor.extractTitle(validUrl);
       setTitle(result.title);
       
-      // Log the extraction method for debugging
       console.log(`Title extracted using ${result.source}:`, result.title);
       
     } catch (error) {
       console.log('Title extraction failed:', error);
-      // Final fallback: use domain name
       try {
         const urlObj = new URL(validUrl);
         const domain = urlObj.hostname.replace('www.', '');
@@ -157,14 +148,11 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl);
     
-    // Clear clipboard message when user manually types
     if (clipboardMessage) {
       setClipboardMessage('');
     }
     
-    // Parse title when URL looks complete
     if (newUrl.trim() && (newUrl.includes('.') || newUrl.startsWith('http'))) {
-      // Debounce the parsing
       const timeoutId = setTimeout(() => {
         parseUrlTitle(newUrl);
       }, 1000);
@@ -202,7 +190,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       favicon_url: `https://www.google.com/s2/favicons?domain=${finalUrl}`,
       tags,
       is_favorite: isFavorite,
-      ...(bookmark?.id && { id: bookmark.id }) // Include ID when editing
+      ...(bookmark?.id && { id: bookmark.id })
     };
 
     console.log('Submitting bookmark data:', bookmarkData);
@@ -243,29 +231,13 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             onFavoriteChange={setIsFavorite}
           />
           
-          <div className="grid gap-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={handleAddTag}
-              placeholder="Type and press Enter to add tags"
-              autoComplete="off"
-            />
-            
-            <div className="flex flex-wrap gap-1 mt-2">
-              {tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {tag}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeTag(tag)}
-                  />
-                </Badge>
-              ))}
-            </div>
-          </div>
+          <BookmarkTagsField
+            tags={tags}
+            tagInput={tagInput}
+            onTagInputChange={setTagInput}
+            onTagAdd={handleAddTag}
+            onTagRemove={removeTag}
+          />
         </div>
         
         <DialogFooter>

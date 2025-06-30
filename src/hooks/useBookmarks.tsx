@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTags } from './useTags';
 
 interface Bookmark {
   id: string;
@@ -10,7 +11,7 @@ interface Bookmark {
   url: string;
   description?: string;
   favicon_url?: string;
-  tags: string[];
+  tags: string[]; // This will be populated from the new tag system
   is_favorite: boolean;
   created_at: string;
   last_visited_at?: string;
@@ -22,10 +23,11 @@ export const useBookmarks = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { getTagsForBookmark, addTagsToBookmark, removeAllTagsFromBookmark } = useTags();
 
-  // Fetch bookmarks using React Query
+  // Fetch bookmarks with their tags
   const {
-    data: bookmarks = [],
+    data: rawBookmarks = [],
     isLoading: loading,
     error
   } = useQuery({
@@ -46,9 +48,15 @@ export const useBookmarks = () => {
       return data || [];
     },
     enabled: !!user,
-    staleTime: 1 * 60 * 1000, // Reduced to 1 minute to catch updates faster
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 1 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
+
+  // Transform bookmarks to include tags from the new system
+  const bookmarks: Bookmark[] = rawBookmarks.map(bookmark => ({
+    ...bookmark,
+    tags: getTagsForBookmark(bookmark.id).map(tag => tag.name)
+  }));
 
   // Show error toast if query fails
   if (error) {
@@ -76,7 +84,6 @@ export const useBookmarks = () => {
         url: bookmarkData.url,
         description: bookmarkData.description,
         favicon_url: bookmarkData.favicon_url,
-        tags: bookmarkData.tags,
         is_favorite: bookmarkData.is_favorite,
         user_id: user.id,
       };
@@ -100,6 +107,19 @@ export const useBookmarks = () => {
 
       if (result.error) {
         throw result.error;
+      }
+
+      // Handle tags separately
+      const bookmarkId = result.data.id;
+      
+      // Remove all existing tags for this bookmark
+      if (!isNew) {
+        await removeAllTagsFromBookmark(bookmarkId);
+      }
+      
+      // Add new tags
+      if (bookmarkData.tags && bookmarkData.tags.length > 0) {
+        await addTagsToBookmark(bookmarkId, bookmarkData.tags);
       }
 
       return { data: result.data, isNew };
@@ -236,15 +256,12 @@ export const useBookmarks = () => {
       return { id, last_visited_at: now, updatedData: data };
     },
     onMutate: async (id: string) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
 
-      // Snapshot the previous value
       const previousBookmarks = queryClient.getQueryData([BOOKMARKS_QUERY_KEY, user?.id]);
 
-      // Optimistically update to the new value
       const now = new Date().toISOString();
-      queryClient.setQueryData([BOOKMARKS_QUERY_KEY, user?.id], (old: Bookmark[] | undefined) => {
+      queryClient.setQueryData([BOOKMARKS_QUERY_KEY, user?.id], (old: any[] | undefined) => {
         if (!old) {
           return old;
         }
@@ -258,15 +275,12 @@ export const useBookmarks = () => {
         return updated;
       });
 
-      // Return a context object with the snapshotted value
       return { previousBookmarks };
     },
     onError: (err, id, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData([BOOKMARKS_QUERY_KEY, user?.id], context?.previousBookmarks);
     },
     onSettled: () => {
-      // Always refetch after error or success to ensure we have the latest data
       queryClient.invalidateQueries({ queryKey: [BOOKMARKS_QUERY_KEY, user?.id] });
     }
   });
