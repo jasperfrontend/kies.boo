@@ -107,6 +107,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     
     setLoadingCurrentCollection(true);
     try {
+      // Change: Use .select() instead of .maybeSingle() to get all collections for this bookmark
       const { data, error } = await supabase
         .from('collection_bookmarks')
         .select(`
@@ -117,19 +118,34 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             type
           )
         `)
-        .eq('bookmark_id', bookmarkId)
-        .maybeSingle();
+        .eq('bookmark_id', bookmarkId);
 
       if (error) {
         console.error('Error fetching current collection:', error);
         return null;
       }
 
-      return data?.smart_collections ? {
-        id: data.smart_collections.id,
-        title: data.smart_collections.title,
-        type: data.smart_collections.type
-      } : null;
+      // Handle multiple collections - return the first one, or null if none
+      if (data && data.length > 0) {
+        console.log(`Found ${data.length} collections for bookmark ${bookmarkId}:`, data);
+        
+        // If bookmark is in multiple collections, log this for debugging
+        if (data.length > 1) {
+          console.warn(`Bookmark ${bookmarkId} is in ${data.length} collections - this should not happen normally`);
+        }
+        
+        // Return the first collection found
+        const firstCollection = data[0];
+        if (firstCollection.smart_collections) {
+          return {
+            id: firstCollection.smart_collections.id,
+            title: firstCollection.smart_collections.title,
+            type: firstCollection.smart_collections.type
+          };
+        }
+      }
+
+      return null;
     } catch (error) {
       console.error('Error in getCurrentCollection:', error);
       return null;
