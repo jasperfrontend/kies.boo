@@ -1,12 +1,10 @@
-
 import React from 'react';
 import { BookmarkCard } from '@/components/BookmarkCard';
 import { BookmarkTable } from '@/components/BookmarkTable';
 import { BookmarkFilters } from '@/components/BookmarkFilters';
 import { PaginationControls } from '@/components/PaginationControls';
-import { useTipsVisibility } from '@/hooks/useTipsVisibility';
+import { TipDisplay } from '@/components/TipDisplay';
 import { usePagination } from '@/hooks/usePagination';
-import { Info, X } from 'lucide-react';
 
 interface Bookmark {
   id: string;
@@ -49,7 +47,6 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   onToggleFavorite,
   onUpdateLastVisited
 }) => {
-  const { showTips, toggleTips } = useTipsVisibility();
   const {
     currentPage,
     totalPages,
@@ -112,25 +109,8 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
         />
       )}
 
-      {showTips && (
-        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <p className="text-sm text-blue-700 dark:text-blue-300 flex-1">
-            <span className="font-medium">Pro tip:</span> Double-click any{' '}
-            <span className="font-semibold bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded">
-              {viewMode === 'grid' ? 'card' : 'table row'}
-            </span>{' '}
-            to open the link in a new tab!
-          </p>
-          <button
-            onClick={() => toggleTips(false)}
-            className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 transition-colors"
-            aria-label="Close tip"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+      {/* Show contextual tips */}
+      <TipDisplay />
 
       {viewMode === 'grid' ? (
         <div className={`grid gap-4 ${compactMode ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>

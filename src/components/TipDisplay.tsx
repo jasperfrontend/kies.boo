@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, X, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { Info, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTipsSystem } from '@/hooks/useTipsSystem';
 
 interface TipDisplayProps {
@@ -23,8 +23,7 @@ export const TipDisplay: React.FC<TipDisplayProps> = ({
     hasMultipleTips,
     nextTip, 
     previousTip,
-    markTipAsShown,
-    resetShownTips
+    markTipAsShown
   } = useTipsSystem();
 
   if (!showTips || !currentTip) {
