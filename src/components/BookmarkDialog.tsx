@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -14,6 +13,9 @@ import { BookmarkUrlField } from './BookmarkUrlField';
 import { BookmarkTitleField } from './BookmarkTitleField';
 import { BookmarkFormFields } from './BookmarkFormFields';
 import { BookmarkTagsField } from './BookmarkTagsField';
+import { BookmarkSmartCollectionField } from './BookmarkSmartCollectionField';
+import { useSmartCollections, ExtendedSmartCollection } from '@/hooks/useSmartCollections';
+import { useToast } from '@/hooks/use-toast';
 
 interface Bookmark {
   id: string;
@@ -30,7 +32,7 @@ interface BookmarkDialogProps {
   onOpenChange: (open: boolean) => void;
   bookmark?: Bookmark | null;
   existingBookmarks?: Bookmark[];
-  onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => void;
+  onSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, collectionData?: { collectionId?: string; newCollectionTitle?: string }) => void;
 }
 
 export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
@@ -48,6 +50,14 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isParsingTitle, setIsParsingTitle] = useState(false);
   const [clipboardMessage, setClipboardMessage] = useState('');
+
+  // Smart collection state
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [newCollectionTitle, setNewCollectionTitle] = useState('');
+  const [isCreatingNewCollection, setIsCreatingNewCollection] = useState(false);
+
+  const { smartCollections } = useSmartCollections(existingBookmarks);
+  const { toast } = useToast();
 
   const isValidUrl = (string: string) => {
     try {
@@ -94,6 +104,10 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTags(bookmark.tags);
       setIsFavorite(bookmark.is_favorite);
       setClipboardMessage('');
+      // Reset collection fields when editing existing bookmark
+      setSelectedCollectionId(null);
+      setNewCollectionTitle('');
+      setIsCreatingNewCollection(false);
     } else {
       setTitle('');
       setUrl('');
@@ -102,6 +116,9 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setTagInput('');
       setIsFavorite(false);
       setClipboardMessage('');
+      setSelectedCollectionId(null);
+      setNewCollectionTitle('');
+      setIsCreatingNewCollection(false);
       
       if (open) {
         checkClipboard();
@@ -175,8 +192,27 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const handleToggleCreateNew = () => {
+    setIsCreatingNewCollection(!isCreatingNewCollection);
+    if (!isCreatingNewCollection) {
+      setSelectedCollectionId(null);
+    } else {
+      setNewCollectionTitle('');
+    }
+  };
+
   const handleSave = () => {
     if (!title.trim() || !url.trim()) return;
+
+    // Validate collection data
+    if (isCreatingNewCollection && !newCollectionTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a collection name or cancel creating a new collection",
+        variant: "destructive"
+      });
+      return;
+    }
 
     let finalUrl = url.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
@@ -193,8 +229,17 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       ...(bookmark?.id && { id: bookmark.id })
     };
 
+    // Prepare collection data
+    const collectionData = isCreatingNewCollection 
+      ? { newCollectionTitle: newCollectionTitle.trim() }
+      : selectedCollectionId 
+        ? { collectionId: selectedCollectionId }
+        : undefined;
+
     console.log('Submitting bookmark data:', bookmarkData);
-    onSave(bookmarkData);
+    console.log('Collection data:', collectionData);
+    
+    onSave(bookmarkData, collectionData);
     onOpenChange(false);
   };
 
@@ -238,6 +283,18 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
             onTagAdd={handleAddTag}
             onTagRemove={removeTag}
           />
+
+          {!bookmark && (
+            <BookmarkSmartCollectionField
+              smartCollections={smartCollections}
+              selectedCollectionId={selectedCollectionId}
+              onCollectionChange={setSelectedCollectionId}
+              newCollectionTitle={newCollectionTitle}
+              onNewCollectionTitleChange={setNewCollectionTitle}
+              isCreatingNewCollection={isCreatingNewCollection}
+              onToggleCreateNew={handleToggleCreateNew}
+            />
+          )}
         </div>
         
         <DialogFooter>

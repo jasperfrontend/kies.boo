@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +16,11 @@ interface Bookmark {
   last_visited_at?: string;
 }
 
+interface CollectionData {
+  collectionId?: string;
+  newCollectionTitle?: string;
+}
+
 const BOOKMARKS_QUERY_KEY = 'bookmarks';
 
 export const useBookmarkMutations = () => {
@@ -25,9 +29,15 @@ export const useBookmarkMutations = () => {
   const queryClient = useQueryClient();
   const { addTagsToBookmark, removeAllTagsFromBookmark } = useTags();
 
-  // Save bookmark mutation
+  // Save bookmark mutation with optional collection handling
   const saveMutation = useMutation({
-    mutationFn: async (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => {
+    mutationFn: async ({ 
+      bookmarkData, 
+      collectionData 
+    }: { 
+      bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+      collectionData?: CollectionData 
+    }) => {
       if (!user) throw new Error('User not authenticated');
 
       const isNew = !bookmarkData.id;
@@ -62,17 +72,55 @@ export const useBookmarkMutations = () => {
         throw result.error;
       }
 
-      // Handle tags separately
       const bookmarkId = result.data.id;
       
-      // Remove all existing tags for this bookmark
+      // Handle tags separately
       if (!isNew) {
         await removeAllTagsFromBookmark(bookmarkId);
       }
       
-      // Add new tags
       if (bookmarkData.tags && bookmarkData.tags.length > 0) {
         await addTagsToBookmark(bookmarkId, bookmarkData.tags);
+      }
+
+      // Handle smart collection assignment (only for new bookmarks)
+      if (isNew && collectionData) {
+        let targetCollectionId = collectionData.collectionId;
+
+        // Create new collection if needed
+        if (collectionData.newCollectionTitle && !targetCollectionId) {
+          const { data: newCollection, error: collectionError } = await supabase
+            .from('smart_collections')
+            .insert({
+              title: collectionData.newCollectionTitle,
+              type: 'manual',
+              user_id: user.id
+            })
+            .select()
+            .single();
+
+          if (collectionError) {
+            console.error('Error creating collection:', collectionError);
+            throw collectionError;
+          }
+
+          targetCollectionId = newCollection.id;
+        }
+
+        // Add bookmark to collection
+        if (targetCollectionId) {
+          const { error: linkError } = await supabase
+            .from('collection_bookmarks')
+            .insert({
+              collection_id: targetCollectionId,
+              bookmark_id: bookmarkId
+            });
+
+          if (linkError) {
+            console.error('Error linking bookmark to collection:', linkError);
+            // Don't throw here - bookmark was saved successfully
+          }
+        }
       }
 
       return { data: result.data, isNew };
@@ -85,6 +133,7 @@ export const useBookmarkMutations = () => {
       });
     },
     onError: (error) => {
+      console.error('Error saving bookmark:', error);
       toast({
         title: "Error",
         description: "Failed to save bookmark",
@@ -182,7 +231,10 @@ export const useBookmarkMutations = () => {
   });
 
   return {
-    handleSave: (bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }) => saveMutation.mutate(bookmarkData),
+    handleSave: (
+      bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
+      collectionData?: CollectionData
+    ) => saveMutation.mutate({ bookmarkData, collectionData }),
     handleDelete: (id: string) => deleteMutation.mutate(id),
     handleBulkDelete: (bookmarkIds: string[]) => bulkDeleteMutation.mutate(bookmarkIds),
     handleToggleFavorite: (id: string, isFavorite: boolean) => toggleFavoriteMutation.mutate({ id, isFavorite }),
