@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Search, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +17,7 @@ import type { Bookmark, SmartCollection } from '@/types/smartCollections';
 
 const SearchResults: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const query = searchParams.get('q') || '';
   const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave } = useBookmarks();
   const [searchQuery, setSearchQuery] = useState(query);
@@ -26,6 +26,18 @@ const SearchResults: React.FC = () => {
   const [savingCollection, setSavingCollection] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Update search query when URL parameter changes
+  useEffect(() => {
+    setSearchQuery(query);
+  }, [query]);
+
+  // Handle search query changes
+  useEffect(() => {
+    if (searchQuery.trim() && searchQuery !== query) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }, [searchQuery, query, navigate]);
 
   // Filter bookmarks based on search query
   const filteredBookmarks = useMemo(() => {

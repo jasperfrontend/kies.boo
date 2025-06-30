@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
@@ -30,36 +29,22 @@ export const Dashboard: React.FC = () => {
   const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // Debounced redirect to search when searchQuery changes
+  // Immediate redirect to search when searchQuery changes
   useEffect(() => {
-    if (!searchQuery.trim()) return;
-
-    const delayedSearch = setTimeout(() => {
+    if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }, 1000);
-
-    return () => clearTimeout(delayedSearch);
+    }
   }, [searchQuery, navigate]);
 
   const filteredBookmarks = useMemo(() => {
     let filtered = [...bookmarks];
-
-    if (searchQuery) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(bookmark =>
-        bookmark.title.toLowerCase().includes(lowerCaseQuery) ||
-        bookmark.description?.toLowerCase().includes(lowerCaseQuery) ||
-        bookmark.url.toLowerCase().includes(lowerCaseQuery) ||
-        bookmark.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery))
-      );
-    }
 
     if (showFavorites) {
       filtered = filtered.filter(bookmark => bookmark.is_favorite);
     }
 
     return filtered;
-  }, [bookmarks, searchQuery, showFavorites]);
+  }, [bookmarks, showFavorites]);
 
   const handleEdit = (bookmark: Bookmark) => {
     setEditingBookmark(bookmark);
@@ -120,7 +105,7 @@ export const Dashboard: React.FC = () => {
           viewMode={viewMode}
           compactMode={compactMode}
           loading={loading}
-          searchQuery={searchQuery}
+          searchQuery=""
           selectedBookmarks={selectedBookmarks}
           onSelectionChange={handleSelectionChange}
           onBulkDelete={handleBulkDeleteClick}

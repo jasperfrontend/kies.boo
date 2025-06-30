@@ -44,6 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const isCurrentPage = (path: string) => location.pathname === path;
   const showDashboardActions = isCurrentPage('/') || isCurrentPage('/hub');
+  const showSearchBar = isCurrentPage('/') || isCurrentPage('/hub') || isCurrentPage('/search');
 
   return (
     <div className="border-b bg-white dark:bg-gray-900 dark:border-gray-700">
@@ -70,25 +71,27 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Second row - Search and actions (only show on dashboard pages) */}
-          {showDashboardActions && (
+          {/* Second row - Search and actions */}
+          {showSearchBar && (
             <div className="flex flex-col gap-3 sm:gap-4">
               <HeaderSearch
                 searchQuery={searchQuery}
                 onSearchChange={onSearchChange}
               />
               
-              <HeaderDashboardActions
-                bookmarkCount={bookmarkCount}
-                favoritesCount={favoritesCount}
-                showFavorites={showFavorites}
-                onShowFavoritesChange={onShowFavoritesChange}
-                viewMode={viewMode}
-                onViewModeChange={onViewModeChange}
-                compactMode={compactMode}
-                onCompactModeChange={onCompactModeChange}
-                onAddBookmark={onAddBookmark}
-              />
+              {showDashboardActions && (
+                <HeaderDashboardActions
+                  bookmarkCount={bookmarkCount}
+                  favoritesCount={favoritesCount}
+                  showFavorites={showFavorites}
+                  onShowFavoritesChange={onShowFavoritesChange}
+                  viewMode={viewMode}
+                  onViewModeChange={onViewModeChange}
+                  compactMode={compactMode}
+                  onCompactModeChange={onCompactModeChange}
+                  onAddBookmark={onAddBookmark}
+                />
+              )}
             </div>
           )}
         </div>
