@@ -1,19 +1,20 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useTipsVisibility } from '@/hooks/useTipsVisibility';
+import { useTipsSystem } from '@/hooks/useTipsSystem';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useBookmarkImport } from '@/hooks/useBookmarkImport';
-import { ArrowLeft, Upload, Settings, Tags } from 'lucide-react';
+import { ArrowLeft, Upload, Settings, Tags, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
   const { showTips, toggleTips } = useTipsVisibility();
+  const { resetShownTips, shownTips } = useTipsSystem();
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { importBookmarks } = useBookmarkImport();
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -93,20 +94,45 @@ const UserProfile: React.FC = () => {
                   />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="show-tips" className="text-base">
-                      Show Tips
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      Display helpful tips and hints throughout the application
-                    </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="show-tips" className="text-base">
+                        Show Tips
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display contextual tips and hints throughout the application
+                      </p>
+                    </div>
+                    <Switch
+                      id="show-tips"
+                      checked={showTips}
+                      onCheckedChange={toggleTips}
+                    />
                   </div>
-                  <Switch
-                    id="show-tips"
-                    checked={showTips}
-                    onCheckedChange={toggleTips}
-                  />
+                  
+                  {showTips && (
+                    <div className="flex items-center justify-between pl-4 pt-2 border-l-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 rounded-r-md p-3">
+                      <div className="space-y-0.5">
+                        <Label className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                          Reset Dismissed Tips
+                        </Label>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          Show all tips again, including ones you've dismissed ({shownTips.size} dismissed)
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetShownTips}
+                        className="gap-2 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800"
+                        disabled={shownTips.size === 0}
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Reset Tips
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
