@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, LayoutDashboard, Layers3, User, LogOut } from 'lucide-react';
+import { Menu, LayoutDashboard, Layers3, Tag, User, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -77,6 +77,16 @@ export const HeaderMobileMenu: React.FC<HeaderMobileMenuProps> = ({
             >
               <Layers3 className="h-4 w-4" />
               Smart Hub
+            </Button>
+
+            <Button
+              variant={isCurrentPage('/tags') ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleNavigation('/tags')}
+              className="justify-start gap-2"
+            >
+              <Tag className="h-4 w-4" />
+              Manage Tags
             </Button>
             
             <Button
