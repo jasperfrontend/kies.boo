@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -64,6 +64,50 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Force cleanup function to ensure body styles are reset
+  const forceCleanupBodyStyles = useCallback(() => {
+    // Small delay to ensure Radix has finished its cleanup
+    setTimeout(() => {
+      const body = document.body;
+      
+      // Remove all problematic attributes and styles
+      body.removeAttribute('data-scroll-locked');
+      body.style.removeProperty('pointer-events');
+      body.style.removeProperty('overflow');
+      body.style.removeProperty('padding-right');
+      
+      // If there's still a style attribute but it's empty, remove it entirely
+      if (body.getAttribute('style') === '') {
+        body.removeAttribute('style');
+      }
+      
+      console.log('Body styles cleaned up after modal close');
+    }, 100);
+  }, []);
+
+  // Enhanced onOpenChange handler
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen) {
+      // Reset all state when closing
+      setTitle('');
+      setUrl('');
+      setDescription('');
+      setTags([]);
+      setTagInput('');
+      setIsFavorite(false);
+      setClipboardMessage('');
+      setSelectedCollectionId(null);
+      setCurrentCollectionId(null);
+      setNewCollectionTitle('');
+      setIsCreatingNewCollection(false);
+      
+      // Force cleanup body styles
+      forceCleanupBodyStyles();
+    }
+    
+    onOpenChange(newOpen);
+  }, [onOpenChange, forceCleanupBodyStyles]);
+
   const isValidUrl = (string: string) => {
     try {
       new URL(string);
@@ -107,7 +151,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     
     setLoadingCurrentCollection(true);
     try {
-      // Change: Use .select() instead of .maybeSingle() to get all collections for this bookmark
+      // Fixed: Use .select() instead of .maybeSingle() to handle multiple collections
       const { data, error } = await supabase
         .from('collection_bookmarks')
         .select(`
@@ -127,7 +171,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
 
       // Handle multiple collections - return the first one, or null if none
       if (data && data.length > 0) {
-        console.log(`Found ${data.length} collections for bookmark ${bookmarkId}:`, data);
+        console.log(`Found ${data.length} collections for bookmark ${bookmarkId}`);
         
         // If bookmark is in multiple collections, log this for debugging
         if (data.length > 1) {
@@ -199,6 +243,15 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       setupDialog();
     }
   }, [bookmark, open, user]);
+
+  // Cleanup effect to ensure body styles are reset when component unmounts
+  useEffect(() => {
+    return () => {
+      if (!open) {
+        forceCleanupBodyStyles();
+      }
+    };
+  }, [open, forceCleanupBodyStyles]);
 
   const parseUrlTitle = async (inputUrl: string) => {
     if (!inputUrl || isParsingTitle) return;
@@ -340,7 +393,11 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     });
     
     onSave(bookmarkData, collectionData);
-    onOpenChange(false);
+    handleOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    handleOpenChange(false);
   };
 
   // Get current collection info for display
@@ -349,7 +406,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
     : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>
@@ -403,7 +460,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={!title.trim() || !url.trim() || isParsingTitle}>
