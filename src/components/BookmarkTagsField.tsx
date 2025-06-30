@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -71,8 +70,8 @@ export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
         e.preventDefault();
         const selectedTag = suggestions[selectedSuggestionIndex];
         if (selectedTag) {
-          onTagInputChange(selectedTag.name);
-          setShowSuggestions(false);
+          // Add the selected tag directly
+          addTagDirectly(selectedTag.name);
         }
       } else {
         onTagAdd(e);
@@ -86,15 +85,28 @@ export const BookmarkTagsField: React.FC<BookmarkTagsFieldProps> = ({
     setShowSuggestions(value.trim().length > 0 && suggestions.length > 0);
   };
 
+  // Helper function to add a tag directly without going through the input
+  const addTagDirectly = (tagName: string) => {
+    if (tagName.trim() && !tags.includes(tagName.trim())) {
+      // Temporarily update the input to the selected tag name
+      onTagInputChange(tagName);
+      setShowSuggestions(false);
+      
+      // Use requestAnimationFrame to ensure the state update has been processed
+      requestAnimationFrame(() => {
+        const mockEvent = {
+          key: 'Enter',
+          preventDefault: () => {}
+        } as React.KeyboardEvent;
+        onTagAdd(mockEvent);
+      });
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
   const handleSuggestionClick = (tagName: string) => {
-    onTagInputChange(tagName);
-    setShowSuggestions(false);
-    // Add the tag immediately
-    const mockEvent = {
-      key: 'Enter',
-      preventDefault: () => {}
-    } as React.KeyboardEvent;
-    setTimeout(() => onTagAdd(mockEvent), 0);
+    addTagDirectly(tagName);
   };
 
   const handleInputFocus = () => {
