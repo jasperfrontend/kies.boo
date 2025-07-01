@@ -1,12 +1,10 @@
 
 import React from 'react';
-import { HeaderLogo } from '@/components/HeaderLogo';
 import { HeaderNavigation } from '@/components/HeaderNavigation';
 import { HeaderUserActions } from '@/components/HeaderUserActions';
 import { HeaderMobileMenu } from '@/components/HeaderMobileMenu';
 import { HeaderSearch } from '@/components/HeaderSearch';
 import { HeaderDashboardActions } from '@/components/HeaderDashboardActions';
-import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
@@ -38,13 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   bookmarkCount = 0,
   favoritesCount = 0
 }) => {
-  const location = useLocation();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-
-  const isCurrentPage = (path: string) => location.pathname === path;
-  const showDashboardActions = isCurrentPage('/') || isCurrentPage('/hub');
-  const showSearchBar = isCurrentPage('/') || isCurrentPage('/hub') || isCurrentPage('/search');
 
   return (
     <div className="border-b bg-white dark:bg-gray-900 dark:border-gray-700">
@@ -52,12 +45,13 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex flex-col gap-3 sm:gap-4">
           {/* Top row - Logo, Navigation, and User actions */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 sm:gap-6">
-              <HeaderLogo />
-              
-              {!isMobile && <HeaderNavigation />}
-            </div>
 
+            {!isMobile && <HeaderNavigation />}
+
+            <HeaderSearch
+              searchQuery={searchQuery}
+              onSearchChange={onSearchChange}
+            />
             <div className="flex items-center gap-2">
               {isMobile ? (
                 <HeaderMobileMenu
@@ -72,28 +66,20 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Second row - Search and actions */}
-          {showSearchBar && (
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <HeaderSearch
-                searchQuery={searchQuery}
-                onSearchChange={onSearchChange}
-              />
-              
-              {showDashboardActions && (
-                <HeaderDashboardActions
-                  bookmarkCount={bookmarkCount}
-                  favoritesCount={favoritesCount}
-                  showFavorites={showFavorites}
-                  onShowFavoritesChange={onShowFavoritesChange}
-                  viewMode={viewMode}
-                  onViewModeChange={onViewModeChange}
-                  compactMode={compactMode}
-                  onCompactModeChange={onCompactModeChange}
-                  onAddBookmark={onAddBookmark}
-                />
-              )}
-            </div>
-          )}
+          <div className="flex flex-col gap-3 sm:gap-4">
+
+            <HeaderDashboardActions
+              bookmarkCount={bookmarkCount}
+              favoritesCount={favoritesCount}
+              showFavorites={showFavorites}
+              onShowFavoritesChange={onShowFavoritesChange}
+              viewMode={viewMode}
+              onViewModeChange={onViewModeChange}
+              compactMode={compactMode}
+              onCompactModeChange={onCompactModeChange}
+              onAddBookmark={onAddBookmark}
+            />
+          </div>
         </div>
       </div>
     </div>

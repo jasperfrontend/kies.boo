@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useTags } from '@/hooks/useTags';
+import { Header } from '@/components/Header';
 import { ArrowLeft, Edit, Trash2, Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
