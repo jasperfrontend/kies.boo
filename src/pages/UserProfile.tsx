@@ -10,6 +10,7 @@ import { useBookmarkImport } from '@/hooks/useBookmarkImport';
 import { ArrowLeft, Upload, Settings, Tags, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BookmarkImportDialog } from '@/components/BookmarkImportDialog';
+import { AppHeader } from '@/components/AppHeader';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +28,9 @@ const UserProfile: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+
+        <AppHeader variant="simple" />
+
         <div className="container mx-auto px-4 py-8 max-w-2xl">
           <div className="mb-6">
             <Button
