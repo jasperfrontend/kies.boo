@@ -1,11 +1,11 @@
-
+// src/pages/TagManagement.tsx (Updated)
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useTags } from '@/hooks/useTags';
-import { Header } from '@/components/Header';
+import { AppHeader } from '@/components/AppHeader';
 import { ArrowLeft, Edit, Trash2, Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,6 +41,9 @@ const TagManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Look how simple this is now! */}
+      <AppHeader variant="simple" />
+      
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
           <Button
