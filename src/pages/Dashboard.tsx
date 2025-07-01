@@ -1,10 +1,12 @@
 // src/pages/Dashboard.tsx (Updated)
 import React, { useMemo } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
-import { useAppLayout } from '@/hooks/useAppLayout';
-import { AppHeader } from '@/components/AppHeader';
+import { useCompactMode } from '@/hooks/useCompactMode';
+import { useViewMode } from '@/hooks/useViewMode';
+import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
   id: string;
@@ -25,25 +27,40 @@ interface CollectionData {
 
 export const Dashboard: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
-  
-  // Use the app layout hook with dashboard-specific options
-  const {
-    isDialogOpen,
-    setIsDialogOpen,
-    viewMode,
-    compactMode,
-    showFavorites,
-
-  } = useAppLayout({
-    enableBookmarkDialog: true,
-    enableSearch: true,
-    enableViewControls: true,
-    enableFavoritesFilter: true,
-    redirectSearchToResults: true
-  });
-
+  const { compactMode, setCompactMode } = useCompactMode();
+  const { viewMode, setViewMode } = useViewMode();
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingBookmark, setEditingBookmark] = React.useState<Bookmark | null>(null);
-  const [selectedBookmarks, setSelectedBookmarksState] = React.useState<string[]>([]);
+  const [showFavorites, setShowFavorites] = React.useState(false);
+  const [selectedBookmarks, setSelectedBookmarks] = React.useState<string[]>([]);
+  const navigate = useNavigate();
+
+  // Debounced redirect to search when searchQuery changes
+  React.useEffect(() => {
+    if (searchQuery.trim()) {
+      const timeoutId = setTimeout(() => {
+        navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchQuery, navigate]);
+
+  // Add keyboard shortcut handler
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key === 'a') {
+        event.preventDefault();
+        setIsDialogOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const filteredBookmarks = useMemo(() => {
     let filtered = [...bookmarks];
@@ -71,17 +88,31 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleSelectionChange = (bookmarkIds: string[]) => {
-    setSelectedBookmarksState(bookmarkIds);
+    setSelectedBookmarks(bookmarkIds);
   };
 
   const handleBulkDeleteClick = async () => {
     handleBulkDelete(selectedBookmarks);
-    setSelectedBookmarksState([]);
+    setSelectedBookmarks([]);
   };
+
+  const favoritesCount = bookmarks.filter(b => b.is_favorite).length;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AppHeader variant="dashboard" />
+      <Header 
+        onAddBookmark={() => setIsDialogOpen(true)}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        compactMode={compactMode}
+        onCompactModeChange={setCompactMode}
+        showFavorites={showFavorites}
+        onShowFavoritesChange={setShowFavorites}
+        bookmarkCount={bookmarks.length}
+        favoritesCount={favoritesCount}
+      />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <BookmarkDisplay
