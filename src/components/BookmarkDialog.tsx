@@ -80,8 +80,7 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
       if (body.getAttribute('style') === '') {
         body.removeAttribute('style');
       }
-      
-      console.log('Body styles cleaned up after modal close');
+
     }, 100);
   }, []);
 
