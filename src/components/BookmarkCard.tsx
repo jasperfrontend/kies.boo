@@ -1,10 +1,15 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ExternalLink, Heart, Edit, Trash2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ExternalLink, Heart, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -114,45 +119,40 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
-                        className={`h-7 w-7 p-0 ${bookmark.is_favorite ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'}`}
-                      >
-                        <Heart className={`h-3 w-3 ${bookmark.is_favorite ? 'fill-current' : ''}`} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => onEdit(bookmark)} className="h-7 w-7 p-0">
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Edit bookmark</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="sm" onClick={() => onDelete(bookmark.id)} className="h-7 w-7 p-0">
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Delete bookmark</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                    >
+                      <MoreVertical className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem
+                      onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
+                      className="cursor-pointer"
+                    >
+                      <Heart className={`h-4 w-4 mr-2 ${bookmark.is_favorite ? 'fill-current text-red-500' : ''}`} />
+                      {bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onEdit(bookmark)}
+                      className="cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit bookmark
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(bookmark.id)}
+                      className="cursor-pointer text-red-600 dark:text-red-400"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete bookmark
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardContent>
