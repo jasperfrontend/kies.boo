@@ -467,14 +467,15 @@ export const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
           />
         </div>
         
-        <DialogFooter>
+        <DialogFooter className="grid grid-cols-2 gap-2">
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={!title.trim() || !url.trim() || isParsingTitle}>
-            {bookmark ? 'Update' : 'Save'} Bookmark
+            {bookmark ? 'Update' : 'Save'}
           </Button>
         </DialogFooter>
+
       </DialogContent>
     </Dialog>
   );

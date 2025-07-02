@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Settings, Star, Grid3X3, Table, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, Settings, Star, Grid3X3, Table, Maximize2, Minimize2, Bookmark } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileFABProps {
@@ -68,18 +68,20 @@ export const MobileFAB: React.FC<MobileFABProps> = ({
           
           <div className="space-y-4">
             {/* Stats */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="flex justify-center items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <Badge variant="secondary" className="gap-1">
+                <Bookmark className="h-3 w-3" />
                 <span className="text-xs">Total: {bookmarkCount}</span>
               </Badge>
               <Badge variant="secondary" className="gap-1">
                 <Star className="h-3 w-3" />
-                <span className="text-xs">{favoritesCount}</span>
+                <span className="text-xs">Favorites: {favoritesCount}</span>
               </Badge>
             </div>
 
+
             {/* Actions Grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {/* Add Bookmark */}
               {onAddBookmark && (
                 <Button
@@ -87,7 +89,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({
                     onAddBookmark();
                     setIsModalOpen(false);
                   }}
-                  className="h-16 flex-col gap-1"
+                  className="h-16 flex items-center gap-2"
                 >
                   <Plus className="h-5 w-5" />
                   <span className="text-xs">Add Bookmark</span>
@@ -102,7 +104,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({
                     onShowFavoritesChange(!showFavorites);
                     setIsModalOpen(false);
                   }}
-                  className="h-16 flex-col gap-1"
+                  className="h-16 flex items-center gap-2"
                 >
                   <Star className={`h-5 w-5 ${showFavorites ? 'fill-current' : ''}`} />
                   <span className="text-xs">{showFavorites ? 'Show All' : 'Favorites'}</span>
@@ -117,7 +119,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({
                     onViewModeChange(viewMode === 'grid' ? 'table' : 'grid');
                     setIsModalOpen(false);
                   }}
-                  className="h-16 flex-col gap-1"
+                  className="h-16 flex items-center gap-2"
                 >
                   {viewMode === 'grid' ? (
                     <Table className="h-5 w-5" />
@@ -136,7 +138,7 @@ export const MobileFAB: React.FC<MobileFABProps> = ({
                     onCompactModeChange(!compactMode);
                     setIsModalOpen(false);
                   }}
-                  className="h-16 flex-col gap-1"
+                  className="h-16 flex items-center gap-2"
                 >
                   {compactMode ? (
                     <Maximize2 className="h-5 w-5" />
