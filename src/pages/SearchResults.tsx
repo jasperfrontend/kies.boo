@@ -1,32 +1,41 @@
-
 import React from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { BookmarkDetailsDialog } from '@/components/BookmarkDetailsDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Search, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useMemo, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import type { Bookmark, SmartCollection } from '@/types/smartCollections';
+
+interface CollectionData {
+  collectionId?: string;
+  newCollectionTitle?: string;
+  removeFromCollection?: boolean;
+}
 
 const SearchResults: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const query = searchParams.get('q') || '';
-  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave } = useBookmarks();
+  const { bookmarks, loading, handleDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState(query);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [savingCollection, setSavingCollection] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [detailsBookmark, setDetailsBookmark] = useState<Bookmark | null>(null);
+  const [detailsCollection, setDetailsCollection] = useState<SmartCollection | null>(null);
 
   // Update search query when URL parameter changes
   useEffect(() => {
@@ -62,12 +71,6 @@ const SearchResults: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  interface CollectionData {
-    collectionId?: string;
-    newCollectionTitle?: string;
-    removeFromCollection?: boolean;
-  }
-
   const handleBookmarkSave = async (
     bookmarkData: Omit<Bookmark, 'id' | 'created_at'> & { id?: string }, 
     collectionData?: CollectionData
@@ -75,6 +78,59 @@ const SearchResults: React.FC = () => {
     await handleSave(bookmarkData, collectionData);
     setIsDialogOpen(false);
     setEditingBookmark(null);
+  };
+
+  const handleViewDetails = async (bookmark: Bookmark) => {
+    setDetailsBookmark(bookmark);
+    
+    // Fetch the collection this bookmark belongs to
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('collection_bookmarks')
+          .select(`
+            collection_id,
+            smart_collections (
+              id,
+              title,
+              type
+            )
+          `)
+          .eq('bookmark_id', bookmark.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching collection:', error);
+          setDetailsCollection(null);
+        } else if (data && data.smart_collections) {
+          setDetailsCollection({
+            id: data.smart_collections.id,
+            title: data.smart_collections.title,
+            type: data.smart_collections.type
+          });
+        } else {
+          setDetailsCollection(null);
+        }
+      } catch (error) {
+        console.error('Error fetching collection:', error);
+        setDetailsCollection(null);
+      }
+    }
+    
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleDetailsDialogClose = () => {
+    setIsDetailsDialogOpen(false);
+    setDetailsBookmark(null);
+    setDetailsCollection(null);
+  };
+
+  const handleDetailsLinkOpen = () => {
+    if (detailsBookmark) {
+      handleUpdateLastVisited(detailsBookmark.id);
+    }
   };
 
   const handleSaveAsCollection = async () => {
@@ -200,6 +256,8 @@ const SearchResults: React.FC = () => {
                   onEdit={handleEdit}
                   onDelete={handleDelete}
                   onToggleFavorite={handleToggleFavorite}
+                  onUpdateLastVisited={handleUpdateLastVisited}
+                  onViewDetails={handleViewDetails}
                 />
               </CardContent>
             </Card>
@@ -232,6 +290,14 @@ const SearchResults: React.FC = () => {
         bookmark={editingBookmark}
         existingBookmarks={bookmarks}
         onSave={handleBookmarkSave}
+      />
+
+      <BookmarkDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={handleDetailsDialogClose}
+        bookmark={detailsBookmark}
+        currentCollection={detailsCollection}
+        onOpenLink={handleDetailsLinkOpen}
       />
     </div>
   );

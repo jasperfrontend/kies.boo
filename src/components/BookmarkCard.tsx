@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ExternalLink, Heart, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { ExternalLink, Heart, Edit, Trash2, MoreVertical, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -32,6 +32,7 @@ interface BookmarkCardProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onUpdateLastVisited?: (id: string) => void;
+  onViewDetails?: (bookmark: Bookmark) => void;
 }
 
 export const BookmarkCard: React.FC<BookmarkCardProps> = ({
@@ -40,7 +41,8 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onUpdateLastVisited
+  onUpdateLastVisited,
+  onViewDetails
 }) => {
   const navigate = useNavigate();
 
@@ -144,6 +146,15 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                       <Edit className="h-4 w-4 mr-2" />
                       Edit bookmark
                     </DropdownMenuItem>
+                    {onViewDetails && (
+                      <DropdownMenuItem
+                        onClick={() => onViewDetails(bookmark)}
+                        className="cursor-pointer"
+                      >
+                        <Info className="h-4 w-4 mr-2" />
+                        View details
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={() => onDelete(bookmark.id)}
                       className="cursor-pointer text-red-600 dark:text-red-400"
@@ -217,6 +228,19 @@ export const BookmarkCard: React.FC<BookmarkCardProps> = ({
                       <p>Edit bookmark</p>
                     </TooltipContent>
                   </Tooltip>
+                  
+                  {onViewDetails && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="sm" onClick={() => onViewDetails(bookmark)}>
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View details</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   
                   <Tooltip>
                     <TooltipTrigger asChild>

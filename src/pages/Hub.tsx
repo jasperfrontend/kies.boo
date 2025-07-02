@@ -3,8 +3,11 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useSmartCollections } from '@/hooks/useSmartCollections';
 import { useCompactMode } from '@/hooks/useCompactMode';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { BookmarkDetailsDialog } from '@/components/BookmarkDetailsDialog';
 import { SmartCollectionEditDialog } from '@/components/SmartCollectionEditDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +29,12 @@ interface Bookmark {
   last_visited_at?: string;
 }
 
+interface SmartCollection {
+  id: string;
+  title: string;
+  type: string;
+}
+
 interface CollectionData {
   collectionId?: string;
   newCollectionTitle?: string;
@@ -36,6 +45,7 @@ const Hub: React.FC = () => {
   // Use hooks directly without additional caching layers
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
+  const { user } = useAuth();
 
   // Stabilize bookmarks reference to prevent unnecessary smart collections recalculation
   const stableBookmarks = useMemo(() => {
@@ -64,6 +74,9 @@ const Hub: React.FC = () => {
   const [selectedBookmarkForTags, setSelectedBookmarkForTags] = useState<Bookmark | null>(null);
   const [actionsModalOpen, setActionsModalOpen] = useState(false);
   const [selectedBookmarkForActions, setSelectedBookmarkForActions] = useState<Bookmark | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [detailsBookmark, setDetailsBookmark] = useState<Bookmark | null>(null);
+  const [detailsCollection, setDetailsCollection] = useState<SmartCollection | null>(null);
   
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -196,6 +209,59 @@ const Hub: React.FC = () => {
   const handleActionsClick = (bookmark: Bookmark) => {
     setSelectedBookmarkForActions(bookmark);
     setActionsModalOpen(true);
+  };
+
+  const handleViewDetails = async (bookmark: Bookmark) => {
+    setDetailsBookmark(bookmark);
+    
+    // Fetch the collection this bookmark belongs to
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('collection_bookmarks')
+          .select(`
+            collection_id,
+            smart_collections (
+              id,
+              title,
+              type
+            )
+          `)
+          .eq('bookmark_id', bookmark.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching collection:', error);
+          setDetailsCollection(null);
+        } else if (data && data.smart_collections) {
+          setDetailsCollection({
+            id: data.smart_collections.id,
+            title: data.smart_collections.title,
+            type: data.smart_collections.type
+          });
+        } else {
+          setDetailsCollection(null);
+        }
+      } catch (error) {
+        console.error('Error fetching collection:', error);
+        setDetailsCollection(null);
+      }
+    }
+    
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleDetailsDialogClose = () => {
+    setIsDetailsDialogOpen(false);
+    setDetailsBookmark(null);
+    setDetailsCollection(null);
+  };
+
+  const handleDetailsLinkOpen = () => {
+    if (detailsBookmark) {
+      handleUpdateLastVisited(detailsBookmark.id);
+    }
   };
 
   // Add keyboard shortcut handler
@@ -347,6 +413,14 @@ const Hub: React.FC = () => {
           onSave={handleCollectionSave}
         />
 
+        <BookmarkDetailsDialog
+          open={isDetailsDialogOpen}
+          onOpenChange={handleDetailsDialogClose}
+          bookmark={detailsBookmark}
+          currentCollection={detailsCollection}
+          onOpenLink={handleDetailsLinkOpen}
+        />
+
         {/* Hub-specific Modals */}
         <HubModals
           tagsModalOpen={tagsModalOpen}
@@ -359,6 +433,7 @@ const Hub: React.FC = () => {
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
           onUpdateLastVisited={handleUpdateLastVisited}
+          onViewDetails={handleViewDetails}
         />
       </div>
     </TooltipProvider>

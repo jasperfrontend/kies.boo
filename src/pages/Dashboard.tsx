@@ -2,9 +2,12 @@ import React, { useMemo } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
 import { useViewMode } from '@/hooks/useViewMode';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { BookmarkDisplay } from '@/components/BookmarkDisplay';
 import { BookmarkDialog } from '@/components/BookmarkDialog';
+import { BookmarkDetailsDialog } from '@/components/BookmarkDetailsDialog';
 import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
@@ -18,6 +21,12 @@ interface Bookmark {
   created_at: string;
 }
 
+interface SmartCollection {
+  id: string;
+  title: string;
+  type: string;
+}
+
 interface CollectionData {
   collectionId?: string;
   newCollectionTitle?: string;
@@ -28,11 +37,15 @@ export const Dashboard: React.FC = () => {
   const { bookmarks, loading, handleDelete, handleBulkDelete, handleToggleFavorite, handleSave, handleUpdateLastVisited } = useBookmarks();
   const { compactMode, setCompactMode } = useCompactMode();
   const { viewMode, setViewMode } = useViewMode();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingBookmark, setEditingBookmark] = React.useState<Bookmark | null>(null);
   const [showFavorites, setShowFavorites] = React.useState(false);
   const [selectedBookmarks, setSelectedBookmarks] = React.useState<string[]>([]);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = React.useState(false);
+  const [detailsBookmark, setDetailsBookmark] = React.useState<Bookmark | null>(null);
+  const [detailsCollection, setDetailsCollection] = React.useState<SmartCollection | null>(null);
   const navigate = useNavigate();
 
   // Debounced redirect to search when searchQuery changes
@@ -95,6 +108,59 @@ export const Dashboard: React.FC = () => {
     setSelectedBookmarks([]);
   };
 
+  const handleViewDetails = async (bookmark: Bookmark) => {
+    setDetailsBookmark(bookmark);
+    
+    // Fetch the collection this bookmark belongs to
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('collection_bookmarks')
+          .select(`
+            collection_id,
+            smart_collections (
+              id,
+              title,
+              type
+            )
+          `)
+          .eq('bookmark_id', bookmark.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching collection:', error);
+          setDetailsCollection(null);
+        } else if (data && data.smart_collections) {
+          setDetailsCollection({
+            id: data.smart_collections.id,
+            title: data.smart_collections.title,
+            type: data.smart_collections.type
+          });
+        } else {
+          setDetailsCollection(null);
+        }
+      } catch (error) {
+        console.error('Error fetching collection:', error);
+        setDetailsCollection(null);
+      }
+    }
+    
+    setIsDetailsDialogOpen(true);
+  };
+
+  const handleDetailsDialogClose = () => {
+    setIsDetailsDialogOpen(false);
+    setDetailsBookmark(null);
+    setDetailsCollection(null);
+  };
+
+  const handleDetailsLinkOpen = () => {
+    if (detailsBookmark) {
+      handleUpdateLastVisited(detailsBookmark.id);
+    }
+  };
+
   const favoritesCount = bookmarks.filter(b => b.is_favorite).length;
 
   return (
@@ -127,6 +193,7 @@ export const Dashboard: React.FC = () => {
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
           onUpdateLastVisited={handleUpdateLastVisited}
+          onViewDetails={handleViewDetails}
         />
       </main>
 
@@ -141,6 +208,14 @@ export const Dashboard: React.FC = () => {
         bookmark={editingBookmark}
         existingBookmarks={bookmarks}
         onSave={handleBookmarkSave}
+      />
+
+      <BookmarkDetailsDialog
+        open={isDetailsDialogOpen}
+        onOpenChange={handleDetailsDialogClose}
+        bookmark={detailsBookmark}
+        currentCollection={detailsCollection}
+        onOpenLink={handleDetailsLinkOpen}
       />
     </div>
   );

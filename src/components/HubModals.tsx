@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Tag, ExternalLink, Edit, Heart, Trash2 } from 'lucide-react';
+import { Tag, ExternalLink, Edit, Heart, Trash2, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Bookmark {
@@ -33,6 +33,7 @@ interface HubModalsProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onUpdateLastVisited: (id: string) => void;
+  onViewDetails?: (bookmark: Bookmark) => void;
 }
 
 export const HubModals: React.FC<HubModalsProps> = ({
@@ -46,6 +47,7 @@ export const HubModals: React.FC<HubModalsProps> = ({
   onDelete,
   onToggleFavorite,
   onUpdateLastVisited,
+  onViewDetails,
 }) => {
   const navigate = useNavigate();
 
@@ -110,11 +112,24 @@ export const HubModals: React.FC<HubModalsProps> = ({
                   <Edit className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
+                {onViewDetails && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      onViewDetails(selectedBookmarkForActions);
+                      setActionsModalOpen(false);
+                    }}
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   className="w-full justify-start"
                   onClick={() => {
-                    onToggleFavorite(selectedBookmarkForActions.id, selectedBookmarkForActions.is_favorite);
+                    onToggleFavorite(selectedBookmarkForActions.id, !selectedBookmarkForActions.is_favorite);
                     setActionsModalOpen(false);
                   }}
                 >

@@ -31,6 +31,7 @@ interface BookmarkDisplayProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onUpdateLastVisited?: (id: string) => void;
+  onViewDetails?: (bookmark: Bookmark) => void;
 }
 
 export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
@@ -45,7 +46,8 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onUpdateLastVisited
+  onUpdateLastVisited,
+  onViewDetails
 }) => {
   const {
     currentPage,
@@ -118,6 +120,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
               onDelete={onDelete}
               onToggleFavorite={onToggleFavorite}
               onUpdateLastVisited={onUpdateLastVisited}
+              onViewDetails={onViewDetails}
             />
           ))}
         </div>
@@ -130,6 +133,7 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
           onDelete={onDelete}
           onToggleFavorite={onToggleFavorite}
           onUpdateLastVisited={onUpdateLastVisited}
+          onViewDetails={onViewDetails}
         />
       )}
 

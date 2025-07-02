@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { ExternalLink, Heart, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { ExternalLink, Heart, Edit, Trash2, MoreVertical, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
@@ -30,6 +29,7 @@ interface BookmarkTableProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onUpdateLastVisited?: (id: string) => void;
+  onViewDetails?: (bookmark: Bookmark) => void;
 }
 
 export const BookmarkTable: React.FC<BookmarkTableProps> = ({
@@ -39,7 +39,8 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
-  onUpdateLastVisited
+  onUpdateLastVisited,
+  onViewDetails
 }) => {
   const navigate = useNavigate();
 
@@ -134,7 +135,8 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                         <p className="font-medium">{bookmark.title}</p>
                         {bookmark.description && (
                           <p className="text-sm text-muted-foreground">{bookmark.description}</p>
-                        )}  </div>
+                        )}
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Double-click row to open link in new tab</p>
@@ -193,7 +195,10 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}>
+                      <DropdownMenuItem
+                        onClick={() => onToggleFavorite(bookmark.id, !bookmark.is_favorite)}
+                        className="cursor-pointer"
+                      >
                         <Heart className={`h-4 w-4 mr-2 ${bookmark.is_favorite ? 'fill-current text-red-500' : 'text-gray-400'}`} />
                         {bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
                       </DropdownMenuItem>
@@ -201,6 +206,15 @@ export const BookmarkTable: React.FC<BookmarkTableProps> = ({
                         <Edit className="h-4 w-4 mr-2" />
                         Edit bookmark
                       </DropdownMenuItem>
+                      {onViewDetails && (
+                        <DropdownMenuItem
+                          onClick={() => onViewDetails(bookmark)}
+                          className="cursor-pointer"
+                        >
+                          <Info className="h-4 w-4 mr-2" />
+                          View details
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleExternalLinkClick(bookmark)}>
                         <a
