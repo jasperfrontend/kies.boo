@@ -50,7 +50,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 // Wrapper component that adds footer to protected routes
 const ProtectedWithFooter = ({ children }: { children: React.ReactNode }) => (
   <ProtectedRoute>
-    <div className="pb-16"> {/* Add padding bottom to prevent content from being hidden behind footer */}
+    <div className="pb-2">
       {children}
     </div>
     <Footer />

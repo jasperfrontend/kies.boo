@@ -91,7 +91,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
       
       {/* Page info */}
       {totalPages > 1 && (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground pb-2">
           Page {currentPage} of {totalPages}
         </span>
       )}
