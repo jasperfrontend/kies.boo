@@ -1,4 +1,3 @@
-// src/pages/Dashboard.tsx (Updated)
 import React, { useMemo } from 'react';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { useCompactMode } from '@/hooks/useCompactMode';
