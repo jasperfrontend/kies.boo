@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,10 +7,14 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthForm } from "./components/AuthForm";
 import { Dashboard } from "./pages/Dashboard";
+import { Footer } from "./components/Footer";
 import Hub from "./pages/Hub";
 import SearchResults from "./pages/SearchResults";
 import UserProfile from "./pages/UserProfile";
 import TagManagement from "./pages/TagManagement";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,46 +47,56 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return user ? <Navigate to="/" replace /> : <>{children}</>;
 };
 
+// Wrapper component that adds footer to protected routes
+const ProtectedWithFooter = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>
+    <div className="pb-16"> {/* Add padding bottom to prevent content from being hidden behind footer */}
+      {children}
+    </div>
+    <Footer />
+  </ProtectedRoute>
+);
+
 const AppContent = () => (
   <Routes>
     <Route 
       path="/" 
       element={
-        <ProtectedRoute>
+        <ProtectedWithFooter>
           <Dashboard />
-        </ProtectedRoute>
+        </ProtectedWithFooter>
       } 
     />
     <Route 
       path="/hub" 
       element={
-        <ProtectedRoute>
+        <ProtectedWithFooter>
           <Hub />
-        </ProtectedRoute>
+        </ProtectedWithFooter>
       } 
     />
     <Route 
       path="/search" 
       element={
-        <ProtectedRoute>
+        <ProtectedWithFooter>
           <SearchResults />
-        </ProtectedRoute>
+        </ProtectedWithFooter>
       } 
     />
     <Route 
       path="/profile" 
       element={
-        <ProtectedRoute>
+        <ProtectedWithFooter>
           <UserProfile />
-        </ProtectedRoute>
+        </ProtectedWithFooter>
       } 
     />
     <Route 
       path="/tags" 
       element={
-        <ProtectedRoute>
+        <ProtectedWithFooter>
           <TagManagement />
-        </ProtectedRoute>
+        </ProtectedWithFooter>
       } 
     />
     <Route 
@@ -93,6 +106,19 @@ const AppContent = () => (
           <AuthForm />
         </PublicRoute>
       } 
+    />
+    {/* Public pages - these show footer without authentication */}
+    <Route 
+      path="/about" 
+      element={<About />} 
+    />
+    <Route 
+      path="/privacy" 
+      element={<Privacy />} 
+    />
+    <Route 
+      path="/terms" 
+      element={<Terms />} 
     />
     <Route path="*" element={<NotFound />} />
   </Routes>

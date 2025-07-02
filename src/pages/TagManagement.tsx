@@ -40,7 +40,7 @@ const TagManagement: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="bg-gray-50 dark:bg-gray-900">
       
       <AppHeader variant="simple" />
       

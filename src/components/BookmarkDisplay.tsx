@@ -50,8 +50,10 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
   const {
     currentPage,
     totalPages,
+    itemsPerPage,
     paginatedItems,
     goToPage,
+    changeItemsPerPage,
   } = usePagination({
     totalItems: bookmarks.length,
     initialItemsPerPage: 20,
@@ -83,7 +85,9 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
       <PaginationControls
         currentPage={currentPage}
         totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
         onPageChange={goToPage}
+        onItemsPerPageChange={changeItemsPerPage}
       />
 
       {viewMode === 'table' && (
@@ -133,7 +137,9 @@ export const BookmarkDisplay: React.FC<BookmarkDisplayProps> = ({
       <PaginationControls
         currentPage={currentPage}
         totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
         onPageChange={goToPage}
+        onItemsPerPageChange={changeItemsPerPage}
       />
     </div>
   );
