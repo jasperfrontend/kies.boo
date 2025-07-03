@@ -1,11 +1,23 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import supabase from '@/lib/supabaseClient'
 
+const user = ref(null)
+
+onMounted(async () => {
+  const { data: { session } } = await supabase.auth.getSession()
+  user.value = session?.user || null
+  supabase.auth.onAuthStateChange((_event, session) => {
+    user.value = session?.user || null
+  })
+})
 </script>
 
 <template>
   <v-card
-    prepend-avatar="https://static-cdn.jtvnw.net/jtv_user_pictures/1d0df896-13c2-4f15-b6ca-f7d40d2fffc5-profile_image-300x300.png"
-    title="JasperDiscovers"
+    v-if="user && user.user_metadata && user.user_metadata.avatar_url && user.user_metadata.custom_claims && user.user_metadata.custom_claims.global_name"
+    :prepend-avatar="user.user_metadata.avatar_url"
+    :title="user.user_metadata.custom_claims.global_name"
     subtitle="View your profile"
     to="/profile"
   ></v-card>

@@ -1,7 +1,12 @@
 <script setup>
 import supabase from '@/lib/supabaseClient';
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 const recentBookmarks = ref([])
+
+const displayUrls = computed(() =>
+  recentBookmarks.value.map(b => b.url.replace(/^https?:\/\/(www\.)?/, ''))
+)
+
 async function getRecentBookmarks() {
   const { data, error } = await supabase
   .from('bookmarks')
@@ -19,19 +24,23 @@ onMounted(() => {
   getRecentBookmarks()
 })
 
+
+
 </script>
 
 <template>
-<v-list-item v-for="bookmark in recentBookmarks" :key="bookmark.id">
+<v-list-item v-for="(bookmark, i) in recentBookmarks" :key="bookmark.id">
   <template v-slot:prepend>
     <v-avatar 
       rounded="0"
       size="24"
-      :image=bookmark.favicon
+      :image="bookmark.favicon"
       @error="e => e.target.src = '/default-favicon.png'"
     ></v-avatar>
   </template>
   <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
-  <v-list-item-subtitle><a :href="bookmark.url" target="_blank">{{ bookmark.url }}</a></v-list-item-subtitle>
+  <v-list-item-subtitle>
+    <a :href="bookmark.url" target="_blank">{{ displayUrls[i] }}</a>
+  </v-list-item-subtitle>
 </v-list-item>
 </template>
