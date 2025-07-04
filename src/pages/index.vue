@@ -132,21 +132,6 @@ function toggleItemSelection(itemId) {
   }
 }
 
-function getRowClasses(item, index) {
-  const classes = [];
-  
-  // Focused row
-  if (focusedRowIndex.value === index) {
-    classes.push('focused-row');
-  }
-  
-  // Selected row
-  if (selectedItems.value.includes(item.id)) {
-    classes.push('selected-row');
-  }
-  
-  return classes.join(' ');
-}
 
 function showNotification(type, message) {
   notification.value = {
@@ -279,6 +264,22 @@ async function fetchBookmarks() {
   loading.value = false;
 }
 
+function getRowClasses(item, index) {
+  return [
+    'cursor-pointer transition-colors duration-200',
+    focusedRowIndex.value === index && selectedItems.value.includes(item.id)
+      ? 'bg-blue-200 ring-2 ring-blue-400 ring-inset'
+      : '',
+    focusedRowIndex.value === index && !selectedItems.value.includes(item.id)
+      ? 'bg-blue-50 ring-2 ring-blue-300 ring-inset'
+      : '',
+    selectedItems.value.includes(item.id) && focusedRowIndex.value !== index
+      ? 'bg-blue-100'
+      : '',
+  ].filter(Boolean).join(' ');
+}
+
+
 onMounted(() => {
   fetchBookmarks();
   document.addEventListener('keydown', handleKeydown);
@@ -383,19 +384,14 @@ const headers = [
       :mobile-breakpoint="600"
       :row-props="({ item, index }) => ({
         class: getRowClasses(item, index),
-        tabindex: -1
+        tabindex: 0
       })"
     >
+      <!-- Table rows -->
       <template #item="{ item, index }">
-        <tr 
-          :class="[
-            'cursor-pointer transition-colors duration-200',
-            {
-              'bg-blue-50 ring-2 ring-blue-300 ring-inset': focusedRowIndex === index,
-              'bg-blue-100': selectedItems.includes(item.id),
-              'bg-blue-200 ring-2 ring-blue-400 ring-inset': focusedRowIndex === index && selectedItems.includes(item.id)
-            }
-          ]"
+        <tr
+          :class="getRowClasses(item, index)"
+          tabindex="0"
         >
           <td class="pa-2">
             <v-checkbox
@@ -406,10 +402,7 @@ const headers = [
             />
           </td>
           <td class="pa-2">
-            <v-avatar 
-              rounded="0"
-              size="24"
-            >
+            <v-avatar rounded="0" size="24">
               <img
                 :src="item.favicon"
                 alt="favicon"
@@ -421,7 +414,11 @@ const headers = [
           </td>
           <td class="pa-2">{{ item.title }}</td>
           <td class="pa-2">
-            <a :href="item.url" target="_blank" class="text-blue-600 hover:text-blue-800">{{ item.url }}</a>
+            <a
+              :href="item.url"
+              target="_blank"
+              class="text-blue-600 hover:text-blue-800"
+            >{{ item.url }}</a>
           </td>
           <td class="pa-2">
             {{
@@ -433,7 +430,9 @@ const headers = [
             }}
           </td>
         </tr>
+
       </template>
+
       <!-- Select all checkbox in header -->
       <template #header.select="{ column }">
         <v-checkbox
@@ -445,7 +444,7 @@ const headers = [
         />
       </template>
 
-      <!-- Individual checkboxes -->
+      <!-- Individual checkboxes (not strictly needed due to item slot override) -->
       <template #item.select="{ item, index }">
         <v-checkbox
           :model-value="selectedItems.includes(item.id)"
@@ -456,10 +455,7 @@ const headers = [
       </template>
 
       <template #item.favicon="{ item }">
-        <v-avatar 
-          rounded="0"
-          size="24"
-        >
+        <v-avatar rounded="0" size="24">
           <img
             :src="item.favicon"
             alt="favicon"
@@ -488,6 +484,7 @@ const headers = [
         <v-alert type="info">No bookmarks found.</v-alert>
       </template>
     </v-data-table>
+
 
     <!-- Undo Delete Snackbar -->
     <v-snackbar

@@ -87,7 +87,7 @@ async function onSubmit() {
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${form.value.url}&sz=128`
   
   try {
-    const { data, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('bookmarks')
       .insert([
         {
