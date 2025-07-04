@@ -11,6 +11,7 @@ async function getRecentBookmarks() {
   const { data, error } = await supabase
   .from('bookmarks')
   .select()
+  .order('created_at', { ascending: false })
   .limit(5);
 
   if(error) {
@@ -34,9 +35,15 @@ onMounted(() => {
     <v-avatar 
       rounded="0"
       size="24"
-      :image="bookmark.favicon"
-      @error="e => e.target.src = '/default-favicon.png'"
-    ></v-avatar>
+    >
+      <img
+        :src="bookmark.favicon"
+        alt="favicon"
+        width="24"
+        height="24"
+        @error="e => e.target.src = '/default-favicon.png'"
+      />
+    </v-avatar>
   </template>
   <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
   <v-list-item-subtitle>

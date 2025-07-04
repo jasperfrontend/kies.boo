@@ -38,12 +38,12 @@ async function logout() {
           <v-btn color="error" @click="logout">Log out</v-btn>
         </v-card-actions>
       </v-card>
-      <!-- <v-card class="mx-auto my-4" outlined>
+      <v-card class="mx-auto my-4" outlined>
         <v-card-title>User object (debug):</v-card-title>
         <v-card-text>
           <pre style="font-size: 0.8em; white-space: pre-wrap; word-break: break-all;">{{ JSON.stringify(user, null, 2) }}</pre>
         </v-card-text>
-      </v-card> -->
+      </v-card>
     </div>
     <div v-else>
       <p>You are not logged in.</p>
