@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 
@@ -12,7 +12,6 @@ const deleting = ref(false);
 
 // Table navigation state
 const focusedRowIndex = ref(-1);
-const tableRowsRef = ref([]);
 
 // Dialog state for Add Bookmark
 const addBookmarkDialog = ref(false);
@@ -148,7 +147,6 @@ function closeNotification() {
 function deleteSelectedItems() {
   if (selectedItems.value.length === 0) return;
   
-  const itemCount = selectedItems.value.length;
   
   // Store the items that are being deleted
   const itemsToDelete = bookmarks.value.filter(
@@ -355,7 +353,7 @@ const headers = [
             </v-btn>
           </template>
 
-          <template v-slot:default="{ isActive }">
+          <template v-slot:default="">
             <v-card title="Add a new bookmark">
               <v-card-text>
                 <AddBookmark @bookmark-added="onBookmarkAdded" />
@@ -434,7 +432,7 @@ const headers = [
       </template>
 
       <!-- Select all checkbox in header -->
-      <template #header.select="{ column }">
+      <template #header.select="">
         <v-checkbox
           :model-value="isAllSelected"
           :indeterminate="isIndeterminate"
@@ -445,10 +443,10 @@ const headers = [
       </template>
 
       <!-- Individual checkboxes (not strictly needed due to item slot override) -->
-      <template #item.select="{ item, index }">
+      <template #item.select="{ item }">
         <v-checkbox
           :model-value="selectedItems.includes(item.id)"
-          @update:model-value="(value) => toggleItemSelection(item.id)"
+          @update:model-value="() => toggleItemSelection(item.id)"
           hide-details
           density="compact"
         />
