@@ -45,7 +45,7 @@ const handleKeydown = (event) => {
   }
   
   // Tab to focus on table rows
-  if (event.key === 'Tab' && !event.shiftKey) {
+  if (event.key === 'Tab' && !event.shiftKey && !addBookmarkDialog.value) {
     if (filteredBookmarks.value.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value < filteredBookmarks.value.length - 1 
@@ -55,7 +55,7 @@ const handleKeydown = (event) => {
   }
   
   // Shift+Tab to go backwards through table rows
-  if (event.key === 'Tab' && event.shiftKey) {
+  if (event.key === 'Tab' && event.shiftKey && !addBookmarkDialog.value) {
     if (filteredBookmarks.value.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value > 0 
@@ -65,7 +65,7 @@ const handleKeydown = (event) => {
   }
   
   // Spacebar to select/deselect focused row
-  if (event.key === ' ' && focusedRowIndex.value >= 0) {
+  if (event.key === ' ' && focusedRowIndex.value >= 0 && !addBookmarkDialog.value) {
     event.preventDefault();
     const item = filteredBookmarks.value[focusedRowIndex.value];
     if (item) {
@@ -264,19 +264,26 @@ async function fetchBookmarks() {
 
 function getRowClasses(item, index) {
   return [
-    'cursor-pointer transition-colors duration-200',
+    'cursor-pointer',
     focusedRowIndex.value === index && selectedItems.value.includes(item.id)
-      ? 'bg-blue-200 ring-2 ring-blue-400 ring-inset'
+      ? 'bg-red-darken-3'
       : '',
     focusedRowIndex.value === index && !selectedItems.value.includes(item.id)
-      ? 'bg-blue-50 ring-2 ring-blue-300 ring-inset'
+      ? 'bg-blue-grey-darken-3'
       : '',
     selectedItems.value.includes(item.id) && focusedRowIndex.value !== index
-      ? 'bg-blue-100'
+      ? 'bg-red-darken-4'
       : '',
   ].filter(Boolean).join(' ');
 }
 
+function doubleClickHandler(url) {
+  window.open(url, '_blank');
+  if (window.getSelection) {
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+  }
+}
 
 onMounted(() => {
   fetchBookmarks();
@@ -338,12 +345,12 @@ const headers = [
           <template v-slot:activator="{ props: activatorProps }">
             <v-btn
               v-bind="activatorProps"
-              color="surface-variant"
+              color="blue-darken-4"
               text="Add Bookmark (Alt+A)"
               variant="flat"
             ></v-btn>
             <v-btn v-if="selectedItems.length > 0"
-              color="error"
+              color="red-darken-4"
               variant="elevated"
               :loading="deleting"
               @click="deleteSelectedItems"
@@ -390,8 +397,9 @@ const headers = [
         <tr
           :class="getRowClasses(item, index)"
           tabindex="0"
+          v-on:dblclick="doubleClickHandler(item.url)"
         >
-          <td class="pa-2">
+          <td>
             <v-checkbox
               :model-value="selectedItems.includes(item.id)"
               @update:model-value="() => toggleItemSelection(item.id)"
