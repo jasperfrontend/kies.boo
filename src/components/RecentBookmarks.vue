@@ -1,6 +1,9 @@
 <script setup>
 import supabase from '@/lib/supabaseClient';
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useAppStore } from '@/stores/app'
+
+const appStore = useAppStore()
 const recentBookmarks = ref([])
 
 const displayUrls = computed(() =>
@@ -21,12 +24,14 @@ async function getRecentBookmarks() {
   recentBookmarks.value = data;
 }
 
-onMounted(() => {
+// Watch for bookmark refresh trigger changes
+watch(() => appStore.bookmarkRefreshTrigger, () => {
   getRecentBookmarks()
 })
 
-
-
+onMounted(() => {
+  getRecentBookmarks()
+})
 </script>
 
 <template>

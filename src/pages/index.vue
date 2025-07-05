@@ -1,21 +1,16 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
-import BookmarkToolbar from '@/components/BookmarkToolbar.vue';
 import UndoSnackbar from '@/components/UndoSnackbar.vue';
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+import { useAppStore } from '@/stores/app';
 
+const appStore = useAppStore();
 const bookmarks = ref([]);
 const loading = ref(false);
-const search = ref('');
-const selectedItems = ref([]);
-const deleting = ref(false);
-
-// Dialog state for Add Bookmark
-const addBookmarkDialog = ref(false);
 
 // Undo delete state
 const undoState = ref({
@@ -31,12 +26,30 @@ const notification = ref({
   message: ''
 });
 
+// Use search from store
 const filteredBookmarks = computed(() => {
-  if (!search.value) return bookmarks.value;
+  if (!appStore.bookmarkSearch) return bookmarks.value;
   return bookmarks.value.filter(b =>
-    (b.title && b.title.toLowerCase().includes(search.value.toLowerCase())) ||
-    (b.url && b.url.toLowerCase().includes(search.value.toLowerCase()))
+    (b.title && b.title.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase())) ||
+    (b.url && b.url.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase()))
   );
+});
+
+// Watch for dialog state changes from store
+watch(() => appStore.addBookmarkDialog, (newValue) => {
+  if (!newValue) {
+    // Dialog was closed, refresh bookmarks
+    fetchBookmarks();
+  }
+});
+
+// Listen for delete events from the layout
+onMounted(() => {
+  document.addEventListener('delete-selected-bookmarks', deleteSelectedItems);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('delete-selected-bookmarks', deleteSelectedItems);
 });
 
 function showNotification(type, message) {
@@ -52,16 +65,18 @@ function closeNotification() {
 }
 
 function deleteSelectedItems() {
-  if (selectedItems.value.length === 0) return;
+  if (appStore.selectedItems.length === 0) return;
+  
+  appStore.setDeleting(true);
   
   // Store the items that are being deleted
   const itemsToDelete = bookmarks.value.filter(
-    bookmark => selectedItems.value.includes(bookmark.id)
+    bookmark => appStore.selectedItems.includes(bookmark.id)
   );
   
   // Remove from UI immediately
   bookmarks.value = bookmarks.value.filter(
-    bookmark => !selectedItems.value.includes(bookmark.id)
+    bookmark => !appStore.selectedItems.includes(bookmark.id)
   );
   
   // Store in undo state
@@ -69,7 +84,8 @@ function deleteSelectedItems() {
   undoState.value.show = true;
   
   // Clear selections
-  selectedItems.value = [];
+  appStore.clearSelectedItems();
+  appStore.setDeleting(false);
   
   // Set timeout to actually delete from database
   if (undoState.value.timeoutId) {
@@ -150,7 +166,9 @@ function dismissUndo() {
 async function onBookmarkAdded() {
   try {
     await fetchBookmarks();
-    addBookmarkDialog.value = false;
+    appStore.closeAddBookmarkDialog();
+    // Trigger refresh for recent bookmarks in sidebar
+    appStore.triggerBookmarkRefresh();
   } catch (error) {
     console.error('Failed to refresh bookmarks:', error);
     showNotification('error', 'Failed to refresh bookmarks');
@@ -180,7 +198,7 @@ onUnmounted(() => {
 
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
-  onAddBookmark: () => { addBookmarkDialog.value = true; },
+  onAddBookmark: () => { appStore.openAddBookmarkDialog(); },
   onDeleteSelected: deleteSelectedItems,
   onUndoDelete: () => {
     if (undoState.value.show) {
@@ -192,23 +210,15 @@ useKeyboardShortcuts({
 
 <template>
   <v-container fluid>
-    <BookmarkToolbar
-      v-model:search="search"
-      :selected-items="selectedItems"
-      :deleting="deleting"
-      @add-bookmark="addBookmarkDialog = true"
-      @delete-selected="deleteSelectedItems"
-    />
-
     <BookmarkTable
       :bookmarks="filteredBookmarks"
       :loading="loading"
-      :dialog-open="addBookmarkDialog"
-      v-model:selected-items="selectedItems"
+      :dialog-open="appStore.addBookmarkDialog"
+      v-model:selected-items="appStore.selectedItems"
     />
 
     <AddBookmarkDialog
-      v-model="addBookmarkDialog"
+      v-model="appStore.addBookmarkDialog"
       @bookmark-added="onBookmarkAdded"
     />
 
