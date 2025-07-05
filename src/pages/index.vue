@@ -2,16 +2,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import NotificationComponent from '@/components/NotificationComponent.vue';
+import BookmarkTable from '@/components/BookmarkTable.vue';
+import BookmarkToolbar from '@/components/BookmarkToolbar.vue';
+import UndoSnackbar from '@/components/UndoSnackbar.vue';
+import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 const bookmarks = ref([]);
 const loading = ref(false);
 const search = ref('');
-const itemsPerPage = ref(20);
 const selectedItems = ref([]);
 const deleting = ref(false);
-
-// Table navigation state
-const focusedRowIndex = ref(-1);
 
 // Dialog state for Add Bookmark
 const addBookmarkDialog = ref(false);
@@ -22,72 +23,6 @@ const undoState = ref({
   deletedItems: [],
   timeoutId: null
 });
-
-// keyboard shortcut to open the Add Bookmark dialog
-const handleKeydown = (event) => {
-  if (event.altKey && event.key === 'a') {
-    event.preventDefault();
-    addBookmarkDialog.value = true;
-  }
-  
-  // Alt+i to trigger immediate delete with undo option
-  if (event.altKey && event.key === 'i') {
-    event.preventDefault();
-    deleteSelectedItems();
-  }
-  
-  // Alt+u to undo delete
-  if (event.altKey && event.key === 'u') {
-    event.preventDefault();
-    if (undoState.value.show) {
-      undoDelete();
-    }
-  }
-  
-  // Tab to focus on table rows
-  if (event.key === 'Tab' && !event.shiftKey && !addBookmarkDialog.value) {
-    if (filteredBookmarks.value.length > 0) {
-      event.preventDefault();
-      focusedRowIndex.value = focusedRowIndex.value < filteredBookmarks.value.length - 1 
-        ? focusedRowIndex.value + 1 
-        : 0;
-    }
-  }
-  
-  // Shift+Tab to go backwards through table rows
-  if (event.key === 'Tab' && event.shiftKey && !addBookmarkDialog.value) {
-    if (filteredBookmarks.value.length > 0) {
-      event.preventDefault();
-      focusedRowIndex.value = focusedRowIndex.value > 0 
-        ? focusedRowIndex.value - 1 
-        : filteredBookmarks.value.length - 1;
-    }
-  }
-  
-  // Spacebar to select/deselect focused row
-  if (event.key === ' ' && focusedRowIndex.value >= 0 && !addBookmarkDialog.value) {
-    event.preventDefault();
-    const item = filteredBookmarks.value[focusedRowIndex.value];
-    if (item) {
-      toggleItemSelection(item.id);
-    }
-  }
-  
-  // Arrow keys for navigation
-  if (event.key === 'ArrowDown' && filteredBookmarks.value.length > 0) {
-    event.preventDefault();
-    focusedRowIndex.value = focusedRowIndex.value < filteredBookmarks.value.length - 1 
-      ? focusedRowIndex.value + 1 
-      : 0;
-  }
-  
-  if (event.key === 'ArrowUp' && filteredBookmarks.value.length > 0) {
-    event.preventDefault();
-    focusedRowIndex.value = focusedRowIndex.value > 0 
-      ? focusedRowIndex.value - 1 
-      : filteredBookmarks.value.length - 1;
-  }
-};
 
 // Notification state
 const notification = ref({
@@ -104,34 +39,6 @@ const filteredBookmarks = computed(() => {
   );
 });
 
-const isAllSelected = computed(() => {
-  return filteredBookmarks.value.length > 0 && 
-         selectedItems.value.length === filteredBookmarks.value.length;
-});
-
-const isIndeterminate = computed(() => {
-  return selectedItems.value.length > 0 && 
-         selectedItems.value.length < filteredBookmarks.value.length;
-});
-
-function toggleSelectAll() {
-  if (isAllSelected.value) {
-    selectedItems.value = [];
-  } else {
-    selectedItems.value = [...filteredBookmarks.value.map(item => item.id)];
-  }
-}
-
-function toggleItemSelection(itemId) {
-  const index = selectedItems.value.indexOf(itemId);
-  if (index > -1) {
-    selectedItems.value.splice(index, 1);
-  } else {
-    selectedItems.value.push(itemId);
-  }
-}
-
-
 function showNotification(type, message) {
   notification.value = {
     show: true,
@@ -147,7 +54,6 @@ function closeNotification() {
 function deleteSelectedItems() {
   if (selectedItems.value.length === 0) return;
   
-  
   // Store the items that are being deleted
   const itemsToDelete = bookmarks.value.filter(
     bookmark => selectedItems.value.includes(bookmark.id)
@@ -162,9 +68,8 @@ function deleteSelectedItems() {
   undoState.value.deletedItems = itemsToDelete;
   undoState.value.show = true;
   
-  // Clear selections and focus
+  // Clear selections
   selectedItems.value = [];
-  focusedRowIndex.value = -1;
   
   // Set timeout to actually delete from database
   if (undoState.value.timeoutId) {
@@ -262,270 +167,58 @@ async function fetchBookmarks() {
   loading.value = false;
 }
 
-function getRowClasses(item, index) {
-  return [
-    'cursor-pointer',
-    focusedRowIndex.value === index && selectedItems.value.includes(item.id)
-      ? 'bg-red-darken-3'
-      : '',
-    focusedRowIndex.value === index && !selectedItems.value.includes(item.id)
-      ? 'bg-blue-grey-darken-3'
-      : '',
-    selectedItems.value.includes(item.id) && focusedRowIndex.value !== index
-      ? 'bg-red-darken-4'
-      : '',
-  ].filter(Boolean).join(' ');
-}
-
-function doubleClickHandler(url) {
-  window.open(url, '_blank');
-  if (window.getSelection) {
-    const selection = window.getSelection();
-    if (selection) selection.removeAllRanges();
-  }
-}
-
 onMounted(() => {
   fetchBookmarks();
-  document.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown);
   // Clean up timeout if component unmounts
   if (undoState.value.timeoutId) {
     clearTimeout(undoState.value.timeoutId);
   }
 });
 
-// Define headers for the data table
-const headers = [
-  {
-    title: '',
-    key: 'select',
-    sortable: false,
-    width: '48px'
-  },
-  {
-    title: '',
-    key: 'favicon',
-    sortable: false,
-    width: '48px'
-  },
-  {
-    title: 'Title',
-    key: 'title',
-    sortable: true
-  },
-  {
-    title: 'URL',
-    key: 'url',
-    sortable: true
-  },
-  {
-    title: 'Created',
-    key: 'created_at',
-    sortable: true
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+  onAddBookmark: () => { addBookmarkDialog.value = true; },
+  onDeleteSelected: deleteSelectedItems,
+  onUndoDelete: () => {
+    if (undoState.value.show) {
+      undoDelete();
+    }
   }
-];
+});
 </script>
 
 <template>
   <v-container fluid>
-    <v-row class="mb-4 d-flex align-items-center">
-      <v-col cols="12" md="6">
-        <v-text-field
-          v-model="search"
-          label="Search bookmarks"
-          prepend-inner-icon="mdi-magnify"
-        />
-      </v-col>
-      <v-col cols="12" md="6">
-        <v-dialog v-model="addBookmarkDialog" max-width="500">
-          <template v-slot:activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              color="blue-darken-4"
-              text="Add Bookmark (Alt+A)"
-              variant="flat"
-            ></v-btn>
-            <v-btn v-if="selectedItems.length > 0"
-              color="red-darken-4"
-              variant="elevated"
-              :loading="deleting"
-              @click="deleteSelectedItems"
-              class="mx-4"
-            >
-              Delete {{ selectedItems.length }} item{{ selectedItems.length === 1 ? '' : 's' }} (alt+i)
-            </v-btn>
-          </template>
+    <BookmarkToolbar
+      v-model:search="search"
+      :selected-items="selectedItems"
+      :deleting="deleting"
+      @add-bookmark="addBookmarkDialog = true"
+      @delete-selected="deleteSelectedItems"
+    />
 
-          <template v-slot:default="">
-            <v-card title="Add a new bookmark">
-              <v-card-text>
-                <AddBookmark @bookmark-added="onBookmarkAdded" />
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-
-                <v-btn
-                  text="Close this"
-                  @click="addBookmarkDialog = false"
-                ></v-btn>
-              </v-card-actions>
-            </v-card>
-          </template>
-        </v-dialog>
-      </v-col>
-    </v-row>
-
-    <v-data-table
-      :headers="headers"
-      :items="filteredBookmarks"
-      :items-per-page="itemsPerPage === -1 ? filteredBookmarks.length : itemsPerPage"
+    <BookmarkTable
+      :bookmarks="filteredBookmarks"
       :loading="loading"
-      class="elevation-1"
-      :mobile-breakpoint="600"
-      :row-props="({ item, index }) => ({
-        class: getRowClasses(item, index),
-        tabindex: 0
-      })"
-    >
-      <!-- Table rows -->
-      <template #item="{ item, index }">
-        <tr
-          :class="getRowClasses(item, index)"
-          tabindex="0"
-          v-on:dblclick="doubleClickHandler(item.url)"
-        >
-          <td>
-            <v-checkbox
-              :model-value="selectedItems.includes(item.id)"
-              @update:model-value="() => toggleItemSelection(item.id)"
-              hide-details
-              density="compact"
-            />
-          </td>
-          <td class="pa-2">
-            <v-avatar rounded="0" size="24">
-              <img
-                :src="item.favicon"
-                alt="favicon"
-                width="24"
-                height="24"
-                @error="e => e.target.src = '/favicon.png'"
-              />
-            </v-avatar>
-          </td>
-          <td class="pa-2">{{ item.title }}</td>
-          <td class="pa-2">
-            <a
-              :href="item.url"
-              target="_blank"
-              class="text-blue-600 hover:text-blue-800"
-            >{{ item.url }}</a>
-          </td>
-          <td class="pa-2">
-            {{
-              (() => {
-                const d = new Date(item.created_at);
-                const pad = n => String(n).padStart(2, '0');
-                return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-              })()
-            }}
-          </td>
-        </tr>
+      :dialog-open="addBookmarkDialog"
+      v-model:selected-items="selectedItems"
+    />
 
-      </template>
+    <AddBookmarkDialog
+      v-model="addBookmarkDialog"
+      @bookmark-added="onBookmarkAdded"
+    />
 
-      <!-- Select all checkbox in header -->
-      <template #header.select="">
-        <v-checkbox
-          :model-value="isAllSelected"
-          :indeterminate="isIndeterminate"
-          @update:model-value="toggleSelectAll"
-          hide-details
-          density="compact"
-        />
-      </template>
-
-      <!-- Individual checkboxes (not strictly needed due to item slot override) -->
-      <template #item.select="{ item }">
-        <v-checkbox
-          :model-value="selectedItems.includes(item.id)"
-          @update:model-value="() => toggleItemSelection(item.id)"
-          hide-details
-          density="compact"
-        />
-      </template>
-
-      <template #item.favicon="{ item }">
-        <v-avatar rounded="0" size="24">
-          <img
-            :src="item.favicon"
-            alt="favicon"
-            width="24"
-            height="24"
-            @error="e => e.target.src = '/favicon.png'"
-          />
-        </v-avatar>
-      </template>
-
-      <template #item.url="{ item }">
-        <a :href="item.url" target="_blank" class="text-blue-600 hover:text-blue-800">{{ item.url }}</a>
-      </template>
-
-      <template #item.created_at="{ item }">
-        {{
-          (() => {
-            const d = new Date(item.created_at);
-            const pad = n => String(n).padStart(2, '0');
-            return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-          })()
-        }}
-      </template>
-
-      <template #no-data>
-        <v-alert type="info">No bookmarks found.</v-alert>
-      </template>
-    </v-data-table>
-
-
-    <!-- Undo Delete Snackbar -->
-    <v-snackbar
+    <UndoSnackbar
       v-model="undoState.show"
-      :timeout="-1"
-      color="info"
-      location="bottom"
-      class="mb-4"
-    >
-      <div class="d-flex align-center">
-        <v-icon class="mr-2">mdi-information</v-icon>
-        <span>
-          {{ undoState.deletedItems.length }} item{{ undoState.deletedItems.length === 1 ? '' : 's' }} deleted
-        </span>
-      </div>
-      
-      <template v-slot:actions>
-        <v-btn
-          variant="text"
-          @click="undoDelete"
-          color="white"
-        >
-          Undo (Alt+U)
-        </v-btn>
-        <v-btn
-          variant="text"
-          @click="dismissUndo"
-          color="white"
-        >
-          Dismiss
-        </v-btn>
-      </template>
-    </v-snackbar>
+      :deleted-items="undoState.deletedItems"
+      @undo="undoDelete"
+      @dismiss="dismissUndo"
+    />
 
-    <!-- Notification Component -->
     <NotificationComponent
       :show="notification.show"
       :type="notification.type"
