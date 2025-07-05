@@ -52,7 +52,12 @@ onUnmounted(() => {
         @click="$emit('undo')"
         color="white"
       >
-        Undo (Alt+U)
+        Undo 
+        <v-badge
+          color="white"
+          content="Alt+U"
+          inline
+        ></v-badge>
       </v-btn>
       <v-btn
         variant="text"

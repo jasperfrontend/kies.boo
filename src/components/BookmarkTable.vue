@@ -156,6 +156,13 @@ const headers = [
     sortable: true
   }
 ];
+
+function displayUrl(url) {
+  return url
+    .replace(/^https?:\/\/(www\.)?/, '')
+    .replace(/\/$/, '');
+}
+
 </script>
 
 <template>
@@ -202,8 +209,9 @@ const headers = [
           <a
             :href="item.url"
             target="_blank"
-            class="text-blue-600 hover:text-blue-800"
-          >{{ item.url }}</a>
+            class="text-decoration-none"
+            :title="item.url"
+          >{{ displayUrl(item.url) }}</a>
         </td>
         <td class="pa-2">
           {{ formatDate(item.created_at) }}
@@ -245,7 +253,7 @@ const headers = [
     </template>
 
     <template #item.url="{ item }">
-      <a :href="item.url" target="_blank" class="text-blue-600 hover:text-blue-800">{{ item.url }}</a>
+      <a :href="item.url" target="_blank" class="text-blue">{{ item.url }}</a>
     </template>
 
     <template #item.created_at="{ item }">

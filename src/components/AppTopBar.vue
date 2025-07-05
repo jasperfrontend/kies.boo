@@ -75,8 +75,14 @@ onUnmounted(() => {
               :loading="appStore.deleting"
               @click="handleDeleteSelected"
               prepend-icon="mdi-delete"
+              class="mx-4"
             >
-              Delete {{ appStore.selectedItems.length }} item{{ appStore.selectedItems.length === 1 ? '' : 's' }} (Alt+I)
+              Delete {{ appStore.selectedItems.length }} item{{ appStore.selectedItems.length === 1 ? '' : 's' }} 
+              <v-badge
+                color="white"
+                content="Alt+I"
+                inline
+              ></v-badge>
             </v-btn>
             
             <!-- Add bookmark button -->
@@ -86,7 +92,12 @@ onUnmounted(() => {
               @click="appStore.openAddBookmarkDialog()"
               prepend-icon="mdi-bookmark-plus"
             >
-              Add Bookmark (Alt+A)
+              Add Bookmark 
+              <v-badge
+                color="white"
+                content="Alt+A"
+                inline
+              ></v-badge>
             </v-btn>
           </v-col>
         </v-row>

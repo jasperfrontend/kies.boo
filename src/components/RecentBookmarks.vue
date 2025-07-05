@@ -5,12 +5,16 @@ import { useAppStore } from '@/stores/app'
 
 const appStore = useAppStore()
 const recentBookmarks = ref([])
+const loading = ref(false)
 
-const displayUrls = computed(() =>
-  recentBookmarks.value.map(b => b.url.replace(/^https?:\/\/(www\.)?/, ''))
-)
+function displayUrl(url) {
+  return url
+    .replace(/^https?:\/\/(www\.)?/, '')
+    .replace(/\/$/, '');
+}
 
 async function getRecentBookmarks() {
+  loading.value = true
   const { data, error } = await supabase
   .from('bookmarks')
   .select()
@@ -21,7 +25,8 @@ async function getRecentBookmarks() {
     console.log("error getting recent bookmarks: ", error);
     return false;
   }
-  recentBookmarks.value = data;
+  recentBookmarks.value = data || [];
+  loading.value = false
 }
 
 // Watch for bookmark refresh trigger changes
@@ -35,24 +40,44 @@ onMounted(() => {
 </script>
 
 <template>
-<v-list-item v-for="(bookmark, i) in recentBookmarks" :key="bookmark.id">
-  <template v-slot:prepend>
-    <v-avatar 
-      rounded="0"
-      size="24"
-    >
-      <img
-        :src="bookmark.favicon"
-        alt="favicon"
-        width="24"
-        height="24"
-        @error="e => e.target.src = '/default-favicon.png'"
-      />
-    </v-avatar>
-  </template>
-  <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
-  <v-list-item-subtitle>
-    <a :href="bookmark.url" target="_blank">{{ displayUrls[i] }}</a>
-  </v-list-item-subtitle>
-</v-list-item>
+  <!-- Loading state -->
+  <v-list-item v-if="loading">
+    <template v-slot:prepend>
+      <v-skeleton-loader type="avatar" width="24" height="24"></v-skeleton-loader>
+    </template>
+    <v-skeleton-loader type="list-item-two-line"></v-skeleton-loader>
+  </v-list-item>
+
+  <!-- Empty state -->
+  <v-list-item v-else-if="recentBookmarks.length === 0">
+    <template v-slot:prepend>
+      <v-icon color="grey-darken-1" size="24">mdi-bookmark-outline</v-icon>
+    </template>
+    <v-list-item-title class="text-grey-darken-1">No bookmarks yet</v-list-item-title>
+    <v-list-item-subtitle class="text-grey-darken-2">
+      Add your first bookmark to get started
+    </v-list-item-subtitle>
+  </v-list-item>
+
+  <!-- Bookmarks list -->
+  <v-list-item v-else v-for="(bookmark, i) in recentBookmarks" :key="bookmark.id">
+    <template v-slot:prepend>
+      <v-avatar 
+        rounded="0"
+        size="24"
+      >
+        <img
+          :src="bookmark.favicon"
+          alt="favicon"
+          width="24"
+          height="24"
+          @error="e => e.target.src = '/default-favicon.png'"
+        />
+      </v-avatar>
+    </template>
+    <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
+    <v-list-item-subtitle>
+      <a :href="bookmark.url" target="_blank" class="text-decoration-none">{{ displayUrl(bookmark.url) }}</a>
+    </v-list-item-subtitle>
+  </v-list-item>
 </template>

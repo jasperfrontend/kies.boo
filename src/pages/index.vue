@@ -114,6 +114,9 @@ function undoDelete() {
   undoState.value.show = false;
   undoState.value.deletedItems = [];
   
+  // Trigger refresh for recent bookmarks since items were restored
+  appStore.triggerBookmarkRefresh();
+  
   showNotification('success', 'Items restored successfully.');
 }
 
@@ -139,6 +142,9 @@ async function commitDelete() {
         'error',
         `Failed to delete ${itemCount} item${itemCount === 1 ? '' : 's'}. Items have been restored.`
       );
+    } else {
+      // Successfully deleted, trigger refresh for recent bookmarks
+      appStore.triggerBookmarkRefresh();
     }
   } catch (error) {
     console.error('Error deleting bookmarks:', error);

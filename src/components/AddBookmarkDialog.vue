@@ -40,7 +40,13 @@ onUnmounted(() => {
         <v-btn
           text="Close this"
           @click="$emit('update:modelValue', false)"
-        />
+        > Close this 
+          <v-badge
+            color="white"
+            content="Esc"
+            inline
+          ></v-badge>
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
