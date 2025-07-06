@@ -29,11 +29,32 @@ const notification = ref({
 // Use search from store
 const filteredBookmarks = computed(() => {
   if (!appStore.bookmarkSearch) return bookmarks.value;
-  return bookmarks.value.filter(b =>
-    (b.title && b.title.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase())) ||
-    (b.tags.includes(appStore.bookmarkSearch.toLowerCase())) ||
-    (b.url && b.url.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase()))
-  );
+  
+  const searchTerm = appStore.bookmarkSearch.toLowerCase();
+  
+  return bookmarks.value.filter(b => {
+    // Check title
+    const titleMatch = b.title && b.title.toLowerCase().includes(searchTerm);
+    
+    // Check URL
+    const urlMatch = b.url && b.url.toLowerCase().includes(searchTerm);
+    
+    // Check tags (handle both array and string cases)
+    let tagsMatch = false;
+    if (b.tags) {
+      if (Array.isArray(b.tags)) {
+        // If tags is an array, check if any tag contains the search term
+        tagsMatch = b.tags.some(tag => 
+          tag && tag.toLowerCase().includes(searchTerm)
+        );
+      } else if (typeof b.tags === 'string') {
+        // If tags is a string, check directly
+        tagsMatch = b.tags.toLowerCase().includes(searchTerm);
+      }
+    }
+    
+    return titleMatch || urlMatch || tagsMatch;
+  });
 });
 
 // Watch for dialog state changes from store
