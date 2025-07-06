@@ -1,9 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
 
 const drawer = ref(null)
 const appStore = useAppStore()
+const searchInputRef = ref(null)
+const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
 
 // Emit event for delete action
 const emit = defineEmits(['delete-selected'])
@@ -11,6 +14,26 @@ function handleDeleteSelected() {
   emit('delete-selected')
 }
 
+// Keyboard shortcut for focusing search bar
+const handleKeydown = (event) => {
+  // Alt+k to focus search bar
+  if (event.altKey && event.key === 'k') {
+    event.preventDefault()
+    searchInputRef.value?.focus()
+  }
+}
+
+function openShortcutsDialog() {
+  showShortcutsDialog.value = true
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
@@ -30,8 +53,9 @@ function handleDeleteSelected() {
         <v-row align="center" no-gutters>
           <v-col cols="12" md="6" lg="6">
             <v-text-field
+              ref="searchInputRef"
               v-model="appStore.bookmarkSearch"
-              label="Search bookmarks"
+              label="Search bookmarks (Alt+k)"
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               density="compact"
@@ -78,4 +102,5 @@ function handleDeleteSelected() {
       </v-container>      
     </v-app-bar-title>
   </v-app-bar>
+  <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
 </template>
