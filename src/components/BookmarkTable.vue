@@ -62,7 +62,7 @@ function getRowClasses(item, index) {
       ? 'bg-red-darken-3'
       : '',
     focusedRowIndex.value === index && !props.selectedItems.includes(item.id)
-      ? 'bg-blue-grey-lighten-3'
+      ? 'bg-blue-grey-darken-3'
       : '',
     props.selectedItems.includes(item.id) && focusedRowIndex.value !== index
       ? 'bg-red-darken-3'
@@ -389,7 +389,7 @@ function searchByTag(tag) {
           <a
             :href="item.url"
             target="_blank"
-            class="text-decoration-none text-blue"
+            class="text-decoration-none text-blue d-block w-100"
             :title="item.url"
             v-bind="props"
           >{{ displayUrl(item.url) }}</a>

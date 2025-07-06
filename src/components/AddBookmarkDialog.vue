@@ -42,7 +42,7 @@ onUnmounted(() => {
           @click="$emit('update:modelValue', false)"
         > Close this 
           <v-badge
-            color="white"
+            color="grey-darken-3"
             content="Esc"
             inline
           ></v-badge>

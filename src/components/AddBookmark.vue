@@ -29,13 +29,14 @@
         :loading="loading"
         :disabled="loading"
         color="primary"
+        variant="outlined"
         type="submit"
         class="mt-4"
         block
       >
         Add Bookmark 
         <v-badge
-          color="white"
+          color="grey-darken-3"
           content="Enter"
           inline
         ></v-badge>
