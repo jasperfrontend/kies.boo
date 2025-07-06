@@ -31,6 +31,7 @@ const filteredBookmarks = computed(() => {
   if (!appStore.bookmarkSearch) return bookmarks.value;
   return bookmarks.value.filter(b =>
     (b.title && b.title.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase())) ||
+    (b.tags.includes(appStore.bookmarkSearch.toLowerCase())) ||
     (b.url && b.url.toLowerCase().includes(appStore.bookmarkSearch.toLowerCase()))
   );
 });

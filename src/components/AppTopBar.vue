@@ -7,32 +7,10 @@ const appStore = useAppStore()
 
 // Emit event for delete action
 const emit = defineEmits(['delete-selected'])
-
-// Handle keyboard shortcuts
-const handleKeydown = (event) => {
-  if (event.altKey && event.key === 'a') {
-    event.preventDefault()
-    appStore.openAddBookmarkDialog()
-  }
-  
-  if (event.altKey && event.key === 'i' && appStore.selectedItems.length > 0) {
-    event.preventDefault()
-    handleDeleteSelected()
-  }
-}
-
 function handleDeleteSelected() {
   emit('delete-selected')
 }
 
-// Add event listener for keyboard shortcuts
-document.addEventListener('keydown', handleKeydown)
-
-// Clean up event listener when component unmounts
-import { onUnmounted } from 'vue'
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
 </script>
 
 <template>
@@ -43,15 +21,11 @@ onUnmounted(() => {
   
   <v-app-bar>
     <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+    <template v-slot:append>
+      <v-btn to="/"><v-icon icon="mdi-home"></v-icon> </v-btn>
+    </template>
     
     <v-app-bar-title>
-      <RouterLink to="/" class="text-white text-decoration-none">
-        kies.boo
-      </RouterLink>
-    </v-app-bar-title>
-    
-    <!-- Search field -->
-    <template v-slot:extension>
       <v-container fluid class="py-0">
         <v-row align="center" no-gutters>
           <v-col cols="12" md="6" lg="6">
@@ -101,7 +75,7 @@ onUnmounted(() => {
             </v-btn>
           </v-col>
         </v-row>
-      </v-container>
-    </template>
+      </v-container>      
+    </v-app-bar-title>
   </v-app-bar>
 </template>

@@ -375,7 +375,7 @@ function displayUrl(url) {
         </td>
         <td>{{ item.title }}</td>
         <td>
-          <v-tooltip :text="`Open ${displayUrl(item.url)} in a new tab`">
+          <v-tooltip :text="`Will open in a new tab`">
             <template v-slot:activator="{ props }">
               <a
                 :href="item.url"
