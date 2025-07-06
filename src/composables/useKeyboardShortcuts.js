@@ -2,6 +2,7 @@ import { onMounted, onUnmounted } from 'vue';
 
 export function useKeyboardShortcuts(callbacks) {
   const handleKeydown = (event) => {
+    
     // Alt+a to add bookmark
     if (event.altKey && event.key === 'a') {
       event.preventDefault();
