@@ -128,7 +128,7 @@ function openEditDialog(bookmark) {
     id: bookmark.id,
     title: bookmark.title,
     url: bookmark.url,
-    tags: [bookmark.tags]
+    tags: bookmark.tags
   };
   
   editDialog.value = true;
@@ -359,13 +359,12 @@ function displayUrl(url) {
         <td>{{ item.title }}</td>
         <td>
           
-          <v-tooltip :text="`Open ${displayUrl(item.url)} in a new tab`">
+          <v-tooltip text="Open bookmark in a new tab">
             <template v-slot:activator="{ props }">
               <a
                 :href="item.url"
                 target="_blank"
                 class="text-decoration-none"
-                :title="item.url"
                 v-bind="props"
               >{{ displayUrl(item.url) }}</a>
             </template>
