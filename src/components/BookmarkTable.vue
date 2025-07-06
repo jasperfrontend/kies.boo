@@ -395,19 +395,24 @@ function searchByTag(tag) {
           >{{ displayUrl(item.url) }}</a>
         </td>
         <td>
-          <v-chip-group v-if="item.tags && item.tags.length > 0">
+          <div 
+            v-if="item.tags && item.tags.length > 0"
+          >
             <v-chip
               v-for="tag in item.tags"
+              pill="true"
+              ripple="false"
               :key="tag"
               size="small"
               variant="tonal"
-              class="cursor-pointer"
+              class="cursor-pointer mr-1"
               v-bind="props"
               @click="searchByTag(tag)"
+              :title="`Click to search for ${tag}`"
             >
               {{ tag }}
             </v-chip>
-          </v-chip-group>
+          </div>
           <span v-else class="text-grey-darken-1">No tags</span>
         </td>
         <td>
