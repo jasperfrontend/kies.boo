@@ -62,21 +62,21 @@ function getRowClasses(item, index) {
       ? 'bg-red-darken-3'
       : '',
     focusedRowIndex.value === index && !props.selectedItems.includes(item.id)
-      ? 'bg-blue-grey-darken-3'
+      ? 'bg-blue-grey-lighten-3'
       : '',
     props.selectedItems.includes(item.id) && focusedRowIndex.value !== index
-      ? 'bg-red-darken-4'
+      ? 'bg-red-darken-3'
       : '',
   ].filter(Boolean).join(' ');
 }
 
-function doubleClickHandler(url) {
-  window.open(url, '_blank');
-  if (window.getSelection) {
-    const selection = window.getSelection();
-    if (selection) selection.removeAllRanges();
-  }
-}
+// function doubleClickHandler(url) {
+//   window.open(url, '_blank');
+//   if (window.getSelection) {
+//     const selection = window.getSelection();
+//     if (selection) selection.removeAllRanges();
+//   }
+// }
 
 function formatDate(dateString) {
   const d = new Date(dateString);
@@ -298,12 +298,15 @@ const headers = [
   {
     title: 'Title',
     key: 'title',
-    sortable: true
+    sortable: true,
+    width: '400px'
+
   },
   {
     title: 'URL',
     key: 'url',
-    sortable: true
+    sortable: true,
+    width: '400px'
   },
   {
     title: 'Tags',
@@ -324,9 +327,13 @@ const headers = [
 ];
 
 function displayUrl(url) {
-  return url
+  const cleanedUrl = url
     .replace(/^https?:\/\/(www\.)?/, '')
     .replace(/\/$/, '');
+  
+  return cleanedUrl.length > 50 
+    ? cleanedUrl.substring(0, 47) + '...' 
+    : cleanedUrl;
 }
 
 // Function to search by tag
@@ -354,20 +361,17 @@ function searchByTag(tag) {
       <tr
         :class="getRowClasses(item, index)"
         tabindex="0"
-        @dblclick="doubleClickHandler(item.url)"
+        @dblclick="toggleItemSelection(item.id)"
+        class="cursor-pointer"
       >
         <td>
-          <v-tooltip :text="`Click to (de)select row ${index + 1}`">
-            <template v-slot:activator="{ props }">
-              <v-checkbox
-                :model-value="selectedItems.includes(item.id)"
-                @update:model-value="() => toggleItemSelection(item.id)"
-                hide-details
-                density="compact"
-                v-bind="props"
-              />
-            </template>
-          </v-tooltip>
+          <v-checkbox
+            :model-value="selectedItems.includes(item.id)"
+            @update:model-value="() => toggleItemSelection(item.id)"
+            hide-details
+            density="compact"
+            v-bind="props"
+          />
         </td>
         <td>
           <v-avatar rounded="0" size="24">
@@ -382,36 +386,27 @@ function searchByTag(tag) {
         </td>
         <td>{{ item.title }}</td>
         <td>
-          <v-tooltip :text="`Will open in a new tab`">
-            <template v-slot:activator="{ props }">
-              <a
-                :href="item.url"
-                target="_blank"
-                class="text-decoration-none"
-                :title="item.url"
-                v-bind="props"
-              >{{ displayUrl(item.url) }}</a>
-            </template>
-          </v-tooltip>
+          <a
+            :href="item.url"
+            target="_blank"
+            class="text-decoration-none text-blue"
+            :title="item.url"
+            v-bind="props"
+          >{{ displayUrl(item.url) }}</a>
         </td>
         <td>
           <v-chip-group v-if="item.tags && item.tags.length > 0">
-            <v-tooltip text="Click a tag to search">
-              <template v-slot:activator="{ props }">
-                <v-chip
-                  v-for="tag in item.tags"
-                  :key="tag"
-                  size="small"
-                  variant="outlined"
-                  class="cursor-pointer"
-                  v-bind="props"
-                  @click="searchByTag(tag)"
-                >
-                {{ tag }}
-              </v-chip>
-              </template>
-            </v-tooltip>
-            
+            <v-chip
+              v-for="tag in item.tags"
+              :key="tag"
+              size="small"
+              variant="tonal"
+              class="cursor-pointer"
+              v-bind="props"
+              @click="searchByTag(tag)"
+            >
+              {{ tag }}
+            </v-chip>
           </v-chip-group>
           <span v-else class="text-grey-darken-1">No tags</span>
         </td>
@@ -514,5 +509,15 @@ function searchByTag(tag) {
 <style>
 .v-table__wrapper > table > thead > tr > th {
   padding: 0 10px;
+}
+.v-table__wrapper table tr {
+  user-select: none;
+}
+
+.v-table__wrapper table tr:hover {
+  background: #2a3236;
+}
+.v-table__wrapper table tr td {
+  user-select: auto;
 }
 </style>

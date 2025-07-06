@@ -45,7 +45,7 @@ function handleDeleteSelected() {
             <v-btn
               v-if="appStore.selectedItems.length > 0"
               color="red-darken-4"
-              variant="elevated"
+              variant="outlined"
               :loading="appStore.deleting"
               @click="handleDeleteSelected"
               prepend-icon="mdi-delete"
@@ -53,7 +53,7 @@ function handleDeleteSelected() {
             >
               Delete {{ appStore.selectedItems.length }} item{{ appStore.selectedItems.length === 1 ? '' : 's' }} 
               <v-badge
-                color="white"
+                color="grey-darken-3"
                 content="Alt+I"
                 inline
               ></v-badge>
@@ -62,13 +62,13 @@ function handleDeleteSelected() {
             <!-- Add bookmark button -->
             <v-btn
               color="primary"
-              variant="elevated"
+              variant="outlined"
               @click="appStore.openAddBookmarkDialog()"
               prepend-icon="mdi-bookmark-plus"
             >
               Add Bookmark 
               <v-badge
-                color="white"
+                color="grey-darken-3"
                 content="Alt+A"
                 inline
               ></v-badge>
