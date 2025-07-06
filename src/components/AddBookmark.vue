@@ -13,6 +13,12 @@
         label="URL"
         prepend-icon="mdi-link"
       ></v-text-field>
+      <v-text-field
+        v-model="form.tags"
+        label="Tags"
+        prepend-icon="mdi-tag"
+      ></v-text-field>
+      
       <v-btn
         :loading="loading"
         :disabled="loading"
@@ -28,24 +34,6 @@
           inline
         ></v-badge>
       </v-btn>
-      <v-alert
-        v-if="error"
-        type="error"
-        class="mt-4"
-        dense
-        border="left"
-      >
-        {{ error }}
-      </v-alert>
-      <v-alert
-        v-if="success"
-        type="success"
-        class="mt-4"
-        dense
-        border="left"
-      >
-        Bookmark added!
-      </v-alert>
     </v-form>
   </v-card>
 </template>
@@ -158,7 +146,8 @@ async function onSubmit() {
       .insert([
         {
           title: form.value.title,
-          url: normalizedUrl, // Use the normalized URL
+          url: normalizedUrl,
+          tags: [form.value.tags],
           favicon: faviconUrl,
           user_id: user.value.id
         }
@@ -169,7 +158,7 @@ async function onSubmit() {
     success.value = true
     form.value.title = ''
     form.value.url = ''
-    form.value.favicon = ''
+    form.value.tags = ''
 
     emit('bookmarkAdded')
   } catch (e) {

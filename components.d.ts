@@ -12,6 +12,7 @@ declare module 'vue' {
     AddBookmarkDialog: typeof import('./src/components/AddBookmarkDialog.vue')['default']
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     AppSidebarNav: typeof import('./src/components/AppSidebarNav.vue')['default']
+    AppTips: typeof import('./src/components/AppTips.vue')['default']
     AppTopBar: typeof import('./src/components/AppTopBar.vue')['default']
     BookmarkTable: typeof import('./src/components/BookmarkTable.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']

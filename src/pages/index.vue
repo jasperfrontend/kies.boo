@@ -64,6 +64,20 @@ function closeNotification() {
   notification.value.show = false;
 }
 
+// Handle bookmark update from BookmarkTable
+function onBookmarkUpdated(updatedBookmark) {
+  // Find and update the bookmark in our local array
+  const index = bookmarks.value.findIndex(b => b.id === updatedBookmark.id);
+  if (index !== -1) {
+    bookmarks.value[index] = updatedBookmark;
+  }
+  
+  // Trigger refresh for recent bookmarks in sidebar
+  appStore.triggerBookmarkRefresh();
+  
+  showNotification('success', 'Bookmark updated successfully!');
+}
+
 function deleteSelectedItems() {
   if (appStore.selectedItems.length === 0) return;
   
@@ -164,7 +178,7 @@ async function commitDelete() {
   }
 }
 
-function dismissUndo() {
+async function dismissUndo() {
   // User explicitly dismisses the undo option
   commitDelete();
 }
@@ -179,6 +193,7 @@ async function onBookmarkAdded() {
     console.error('Failed to refresh bookmarks:', error);
     showNotification('error', 'Failed to refresh bookmarks');
   }
+  showNotification('success', 'Bookmark added successfully!');
 }
 
 async function fetchBookmarks() {
@@ -205,6 +220,7 @@ onUnmounted(() => {
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
   onAddBookmark: () => { appStore.openAddBookmarkDialog(); },
+  onRefreshBookmarks: fetchBookmarks,
   onDeleteSelected: deleteSelectedItems,
   onUndoDelete: () => {
     if (undoState.value.show) {
@@ -215,12 +231,16 @@ useKeyboardShortcuts({
 </script>
 
 <template>
-  <v-container fluid>
+  <v-container 
+    fluid
+    class="pa-1"
+  >
     <BookmarkTable
       :bookmarks="filteredBookmarks"
       :loading="loading"
       :dialog-open="appStore.addBookmarkDialog"
       v-model:selected-items="appStore.selectedItems"
+      @bookmark-updated="onBookmarkUpdated"
     />
 
     <AddBookmarkDialog

@@ -2,8 +2,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import supabase from '@/lib/supabaseClient';
 
-const editedBookmarkData = ref(null);
-
 const props = defineProps({
   bookmarks: Array,
   loading: Boolean,
@@ -11,10 +9,22 @@ const props = defineProps({
   dialogOpen: Boolean
 });
 
-const emit = defineEmits(['update:selected-items']);
+const emit = defineEmits(['update:selected-items', 'bookmark-updated']);
 
 const itemsPerPage = ref(20);
 const focusedRowIndex = ref(-1);
+
+// Edit dialog state
+const editDialog = ref(false);
+const editLoading = ref(false);
+const editForm = ref({
+  id: null,
+  title: '',
+  url: '',
+  tags: []
+});
+const editError = ref('');
+const editSuccess = ref(false);
 
 const isAllSelected = computed(() => {
   return props.bookmarks.length > 0 && props.selectedItems.length === props.bookmarks.length;
@@ -72,26 +82,137 @@ function formatDate(dateString) {
   return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().substring(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-async function handleEditBookmark(id, title, tags = [], url) {
-  const { data, error } = await supabase
-  .from('bookmarks')
-  .update({ title: title, url: url, tags: tags })
-  .eq('id', id)
-  .select()
+function normalizeUrl(url) {
+  if (!url) return url
+  
+  // Remove any leading/trailing whitespace
+  url = url.trim()
+  
+  // If it already starts with http:// or https://, don't modify it
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  
+  // Check if it looks like a URL (basic pattern: word.word)
+  const urlPattern = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
+  
+  if (urlPattern.test(url)) {
+    return `https://${url}`
+  }
+  
+  // If it doesn't match the pattern, return as-is (let the user handle it)
+  return url
+}
 
-  if (error) {
-    return console.error("Error updating Bookmark: ", error)
+function isValidUrl(url) {
+  if (!url) return false
+  
+  const normalizedUrl = normalizeUrl(url)
+  
+  try {
+    new URL(normalizedUrl)
+    return true
+  } catch {
+    const basicPattern = /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
+    return basicPattern.test(normalizedUrl)
+  }
+}
+
+function openEditDialog(bookmark) {
+  // Reset states
+  editError.value = '';
+  editSuccess.value = false;
+  
+  // Copy bookmark data to form (creating a local copy)
+  editForm.value = {
+    id: bookmark.id,
+    title: bookmark.title,
+    url: bookmark.url,
+    tags: [bookmark.tags]
+  };
+  
+  editDialog.value = true;
+}
+
+function closeEditDialog() {
+  editDialog.value = false;
+  editForm.value = {
+    id: null,
+    title: '',
+    url: '',
+    tags: []
+  };
+  editError.value = '';
+  editSuccess.value = false;
+}
+
+async function handleEditBookmark() {
+  editError.value = '';
+  editSuccess.value = false;
+  
+  // Validation
+  if (!editForm.value.title.trim()) {
+    editError.value = 'Please enter a title for the bookmark.';
+    return;
   }
 
-  console.log(data);
-  
+  if (!editForm.value.url.trim()) {
+    editError.value = 'Please enter a URL for the bookmark.';
+    return;
+  }
 
+  if (!editForm.value.tags.trim()) {
+    editError.value = 'Please enter 1 or more tags for the bookmark.';
+    return;
+  }
+
+  // Normalize and validate URL
+  const normalizedUrl = normalizeUrl(editForm.value.url);
+  if (!isValidUrl(normalizedUrl)) {
+    editError.value = 'Please enter a valid URL (e.g., example.com or https://example.com).';
+    return;
+  }
+
+  editLoading.value = true;
+
+  try {
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .update({ 
+        title: editForm.value.title.trim(), 
+        url: normalizedUrl,
+        tags: [editForm.value.tags.trim()]
+      })
+      .eq('id', editForm.value.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    editSuccess.value = true;
+    
+    // Emit event to parent to refresh bookmarks
+    emit('bookmark-updated', data);
+    
+    closeEditDialog();
+
+  } catch (error) {
+    console.error('Error updating bookmark:', error);
+    
+    if (error.code === '23505') {
+      editError.value = 'This URL is already bookmarked.';
+    } else {
+      editError.value = error.message || 'Failed to update bookmark.';
+    }
+  } finally {
+    editLoading.value = false;
+  }
 }
 
 // Keyboard navigation
 const handleKeydown = (event) => {
   // Tab to focus on table rows
-  if (event.key === 'Tab' && !event.shiftKey && !props.dialogOpen) {
+  if (event.key === 'Tab' && !event.shiftKey && !props.dialogOpen && !editDialog.value) {
     if (props.bookmarks.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value < props.bookmarks.length - 1 
@@ -101,7 +222,7 @@ const handleKeydown = (event) => {
   }
   
   // Shift+Tab to go backwards through table rows
-  if (event.key === 'Tab' && event.shiftKey && !props.dialogOpen) {
+  if (event.key === 'Tab' && event.shiftKey && !props.dialogOpen && !editDialog.value) {
     if (props.bookmarks.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value > 0 
@@ -111,7 +232,7 @@ const handleKeydown = (event) => {
   }
   
   // Spacebar to select/deselect focused row
-  if (event.key === ' ' && focusedRowIndex.value >= 0 && !props.dialogOpen) {
+  if (event.key === ' ' && focusedRowIndex.value >= 0 && !props.dialogOpen && !editDialog.value) {
     event.preventDefault();
     const item = props.bookmarks[focusedRowIndex.value];
     if (item) {
@@ -120,14 +241,14 @@ const handleKeydown = (event) => {
   }
   
   // Arrow keys for navigation
-  if (event.key === 'ArrowDown' && props.bookmarks.length > 0) {
+  if (event.key === 'ArrowDown' && props.bookmarks.length > 0 && !editDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = focusedRowIndex.value < props.bookmarks.length - 1 
       ? focusedRowIndex.value + 1 
       : 0;
   }
   
-  if (event.key === 'ArrowUp' && props.bookmarks.length > 0) {
+  if (event.key === 'ArrowUp' && props.bookmarks.length > 0 && !editDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = focusedRowIndex.value > 0 
       ? focusedRowIndex.value - 1 
@@ -171,12 +292,12 @@ const headers = [
     title: 'Created',
     key: 'created_at',
     sortable: true
-  }
-  ,
+  },
   {
-    title: '',
-    key: '',
-    sortable: false
+    title: 'Actions',
+    key: 'actions',
+    sortable: false,
+    width: '75px'
   }
 ];
 
@@ -185,7 +306,6 @@ function displayUrl(url) {
     .replace(/^https?:\/\/(www\.)?/, '')
     .replace(/\/$/, '');
 }
-
 </script>
 
 <template>
@@ -195,6 +315,7 @@ function displayUrl(url) {
     :items-per-page="itemsPerPage === -1 ? bookmarks.length : itemsPerPage"
     :loading="loading"
     class="elevation-1"
+    density="compact"
     :mobile-breakpoint="600"
     :row-props="({ item, index }) => ({
       class: getRowClasses(item, index),
@@ -209,14 +330,22 @@ function displayUrl(url) {
         @dblclick="doubleClickHandler(item.url)"
       >
         <td>
-          <v-checkbox
-            :model-value="selectedItems.includes(item.id)"
-            @update:model-value="() => toggleItemSelection(item.id)"
-            hide-details
-            density="compact"
-          />
+          
+
+          <v-tooltip :text="`Click to (de)select row ${index + 1}`">
+            <template v-slot:activator="{ props }">
+              <v-checkbox
+                :model-value="selectedItems.includes(item.id)"
+                @update:model-value="() => toggleItemSelection(item.id)"
+                hide-details
+                density="compact"
+                v-bind="props"
+              />
+            </template>
+          </v-tooltip>
+
         </td>
-        <td class="pa-2">
+        <td>
           <v-avatar rounded="0" size="24">
             <img
               :src="item.favicon"
@@ -227,61 +356,37 @@ function displayUrl(url) {
             />
           </v-avatar>
         </td>
-        <td class="pa-2">{{ item.title }}</td>
-        <td class="pa-2">
-          <a
-            :href="item.url"
-            target="_blank"
-            class="text-decoration-none"
-            :title="item.url"
-          >{{ displayUrl(item.url) }}</a>
-        </td>
-        <td class="pa-2">
-          {{ formatDate(item.created_at) }}
-        </td class="pa-2">
-
+        <td>{{ item.title }}</td>
         <td>
-          <v-dialog max-width="500">
-            <template v-slot:activator="{ props: activatorProps }">
+          
+          <v-tooltip :text="`Open ${displayUrl(item.url)} in a new tab`">
+            <template v-slot:activator="{ props }">
+              <a
+                :href="item.url"
+                target="_blank"
+                class="text-decoration-none"
+                :title="item.url"
+                v-bind="props"
+              >{{ displayUrl(item.url) }}</a>
+            </template>
+          </v-tooltip>
+        </td>
+        <td>
+          {{ formatDate(item.created_at) }}
+        </td>
+        <td>
+          <v-tooltip :text="`Edit ${item.title}`">
+            <template v-slot:activator="{ props }">
               <v-btn
-                v-bind="activatorProps"
-                color="surface-variant"
-                text="Edit"
                 variant="flat"
-              ></v-btn>
-            </template>
-
-            <template v-slot:default="{ isActive }">
-              <v-card 
-                title="Edit Bookmark"
-                :subtitle="`${item.title} - ID: ${item.id}`"
+                size="small"
+                v-bind="props"
+                @click="openEditDialog(item)"
               >
-                <v-card-text>
-                  <v-text-field 
-                    v-model="item.title"
-                    label="Title"
-                  ></v-text-field>
-                  <v-text-field 
-                    v-model="item.url"
-                    label="URL"
-                  ></v-text-field>
-                </v-card-text>
-
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    text="Save Bookmark"
-                    color="success"
-                    @click="handleEditBookmark(item.id, item.title, [], item.url); isActive.value = false"
-                  ></v-btn>
-                  <v-btn
-                    text="Close Dialog"
-                    @click="isActive.value = false"
-                  ></v-btn>
-                </v-card-actions>
-              </v-card>
+                <v-icon icon="mdi-note-edit"></v-icon>
+              </v-btn>
             </template>
-          </v-dialog>
+          </v-tooltip>
         </td>
       </tr>
     </template>
@@ -300,6 +405,65 @@ function displayUrl(url) {
     <template #no-data>
       <v-alert type="info">No bookmarks found.</v-alert>
     </template>
-
   </v-data-table>
+
+  <!-- Edit Dialog -->
+  <v-dialog 
+    v-model="editDialog" 
+    max-width="500"
+    persistent
+    >
+    <v-form @submit.prevent="handleEditBookmark">
+      <v-card title="Edit Bookmark">
+        <v-card-text>
+            <v-text-field
+              v-model="editForm.title"
+              label="Title"
+              prepend-icon="mdi-bookmark"
+              :disabled="editLoading"
+              autofocus
+            />
+            <v-text-field
+              v-model="editForm.url"
+              label="URL"
+              prepend-icon="mdi-link"
+              :disabled="editLoading"
+            />
+            <v-text-field
+              v-model="editForm.tags"
+              label="Tags"
+              prepend-icon="mdi-link"
+              :disabled="editLoading"
+            />
+          
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            :loading="editLoading"
+            :disabled="editLoading"
+            text="Save Changes"
+            color="primary"
+            type="submit"
+          />
+
+          <v-btn
+            text="Cancel"
+            @click="closeEditDialog"
+            :disabled="editLoading"
+          />
+        </v-card-actions>
+      </v-card>
+    </v-form>
+  </v-dialog>
+
+  <AppTips />
+
 </template>
+
+<style>
+.v-table__wrapper > table > thead > tr > th {
+  padding: 0 10px;
+}
+</style>

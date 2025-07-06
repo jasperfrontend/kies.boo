@@ -7,6 +7,12 @@ export function useKeyboardShortcuts(callbacks) {
       event.preventDefault();
       callbacks.onAddBookmark?.();
     }
+
+    // Alt+o to refresh bookmarks table
+    if (event.altKey && event.key === 'o') {
+      event.preventDefault();
+      callbacks.onRefreshBookmarks?.();
+    }
     
     // Alt+i to delete selected items
     if (event.altKey && event.key === 'i') {
