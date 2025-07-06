@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import supabase from '@/lib/supabaseClient';
+
+const editedBookmarkData = ref(null);
 
 const props = defineProps({
   bookmarks: Array,
@@ -14,13 +17,11 @@ const itemsPerPage = ref(20);
 const focusedRowIndex = ref(-1);
 
 const isAllSelected = computed(() => {
-  return props.bookmarks.length > 0 && 
-         props.selectedItems.length === props.bookmarks.length;
+  return props.bookmarks.length > 0 && props.selectedItems.length === props.bookmarks.length;
 });
 
 const isIndeterminate = computed(() => {
-  return props.selectedItems.length > 0 && 
-         props.selectedItems.length < props.bookmarks.length;
+  return props.selectedItems.length > 0 && props.selectedItems.length < props.bookmarks.length;
 });
 
 function toggleSelectAll() {
@@ -68,7 +69,23 @@ function doubleClickHandler(url) {
 function formatDate(dateString) {
   const d = new Date(dateString);
   const pad = n => String(n).padStart(2, '0');
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().substring(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function handleEditBookmark(id, title, tags = [], url) {
+  const { data, error } = await supabase
+  .from('bookmarks')
+  .update({ title: title, url: url, tags: tags })
+  .eq('id', id)
+  .select()
+
+  if (error) {
+    return console.error("Error updating Bookmark: ", error)
+  }
+
+  console.log(data);
+  
+
 }
 
 // Keyboard navigation
@@ -155,6 +172,12 @@ const headers = [
     key: 'created_at',
     sortable: true
   }
+  ,
+  {
+    title: '',
+    key: '',
+    sortable: false
+  }
 ];
 
 function displayUrl(url) {
@@ -215,6 +238,50 @@ function displayUrl(url) {
         </td>
         <td class="pa-2">
           {{ formatDate(item.created_at) }}
+        </td class="pa-2">
+
+        <td>
+          <v-dialog max-width="500">
+            <template v-slot:activator="{ props: activatorProps }">
+              <v-btn
+                v-bind="activatorProps"
+                color="surface-variant"
+                text="Edit"
+                variant="flat"
+              ></v-btn>
+            </template>
+
+            <template v-slot:default="{ isActive }">
+              <v-card 
+                title="Edit Bookmark"
+                :subtitle="`${item.title} - ID: ${item.id}`"
+              >
+                <v-card-text>
+                  <v-text-field 
+                    v-model="item.title"
+                    label="Title"
+                  ></v-text-field>
+                  <v-text-field 
+                    v-model="item.url"
+                    label="URL"
+                  ></v-text-field>
+                </v-card-text>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    text="Save Bookmark"
+                    color="success"
+                    @click="handleEditBookmark(item.id, item.title, [], item.url); isActive.value = false"
+                  ></v-btn>
+                  <v-btn
+                    text="Close Dialog"
+                    @click="isActive.value = false"
+                  ></v-btn>
+                </v-card-actions>
+              </v-card>
+            </template>
+          </v-dialog>
         </td>
       </tr>
     </template>
@@ -230,38 +297,9 @@ function displayUrl(url) {
       />
     </template>
 
-    <!-- Individual checkboxes (not strictly needed due to item slot override) -->
-    <template #item.select="{ item }">
-      <v-checkbox
-        :model-value="selectedItems.includes(item.id)"
-        @update:model-value="() => toggleItemSelection(item.id)"
-        hide-details
-        density="compact"
-      />
-    </template>
-
-    <template #item.favicon="{ item }">
-      <v-avatar rounded="0" size="24">
-        <img
-          :src="item.favicon"
-          alt="favicon"
-          width="24"
-          height="24"
-          @error="e => e.target.src = '/favicon.png'"
-        />
-      </v-avatar>
-    </template>
-
-    <template #item.url="{ item }">
-      <a :href="item.url" target="_blank" class="text-blue">{{ item.url }}</a>
-    </template>
-
-    <template #item.created_at="{ item }">
-      {{ formatDate(item.created_at) }}
-    </template>
-
     <template #no-data>
       <v-alert type="info">No bookmarks found.</v-alert>
     </template>
+
   </v-data-table>
 </template>

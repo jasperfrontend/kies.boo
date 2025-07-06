@@ -14,8 +14,6 @@ declare module 'vue' {
     AppSidebarNav: typeof import('./src/components/AppSidebarNav.vue')['default']
     AppTopBar: typeof import('./src/components/AppTopBar.vue')['default']
     BookmarkTable: typeof import('./src/components/BookmarkTable.vue')['default']
-    BookmarkToolbar: typeof import('./src/components/BookmarkToolbar.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     NotificationComponent: typeof import('./src/components/NotificationComponent.vue')['default']
     RecentBookmarks: typeof import('./src/components/RecentBookmarks.vue')['default']
