@@ -44,9 +44,6 @@ onUnmounted(() => {
   
   <v-app-bar>
     <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-    <template v-slot:append>
-      <v-btn to="/"><v-icon icon="mdi-home"></v-icon> </v-btn>
-    </template>
     
     <v-app-bar-title>
       <v-container fluid class="py-0">

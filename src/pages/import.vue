@@ -7,10 +7,15 @@
             Import Bookmarks
           </v-card-title>
           
-          <v-card-subtitle class="mb-6">
-            Upload an HTML bookmark file exported from your browser to import your bookmarks.
-            Supported formats include Chrome, Firefox, Safari, and Edge bookmark exports.
-          </v-card-subtitle>
+          <v-card-text class="mb-6">
+            <p>Upload an HTML bookmark file exported from your browser to import your bookmarks.
+            Supported formats include 
+            <a href="https://support.google.com/chrome/thread/171823628/export-chrome-bookmarks" target="_blank">Chrome</a>,  
+            <a href="https://support.mozilla.org/en-US/kb/export-firefox-bookmarks-to-backup-or-transfer" target="_blank">Firefox</a>, 
+            <a href="https://www.asurion.com/connect/tech-tips/safari-bookmarks/" target="_blank">Safari</a>, and 
+            <a href="https://www.ju.edu/it/Browser_Favorites_Microsoft_Edge-How_To.pdf" target="_blank">Edge</a> 
+            bookmark exports.</p>
+          </v-card-text>
 
           <v-form @submit.prevent="handleFileUpload">
             <v-file-input

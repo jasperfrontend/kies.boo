@@ -21,10 +21,9 @@ async function logout() {
 </script>
 
 <template>
-  <div class="pa-2 px-4">
-    <h2>Profile</h2>
+  <div class="pa-1">
     <div v-if="isAuthenticated && user">
-      <v-card class="mx-auto my-4">
+      <v-card class="mx-auto">
         <v-card-title class="d-flex align-center">
           <v-avatar size="56" class="me-4">
             <img :src="user.user_metadata?.avatar_url" alt="User avatar" />
@@ -38,12 +37,12 @@ async function logout() {
           <v-btn color="error" @click="logout">Log out</v-btn>
         </v-card-actions>
       </v-card>
-      <v-card class="mx-auto my-4" outlined>
+      <!-- <v-card class="mx-auto mt-1" outlined>
         <v-card-title>User object (debug):</v-card-title>
         <v-card-text>
           <pre style="font-size: 0.8em; white-space: pre-wrap; word-break: break-all;">{{ JSON.stringify(user, null, 2) }}</pre>
         </v-card-text>
-      </v-card>
+      </v-card> -->
     </div>
     <div v-else>
       <p>You are not logged in.</p>
