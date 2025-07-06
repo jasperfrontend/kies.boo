@@ -1,6 +1,5 @@
 <template>
-  <v-card class="pa-6" max-width="500" outlined>
-    <v-card-title>Add Bookmark</v-card-title>
+  <v-card outlined>
     <v-form @submit.prevent="onSubmit">
       <v-text-field
         v-model="form.title"
@@ -15,8 +14,10 @@
       ></v-text-field>
       <v-text-field
         v-model="form.tags"
-        label="Tags"
+        label="Tags (comma separated)"
         prepend-icon="mdi-tag"
+        hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
+        persistent-hint
       ></v-text-field>
       
       <v-btn

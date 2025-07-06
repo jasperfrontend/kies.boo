@@ -6,7 +6,8 @@ const randomTip = appTips[Math.floor(Math.random() * appTips.length)]
 <template>
 <v-card
   class="my-1 pt-1"
-  color="teal-darken-4"
+  color="teal"
   :text="randomTip"
+  variant="tonal"
 />
 </template>

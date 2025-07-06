@@ -21,7 +21,7 @@ const editForm = ref({
   id: null,
   title: '',
   url: '',
-  tags: []
+  tags: ''
 });
 const editError = ref('');
 const editSuccess = ref(false);
@@ -118,17 +118,29 @@ function isValidUrl(url) {
   }
 }
 
+// Helper function to format tags for display
+function formatTags(tags) {
+  if (!tags) return '';
+  if (Array.isArray(tags)) {
+    return tags.join(', ');
+  }
+  if (typeof tags === 'string') {
+    return tags;
+  }
+  return '';
+}
+
 function openEditDialog(bookmark) {
   // Reset states
   editError.value = '';
   editSuccess.value = false;
   
-  // Copy bookmark data to form (creating a local copy)
+  // Copy bookmark data to form (properly handle tags)
   editForm.value = {
     id: bookmark.id,
     title: bookmark.title,
     url: bookmark.url,
-    tags: bookmark.tags
+    tags: formatTags(bookmark.tags) // Convert array to comma-separated string
   };
   
   editDialog.value = true;
@@ -140,7 +152,7 @@ function closeEditDialog() {
     id: null,
     title: '',
     url: '',
-    tags: []
+    tags: ''
   };
   editError.value = '';
   editSuccess.value = false;
@@ -176,12 +188,15 @@ async function handleEditBookmark() {
   editLoading.value = true;
 
   try {
+    // Convert comma-separated tags back to array
+    const tagsArray = editForm.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    
     const { data, error } = await supabase
       .from('bookmarks')
       .update({ 
         title: editForm.value.title.trim(), 
         url: normalizedUrl,
-        tags: [editForm.value.tags.trim()]
+        tags: tagsArray // Save as array
       })
       .eq('id', editForm.value.id)
       .select()
@@ -289,6 +304,11 @@ const headers = [
     sortable: true
   },
   {
+    title: 'Tags',
+    key: 'tags',
+    sortable: true
+  },
+  {
     title: 'Created',
     key: 'created_at',
     sortable: true
@@ -330,8 +350,6 @@ function displayUrl(url) {
         @dblclick="doubleClickHandler(item.url)"
       >
         <td>
-          
-
           <v-tooltip :text="`Click to (de)select row ${index + 1}`">
             <template v-slot:activator="{ props }">
               <v-checkbox
@@ -343,7 +361,6 @@ function displayUrl(url) {
               />
             </template>
           </v-tooltip>
-
         </td>
         <td>
           <v-avatar rounded="0" size="24">
@@ -358,17 +375,30 @@ function displayUrl(url) {
         </td>
         <td>{{ item.title }}</td>
         <td>
-          
-          <v-tooltip text="Open bookmark in a new tab">
+          <v-tooltip :text="`Open ${displayUrl(item.url)} in a new tab`">
             <template v-slot:activator="{ props }">
               <a
                 :href="item.url"
                 target="_blank"
                 class="text-decoration-none"
+                :title="item.url"
                 v-bind="props"
               >{{ displayUrl(item.url) }}</a>
             </template>
           </v-tooltip>
+        </td>
+        <td>
+          <v-chip-group v-if="item.tags && item.tags.length > 0">
+            <v-chip
+              v-for="tag in item.tags"
+              :key="tag"
+              size="small"
+              variant="outlined"
+            >
+              {{ tag }}
+            </v-chip>
+          </v-chip-group>
+          <span v-else class="text-grey-darken-1">No tags</span>
         </td>
         <td>
           {{ formatDate(item.created_at) }}
@@ -410,51 +440,68 @@ function displayUrl(url) {
   <v-dialog 
     v-model="editDialog" 
     max-width="500"
-    persistent
-    >
-    <v-form @submit.prevent="handleEditBookmark">
-      <v-card title="Edit Bookmark">
+  >
+    <v-card outlined class="pa-2" title="Edit Bookmark">
+      <v-form @submit.prevent="handleEditBookmark">
         <v-card-text>
-            <v-text-field
-              v-model="editForm.title"
-              label="Title"
-              prepend-icon="mdi-bookmark"
-              :disabled="editLoading"
-              autofocus
-            />
-            <v-text-field
-              v-model="editForm.url"
-              label="URL"
-              prepend-icon="mdi-link"
-              :disabled="editLoading"
-            />
-            <v-text-field
-              v-model="editForm.tags"
-              label="Tags"
-              prepend-icon="mdi-link"
-              :disabled="editLoading"
-            />
+          <v-text-field
+            v-model="editForm.title"
+            label="Title"
+            prepend-icon="mdi-bookmark"
+            :disabled="editLoading"
+            autofocus
+          />
+          <v-text-field
+            v-model="editForm.url"
+            label="URL"
+            prepend-icon="mdi-link"
+            :disabled="editLoading"
+          />
+          <v-text-field
+            v-model="editForm.tags"
+            label="Tags (comma separated)"
+            prepend-icon="mdi-tag"
+            :disabled="editLoading"
+            hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
+            persistent-hint
+          />
           
-        </v-card-text>
+          <v-alert v-if="editError" type="error" class="mt-4">
+            {{ editError }}
+          </v-alert>        
 
-        <v-card-actions>
-          <v-spacer />
           <v-btn
             :loading="editLoading"
             :disabled="editLoading"
-            text="Save Changes"
             color="primary"
             type="submit"
-          />
-
+            class="mt-4"
+            block
+          >
+            Edit Bookmark 
+            <v-badge
+              color="white"
+              content="Enter"
+              inline
+            ></v-badge>
+          </v-btn>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
           <v-btn
-            text="Cancel"
             @click="closeEditDialog"
             :disabled="editLoading"
-          />
+          >
+            Close this 
+            <v-badge
+              color="white"
+              content="Esc"
+              inline
+            ></v-badge>
+          </v-btn>
         </v-card-actions>
-      </v-card>
-    </v-form>
+      </v-form>
+    </v-card>
   </v-dialog>
 
   <AppTips />

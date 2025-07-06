@@ -200,7 +200,7 @@ async function fetchBookmarks() {
   loading.value = true;
   let { data, error } = await supabase
     .from('bookmarks')
-    .select('id, url, title, favicon, created_at')
+    .select('id, url, title, tags, favicon, created_at')
     .order('created_at', { ascending: false });
   if (!error) bookmarks.value = data;
   loading.value = false;
