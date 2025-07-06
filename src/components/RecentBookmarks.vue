@@ -60,7 +60,7 @@ onMounted(() => {
   </v-list-item>
 
   <!-- Bookmarks list -->
-  <v-list-item v-else v-for="(bookmark, i) in recentBookmarks" :key="bookmark.id">
+  <v-list-item v-else v-for="(bookmark, i) in recentBookmarks" :key="bookmark.id" :href="bookmark.url" target="_blank">
     <template v-slot:prepend>
       <v-avatar 
         rounded="0"
@@ -77,7 +77,7 @@ onMounted(() => {
     </template>
     <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
     <v-list-item-subtitle>
-      <a :href="bookmark.url" target="_blank" class="text-decoration-none">{{ displayUrl(bookmark.url) }}</a>
+      {{ displayUrl(bookmark.url) }}
     </v-list-item-subtitle>
   </v-list-item>
 </template>

@@ -58,7 +58,6 @@ function toggleItemSelection(itemId) {
 
 function getRowClasses(item, index) {
   return [
-    'cursor-pointer',
     focusedRowIndex.value === index && props.selectedItems.includes(item.id)
       ? 'bg-red-darken-3'
       : '',
