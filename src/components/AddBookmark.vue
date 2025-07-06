@@ -1,5 +1,6 @@
 <template>
-  <v-card outlined>
+  <v-card class="pa-6" max-width="500" outlined>
+    <v-card-title>Add Bookmark</v-card-title>
     <v-form @submit.prevent="onSubmit">
       <v-text-field
         v-model="form.title"
@@ -19,6 +20,10 @@
         hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
         persistent-hint
       ></v-text-field>
+      
+      <v-alert v-if="error" type="error" class="mt-4">
+        {{ error }}
+      </v-alert>
       
       <v-btn
         :loading="loading"
@@ -61,7 +66,7 @@ onMounted(async () => {
 const form = ref({
   title: '',
   url: '',
-  favicon: ''
+  tags: ''
 })
 
 const loading = ref(false)
@@ -141,6 +146,11 @@ async function onSubmit() {
 
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${normalizedUrl}&sz=128`
   
+  // Convert comma-separated tags to array, trim whitespace, and filter out empty strings
+  const tagsArray = form.value.tags 
+    ? form.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+    : []
+  
   try {
     const { error: insertError } = await supabase
       .from('bookmarks')
@@ -148,7 +158,7 @@ async function onSubmit() {
         {
           title: form.value.title,
           url: normalizedUrl,
-          tags: [form.value.tags],
+          tags: tagsArray, // Save as properly split array
           favicon: faviconUrl,
           user_id: user.value.id
         }
