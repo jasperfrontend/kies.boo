@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import supabase from '@/lib/supabaseClient';
+import { useAppStore } from '@/stores/app';
 
 const props = defineProps({
   bookmarks: Array,
@@ -10,6 +11,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:selected-items', 'bookmark-updated']);
+
+const appStore = useAppStore();
 
 const itemsPerPage = ref(20);
 const focusedRowIndex = ref(-1);
@@ -326,6 +329,11 @@ function displayUrl(url) {
     .replace(/^https?:\/\/(www\.)?/, '')
     .replace(/\/$/, '');
 }
+
+// Function to search by tag
+function searchByTag(tag) {
+  appStore.setBookmarkSearch(tag);
+}
 </script>
 
 <template>
@@ -375,7 +383,7 @@ function displayUrl(url) {
         </td>
         <td>{{ item.title }}</td>
         <td>
-          <v-tooltip :text="`Will open in a new tab`">
+          <v-tooltip :text="`Open ${displayUrl(item.url)} in a new tab`">
             <template v-slot:activator="{ props }">
               <a
                 :href="item.url"
@@ -389,14 +397,22 @@ function displayUrl(url) {
         </td>
         <td>
           <v-chip-group v-if="item.tags && item.tags.length > 0">
-            <v-chip
-              v-for="tag in item.tags"
-              :key="tag"
-              size="small"
-              variant="outlined"
-            >
-              {{ tag }}
-            </v-chip>
+            <v-tooltip text="Click a tag to search">
+              <template v-slot:activator="{ props }">
+                <v-chip
+                  v-for="tag in item.tags"
+                  :key="tag"
+                  size="small"
+                  variant="outlined"
+                  class="cursor-pointer"
+                  v-bind="props"
+                  @click="searchByTag(tag)"
+                >
+                {{ tag }}
+              </v-chip>
+              </template>
+            </v-tooltip>
+            
           </v-chip-group>
           <span v-else class="text-grey-darken-1">No tags</span>
         </td>
@@ -440,68 +456,56 @@ function displayUrl(url) {
   <v-dialog 
     v-model="editDialog" 
     max-width="500"
-  >
-    <v-card outlined class="pa-2" title="Edit Bookmark">
-      <v-form @submit.prevent="handleEditBookmark">
+    persistent
+    >
+    <v-form @submit.prevent="handleEditBookmark">
+      <v-card title="Edit Bookmark">
         <v-card-text>
-          <v-text-field
-            v-model="editForm.title"
-            label="Title"
-            prepend-icon="mdi-bookmark"
-            :disabled="editLoading"
-            autofocus
-          />
-          <v-text-field
-            v-model="editForm.url"
-            label="URL"
-            prepend-icon="mdi-link"
-            :disabled="editLoading"
-          />
-          <v-text-field
-            v-model="editForm.tags"
-            label="Tags (comma separated)"
-            prepend-icon="mdi-tag"
-            :disabled="editLoading"
-            hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
-            persistent-hint
-          />
-          
-          <v-alert v-if="editError" type="error" class="mt-4">
-            {{ editError }}
-          </v-alert>        
+            <v-text-field
+              v-model="editForm.title"
+              label="Title"
+              prepend-icon="mdi-bookmark"
+              :disabled="editLoading"
+              autofocus
+            />
+            <v-text-field
+              v-model="editForm.url"
+              label="URL"
+              prepend-icon="mdi-link"
+              :disabled="editLoading"
+            />
+            <v-text-field
+              v-model="editForm.tags"
+              label="Tags (comma separated)"
+              prepend-icon="mdi-tag"
+              :disabled="editLoading"
+              hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
+              persistent-hint
+            />
+            
+            <v-alert v-if="editError" type="error" class="mt-4">
+              {{ editError }}
+            </v-alert>
+        </v-card-text>
 
+        <v-card-actions>
+          <v-spacer />
           <v-btn
             :loading="editLoading"
             :disabled="editLoading"
+            text="Save Changes"
             color="primary"
             type="submit"
-            class="mt-4"
-            block
-          >
-            Edit Bookmark 
-            <v-badge
-              color="white"
-              content="Enter"
-              inline
-            ></v-badge>
-          </v-btn>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
+          />
+
           <v-btn
+            text="Cancel"
             @click="closeEditDialog"
             :disabled="editLoading"
-          >
-            Close this 
-            <v-badge
-              color="white"
-              content="Esc"
-              inline
-            ></v-badge>
-          </v-btn>
+          />
         </v-card-actions>
-      </v-form>
-    </v-card>
+      </v-card>
+    </v-form>
   </v-dialog>
 
   <AppTips />
