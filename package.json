@@ -13,7 +13,6 @@
     "@fontsource/roboto": "5.2.5",
     "@mdi/font": "7.4.47",
     "@supabase/supabase-js": "^2.50.3",
-    "@vueuse/core": "^13.5.0",
     "vue": "^3.5.13",
     "vuetify": "^3.8.1"
   },

@@ -68,31 +68,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useClipboard, usePermission } from '@vueuse/core'
+import { ref, onMounted } from 'vue'
 import supabase from '@/lib/supabaseClient'
-
-// Clipboard + permissie
-const { text: clipboardText, read, isSupported } = useClipboard({ legacy: true })
-const permissionRead = usePermission('clipboard-read')
 
 const clipboardNotice = ref(false)
 const previousUrl = ref('')
 
 async function tryReadClipboard() {
-  console.log("read:", read);
-  console.log("isSupported.value:", isSupported.value);
-  
-  if (!read || !isSupported.value) return
+  // Check if clipboard API is supported
+  if (!navigator.clipboard || !navigator.clipboard.readText) {
+    console.log('Clipboard API not supported')
+    return
+  }
 
-  const permission = await permissionRead?.value?.state
-  if (permission !== 'granted' && permission !== 'prompt') return
-
-  const clip = await read()
-  if (clip && isValidUrl(normalizeUrl(clip))) {
-    previousUrl.value = form.value.url
-    form.value.url = normalizeUrl(clip)
-    clipboardNotice.value = true
+  try {
+    // Read text from clipboard
+    const clipboardText = await navigator.clipboard.readText()
+    
+    if (clipboardText && isValidUrl(normalizeUrl(clipboardText))) {
+      // Only paste if the URL field is empty or if it's different from current value
+      if (!form.value.url || form.value.url !== normalizeUrl(clipboardText)) {
+        previousUrl.value = form.value.url
+        form.value.url = normalizeUrl(clipboardText)
+        clipboardNotice.value = true
+        
+        // Auto-hide the notice after 5 seconds
+        setTimeout(() => {
+          clipboardNotice.value = false
+        }, 5000)
+      }
+    }
+  } catch (err) {
+    // Handle permission denied or other errors silently
+    console.log('Could not read clipboard:', err.message)
   }
 }
 
@@ -137,12 +145,16 @@ function normalizeUrl(url) {
 }
 
 function isValidUrl(url) {
+  if (!url) return false
+  
+  const normalizedUrl = normalizeUrl(url)
+  
   try {
-    new URL(normalizeUrl(url))
+    new URL(normalizedUrl)
     return true
   } catch {
     const basicPattern = /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
-    return basicPattern.test(normalizeUrl(url))
+    return basicPattern.test(normalizedUrl)
   }
 }
 
@@ -208,7 +220,6 @@ async function onSubmit() {
   }
 }
 </script>
-
 
 <style scoped>
 .v-card {
