@@ -1,6 +1,7 @@
 <template>
   <v-card class="pa-6" max-width="500" outlined>
     <v-card-title>Add Bookmark</v-card-title>
+
     <v-form @submit.prevent="onSubmit">
       <v-text-field
         v-model="form.title"
@@ -12,7 +13,28 @@
         v-model="form.url"
         label="URL"
         prepend-icon="mdi-link"
-      ></v-text-field>
+        @focus="tryReadClipboard"
+      />
+
+      <v-alert
+        v-if="clipboardNotice"
+        type="info"
+        density="compact"
+        class="mt-2"
+        border="start"
+        variant="tonal"
+      >
+        Link detected on your clipboard, we went ahead and pasted that for you.
+        <v-btn
+          size="x-small"
+          variant="text"
+          class="ml-2 text-decoration-underline"
+          @click="undoClipboardPaste"
+        >
+          Undo
+        </v-btn>
+      </v-alert>
+
       <v-text-field
         v-model="form.tags"
         label="Tags (comma separated)"
@@ -46,11 +68,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useClipboard, usePermission } from '@vueuse/core'
 import supabase from '@/lib/supabaseClient'
 
-const emit = defineEmits(['bookmarkAdded'])
+// Clipboard + permissie
+const { text: clipboardText, read, isSupported } = useClipboard({ legacy: true })
+const permissionRead = usePermission('clipboard-read')
 
+const clipboardNotice = ref(false)
+const previousUrl = ref('')
+
+async function tryReadClipboard() {
+  console.log("read:", read);
+  console.log("isSupported.value:", isSupported.value);
+  
+  if (!read || !isSupported.value) return
+
+  const permission = await permissionRead?.value?.state
+  if (permission !== 'granted' && permission !== 'prompt') return
+
+  const clip = await read()
+  if (clip && isValidUrl(normalizeUrl(clip))) {
+    previousUrl.value = form.value.url
+    form.value.url = normalizeUrl(clip)
+    clipboardNotice.value = true
+  }
+}
+
+function undoClipboardPaste() {
+  form.value.url = previousUrl.value
+  clipboardNotice.value = false
+}
+
+// Auth
+const emit = defineEmits(['bookmarkAdded'])
 const isAuthenticated = ref(false)
 const user = ref(null)
 
@@ -64,61 +116,40 @@ onMounted(async () => {
   })
 })
 
+// Form
 const form = ref({
   title: '',
   url: '',
   tags: ''
 })
-
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
 
+// Helpers
 function normalizeUrl(url) {
   if (!url) return url
-  
-  // Remove any leading/trailing whitespace
   url = url.trim()
-  
-  // If it already starts with http:// or https://, don't modify it
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  
-  // Check if it looks like a URL (basic pattern: word.word)
-  // This regex matches: letters/numbers/hyphens, followed by dot, followed by letters/numbers/hyphens
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
   const urlPattern = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
-  
-  if (urlPattern.test(url)) {
-    return `https://${url}`
-  }
-  
-  // If it doesn't match the pattern, return as-is (let the user handle it)
+  if (urlPattern.test(url)) return `https://${url}`
   return url
 }
 
 function isValidUrl(url) {
-  if (!url) return false
-  
-  // Basic pattern check: should contain at least word.word after normalization
-  const normalizedUrl = normalizeUrl(url)
-  
-  // After normalization, check if it's a valid-looking URL
   try {
-    // Try to create a URL object to validate structure
-    new URL(normalizedUrl)
+    new URL(normalizeUrl(url))
     return true
   } catch {
-    // If URL constructor fails, fall back to basic pattern check
     const basicPattern = /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
-    return basicPattern.test(normalizedUrl)
+    return basicPattern.test(normalizeUrl(url))
   }
 }
 
 async function onSubmit() {
   error.value = ''
   success.value = false
-  
+
   if (!user.value) {
     error.value = 'You must be logged in to add a bookmark.'
     return
@@ -134,56 +165,50 @@ async function onSubmit() {
     return
   }
 
-  // Normalize the URL
   const normalizedUrl = normalizeUrl(form.value.url)
-  
-  // Validate the normalized URL
+
   if (!isValidUrl(normalizedUrl)) {
-    error.value = 'Please enter a valid URL (e.g., example.com or https://example.com).'
+    error.value = 'Please enter a valid URL.'
     return
   }
 
   loading.value = true
 
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${normalizedUrl}&sz=128`
-  
-  // Convert comma-separated tags to array, trim whitespace, and filter out empty strings
   const tagsArray = form.value.tags 
-    ? form.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+    ? form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
     : []
-  
+
   try {
     const { error: insertError } = await supabase
       .from('bookmarks')
-      .insert([
-        {
-          title: form.value.title,
-          url: normalizedUrl,
-          tags: tagsArray, // Save as properly split array
-          favicon: faviconUrl,
-          user_id: user.value.id
-        }
-      ])
+      .insert([{
+        title: form.value.title,
+        url: normalizedUrl,
+        tags: tagsArray,
+        favicon: faviconUrl,
+        user_id: user.value.id
+      }])
       .select()
       .single()
-    if (insertError) throw insertError
-    success.value = true
-    form.value.title = ''
-    form.value.url = ''
-    form.value.tags = ''
 
+    if (insertError) throw insertError
+
+    success.value = true
+    form.value = { title: '', url: '', tags: '' }
+    clipboardNotice.value = false
     emit('bookmarkAdded')
+
   } catch (e) {
-    if (e.code === '23505') {
-      error.value = 'This URL is already bookmarked.'
-    } else {
-      error.value = e.message || 'Failed to add bookmark.'
-    }
+    error.value = e.code === '23505'
+      ? 'This URL is already bookmarked.'
+      : e.message || 'Failed to add bookmark.'
   } finally {
     loading.value = false
   }
 }
 </script>
+
 
 <style scoped>
 .v-card {

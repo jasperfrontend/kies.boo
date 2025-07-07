@@ -89,7 +89,7 @@ onUnmounted(() => {
             <!-- Add bookmark button -->
             <v-btn
               color="primary"
-              variant="outlined"
+              variant="flat"
               @click="appStore.openAddBookmarkDialog()"
               prepend-icon="mdi-bookmark-plus"
             >

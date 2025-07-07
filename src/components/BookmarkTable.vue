@@ -386,14 +386,13 @@ function searchByTag(tag) {
         </td>
         <td>{{ item.title }}</td>
         <td>
-          <a
+          <v-list-item
             :href="item.url"
             target="_blank"
-            class="text-decoration-none text-blue d-block w-100"
-            :title="item.url"
+            class="text-primary-lighten-3"
+            :text="`${displayUrl(item.url)}`"
           >
-            {{ displayUrl(item.url) }}
-          </a>
+        </v-list-item>
         </td>
         <td>
           <div v-if="item.tags && item.tags.length > 0">
@@ -402,6 +401,7 @@ function searchByTag(tag) {
               :key="tag"
               size="small"
               variant="tonal"
+              color="primary-lighten-3"
               class="cursor-pointer mr-1"
               @click="searchByTag(tag)"
               :title="`Click to search for ${tag}`"
@@ -511,4 +511,5 @@ function searchByTag(tag) {
 .v-table__wrapper table tr td {
   user-select: auto;
 }
+
 </style>

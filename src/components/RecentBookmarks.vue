@@ -77,7 +77,7 @@ onMounted(() => {
     </template>
     <v-list-item-title>{{ bookmark.title }}</v-list-item-title>
     <v-list-item-subtitle
-      class="text-blue opacity-1"
+      class="opacity-1"
     >
       {{ displayUrl(bookmark.url) }}
     </v-list-item-subtitle>
