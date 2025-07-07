@@ -70,6 +70,14 @@ function getRowClasses(item, index) {
   ].filter(Boolean).join(' ');
 }
 
+// function doubleClickHandler(url) {
+//   window.open(url, '_blank');
+//   if (window.getSelection) {
+//     const selection = window.getSelection();
+//     if (selection) selection.removeAllRanges();
+//   }
+// }
+
 function formatDate(dateString) {
   const d = new Date(dateString);
   const pad = n => String(n).padStart(2, '0');
@@ -343,84 +351,88 @@ function searchByTag(tag) {
     class="elevation-1"
     density="compact"
     :mobile-breakpoint="600"
+    :row-props="({ item, index }) => ({
+      class: getRowClasses(item, index),
+      tabindex: 0
+    })"
   >
-    <!-- Select column -->
-    <template #item.select="{ item }">
-      <v-checkbox
-        :model-value="selectedItems.includes(item.id)"
-        @update:model-value="() => toggleItemSelection(item.id)"
-        hide-details
-        density="compact"
-      />
-    </template>
-
-    <!-- Favicon column -->
-    <template #item.favicon="{ item }">
-      <v-avatar rounded="0" size="24">
-        <img
-          :src="item.favicon"
-          alt="favicon"
-          width="24"
-          height="24"
-          @error="e => e.target.src = '/favicon.png'"
-        />
-      </v-avatar>
-    </template>
-
-    <!-- Title column -->
-    <template #item.title="{ item }">
-      {{ item.title }}
-    </template>
-
-    <!-- URL column -->
-    <template #item.url="{ item }">
-      <a
-        :href="item.url"
-        target="_blank"
-        class="text-decoration-none text-blue"
-        :title="item.url"
+    <!-- Table rows -->
+    <template #item="{ item, index }">
+      <tr
+        :class="getRowClasses(item, index)"
+        tabindex="0"
+        @dblclick="toggleItemSelection(item.id)"
+        class="cursor-pointer"
       >
-        {{ displayUrl(item.url) }}
-      </a>
-    </template>
-
-    <!-- Tags column -->
-    <template #item.tags="{ item }">
-      <div v-if="item.tags && item.tags.length > 0">
-        <v-chip
-          v-for="tag in item.tags"
-          :key="tag"
-          size="small"
-          variant="tonal"
-          class="cursor-pointer mr-1"
-          @click="searchByTag(tag)"
-          :title="`Click to search for ${tag}`"
-        >
-          {{ tag }}
-        </v-chip>
-      </div>
-      <span v-else class="text-grey-darken-1">No tags</span>
-    </template>
-
-    <!-- Created date column -->
-    <template #item.created_at="{ item }">
-      {{ formatDate(item.created_at) }}
-    </template>
-
-    <!-- Actions column -->
-    <template #item.actions="{ item }">
-      <v-tooltip :text="`Edit ${item.title}`">
-        <template v-slot:activator="{ props }">
-          <v-btn
-            variant="flat"
-            size="small"
+        <td>
+          <v-checkbox
+            :model-value="selectedItems.includes(item.id)"
+            @update:model-value="() => toggleItemSelection(item.id)"
+            hide-details
+            density="compact"
             v-bind="props"
-            @click="openEditDialog(item)"
+          />
+        </td>
+        <td>
+          <v-avatar rounded="0" size="24">
+            <img
+              :src="item.favicon"
+              alt="favicon"
+              width="24"
+              height="24"
+              @error="e => e.target.src = '/favicon.png'"
+            />
+          </v-avatar>
+        </td>
+        <td>{{ item.title }}</td>
+        <td>
+          <a
+            :href="item.url"
+            target="_blank"
+            class="text-decoration-none text-blue d-block w-100"
+            :title="item.url"
+            v-bind="props"
+          >{{ displayUrl(item.url) }}</a>
+        </td>
+        <td>
+          <div 
+            v-if="item.tags && item.tags.length > 0"
           >
-            <v-icon icon="mdi-note-edit"></v-icon>
-          </v-btn>
-        </template>
-      </v-tooltip>
+            <v-chip
+              v-for="tag in item.tags"
+              pill="true"
+              ripple="false"
+              :key="tag"
+              size="small"
+              variant="tonal"
+              class="cursor-pointer mr-1"
+              v-bind="props"
+              @click="searchByTag(tag)"
+              :title="`Click to search for ${tag}`"
+            >
+              {{ tag }}
+            </v-chip>
+          </div>
+          <span v-else class="text-grey-darken-1">No tags</span>
+        </td>
+        <td>
+          {{ formatDate(item.created_at) }}
+        </td>
+        <td>
+          <v-tooltip :text="`Edit ${item.title}`">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                variant="flat"
+                size="small"
+                v-bind="props"
+                @click="openEditDialog(item)"
+              >
+                <v-icon icon="mdi-note-edit"></v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </td>
+      </tr>
     </template>
 
     <!-- Select all checkbox in header -->
@@ -434,17 +446,6 @@ function searchByTag(tag) {
       />
     </template>
 
-    <!-- Custom row styling -->
-    <template #item="{ item, index, props: itemProps }">
-      <v-data-table-row
-        v-bind="itemProps"
-        :class="getRowClasses(item, index)"
-        tabindex="0"
-        @dblclick="toggleItemSelection(item.id)"
-        class="cursor-pointer"
-      />
-    </template>
-
     <template #no-data>
       <v-alert type="info">No bookmarks found.</v-alert>
     </template>
@@ -455,35 +456,35 @@ function searchByTag(tag) {
     v-model="editDialog" 
     max-width="500"
     persistent
-  >
+    >
     <v-form @submit.prevent="handleEditBookmark">
       <v-card title="Edit Bookmark">
         <v-card-text>
-          <v-text-field
-            v-model="editForm.title"
-            label="Title"
-            prepend-icon="mdi-bookmark"
-            :disabled="editLoading"
-            autofocus
-          />
-          <v-text-field
-            v-model="editForm.url"
-            label="URL"
-            prepend-icon="mdi-link"
-            :disabled="editLoading"
-          />
-          <v-text-field
-            v-model="editForm.tags"
-            label="Tags (comma separated)"
-            prepend-icon="mdi-tag"
-            :disabled="editLoading"
-            hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
-            persistent-hint
-          />
-          
-          <v-alert v-if="editError" type="error" class="mt-4">
-            {{ editError }}
-          </v-alert>
+            <v-text-field
+              v-model="editForm.title"
+              label="Title"
+              prepend-icon="mdi-bookmark"
+              :disabled="editLoading"
+              autofocus
+            />
+            <v-text-field
+              v-model="editForm.url"
+              label="URL"
+              prepend-icon="mdi-link"
+              :disabled="editLoading"
+            />
+            <v-text-field
+              v-model="editForm.tags"
+              label="Tags (comma separated)"
+              prepend-icon="mdi-tag"
+              :disabled="editLoading"
+              hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
+              persistent-hint
+            />
+            
+            <v-alert v-if="editError" type="error" class="mt-4">
+              {{ editError }}
+            </v-alert>
         </v-card-text>
 
         <v-card-actions>
@@ -507,13 +508,13 @@ function searchByTag(tag) {
   </v-dialog>
 
   <AppTips />
+
 </template>
 
 <style>
 .v-table__wrapper > table > thead > tr > th {
   padding: 0 10px;
 }
-
 .v-table__wrapper table tr {
   user-select: none;
 }
@@ -521,7 +522,6 @@ function searchByTag(tag) {
 .v-table__wrapper table tr:hover {
   background: #2a3236;
 }
-
 .v-table__wrapper table tr td {
   user-select: auto;
 }
