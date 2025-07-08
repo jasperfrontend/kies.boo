@@ -457,13 +457,13 @@ function searchByTag(tag) {
     :mobile-breakpoint="600"
   >
 
-      <template v-slot:top="{ pagination, options, updateOptions }">
+      <template v-slot:top="{ pagination, options, updateServerOptions }">
         <v-data-table-footer
           :pagination="pagination" 
           :options="options"
-          @update:options="updateOptions"
+          :items-per-page-options="itemsPerPageOptions"
+          @update:options="updateServerOptions"
           show-current-page
-          items-per-page-text="$vuetify.dataTable.itemsPerPageText"
         />
       </template>
 
