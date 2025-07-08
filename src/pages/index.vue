@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
@@ -9,8 +9,6 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 import { useAppStore } from '@/stores/app';
 
 const appStore = useAppStore();
-const bookmarks = ref([]);
-const loading = ref(false);
 
 // Undo delete state
 const undoState = ref({
@@ -26,42 +24,11 @@ const notification = ref({
   message: ''
 });
 
-// Use search from store
-const filteredBookmarks = computed(() => {
-  if (!appStore.bookmarkSearch) return bookmarks.value;
-  
-  const searchTerm = appStore.bookmarkSearch.toLowerCase();
-  
-  return bookmarks.value.filter(b => {
-    // Check title
-    const titleMatch = b.title && b.title.toLowerCase().includes(searchTerm);
-    
-    // Check URL
-    const urlMatch = b.url && b.url.toLowerCase().includes(searchTerm);
-    
-    // Check tags (handle both array and string cases)
-    let tagsMatch = false;
-    if (b.tags) {
-      if (Array.isArray(b.tags)) {
-        // If tags is an array, check if any tag contains the search term
-        tagsMatch = b.tags.some(tag => 
-          tag && tag.toLowerCase().includes(searchTerm)
-        );
-      } else if (typeof b.tags === 'string') {
-        // If tags is a string, check directly
-        tagsMatch = b.tags.toLowerCase().includes(searchTerm);
-      }
-    }
-    
-    return titleMatch || urlMatch || tagsMatch;
-  });
-});
-
 // Watch for dialog state changes from store
 watch(() => appStore.addBookmarkDialog, (newValue) => {
   if (!newValue) {
-    // Dialog was closed, refresh bookmarks
-    fetchBookmarks();
+    // Dialog was closed, trigger bookmark refresh
+    appStore.triggerBookmarkRefresh();
   }
 });
 
@@ -87,150 +54,156 @@ function closeNotification() {
 }
 
 // Handle bookmark update from BookmarkTable
-function onBookmarkUpdated(updatedBookmark) {
-  // Find and update the bookmark in our local array
-  const index = bookmarks.value.findIndex(b => b.id === updatedBookmark.id);
-  if (index !== -1) {
-    bookmarks.value[index] = updatedBookmark;
-  }
-  
+function onBookmarkUpdated() {
   // Trigger refresh for recent bookmarks in sidebar
   appStore.triggerBookmarkRefresh();
   
   showNotification('success', 'Bookmark updated successfully!');
 }
 
-function deleteSelectedItems() {
+async function deleteSelectedItems() {
   if (appStore.selectedItems.length === 0) return;
   
   appStore.setDeleting(true);
   
-  // Store the items that are being deleted
-  const itemsToDelete = bookmarks.value.filter(
-    bookmark => appStore.selectedItems.includes(bookmark.id)
-  );
-  
-  // Remove from UI immediately
-  bookmarks.value = bookmarks.value.filter(
-    bookmark => !appStore.selectedItems.includes(bookmark.id)
-  );
-  
-  // Store in undo state
-  undoState.value.deletedItems = itemsToDelete;
-  undoState.value.show = true;
-  
-  // Clear selections
-  appStore.clearSelectedItems();
-  appStore.setDeleting(false);
-  
-  // Set timeout to actually delete from database
-  if (undoState.value.timeoutId) {
-    clearTimeout(undoState.value.timeoutId);
+  try {
+    // Get the items that are being deleted from the database
+    const { data: itemsToDelete, error: fetchError } = await supabase
+      .from('bookmarks')
+      .select('*')
+      .in('id', appStore.selectedItems);
+    
+    if (fetchError) {
+      console.error('Error fetching items to delete:', fetchError);
+      showNotification('error', 'Failed to delete items.');
+      appStore.setDeleting(false);
+      return;
+    }
+    
+    // Store in undo state BEFORE deleting
+    undoState.value.deletedItems = itemsToDelete || [];
+    undoState.value.show = true;
+    
+    // Delete from database
+    const { error: deleteError } = await supabase
+      .from('bookmarks')
+      .delete()
+      .in('id', appStore.selectedItems);
+    
+    if (deleteError) {
+      console.error('Error deleting bookmarks:', deleteError);
+      showNotification('error', 'Failed to delete bookmarks.');
+      undoState.value.show = false;
+      undoState.value.deletedItems = [];
+      appStore.setDeleting(false);
+      return;
+    }
+    
+    // Clear selections
+    appStore.clearSelectedItems();
+    
+    // Trigger refresh for both table and recent bookmarks
+    appStore.triggerBookmarkRefresh();
+    
+    // Set timeout to permanently delete (clear undo state)
+    if (undoState.value.timeoutId) {
+      clearTimeout(undoState.value.timeoutId);
+    }
+    
+    undoState.value.timeoutId = setTimeout(() => {
+      commitDelete();
+    }, 10000); // 10 seconds to undo
+    
+  } catch (error) {
+    console.error('Error deleting bookmarks:', error);
+    showNotification('error', 'Failed to delete bookmarks.');
+  } finally {
+    appStore.setDeleting(false);
   }
-  
-  undoState.value.timeoutId = setTimeout(() => {
-    commitDelete();
-  }, 10000); // 10 seconds to undo
 }
 
-function undoDelete() {
+async function undoDelete() {
   // Clear the timeout
   if (undoState.value.timeoutId) {
     clearTimeout(undoState.value.timeoutId);
     undoState.value.timeoutId = null;
   }
   
-  // Restore items to the bookmarks array
-  bookmarks.value = [...bookmarks.value, ...undoState.value.deletedItems];
+  const itemsToRestore = undoState.value.deletedItems;
   
-  // Sort by created_at descending to maintain original order
-  bookmarks.value.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  
-  // Clear undo state
-  undoState.value.show = false;
-  undoState.value.deletedItems = [];
-  
-  // Trigger refresh for recent bookmarks since items were restored
-  appStore.triggerBookmarkRefresh();
-  
-  showNotification('success', 'Items restored successfully.');
-}
-
-async function commitDelete() {
-  const itemsToDelete = undoState.value.deletedItems;
-  const itemCount = itemsToDelete.length;
-  
-  if (itemCount === 0) return;
+  if (itemsToRestore.length === 0) return;
   
   try {
+    // Prepare items for insertion (remove any auto-generated fields that might cause conflicts)
+    const itemsForInsertion = itemsToRestore.map(item => {
+      const { ...itemCopy } = item;
+      // Keep all original fields including the original id, created_at, etc.
+      return itemCopy;
+    });
+
+    // Restore items to the database
     const { error } = await supabase
       .from('bookmarks')
-      .delete()
-      .in('id', itemsToDelete.map(item => item.id));
+      .upsert(itemsToRestore, { 
+        onConflict: 'id',
+        ignoreDuplicates: false 
+      });
     
     if (error) {
-      console.error('Error deleting bookmarks:', error);
-      // If database delete fails, restore the items
-      bookmarks.value = [...bookmarks.value, ...itemsToDelete];
-      bookmarks.value.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      
-      showNotification(
-        'error',
-        `Failed to delete ${itemCount} item${itemCount === 1 ? '' : 's'}. Items have been restored.`
-      );
-    } else {
-      // Successfully deleted, trigger refresh for recent bookmarks
-      appStore.triggerBookmarkRefresh();
+      console.error('Error restoring bookmarks:', error);
+      showNotification('error', 'Failed to restore bookmarks.');
+      return;
     }
-  } catch (error) {
-    console.error('Error deleting bookmarks:', error);
-    // If database delete fails, restore the items
-    bookmarks.value = [...bookmarks.value, ...itemsToDelete];
-    bookmarks.value.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     
-    showNotification(
-      'error',
-      `Failed to delete ${itemCount} item${itemCount === 1 ? '' : 's'}. Items have been restored.`
-    );
-  } finally {
     // Clear undo state
     undoState.value.show = false;
     undoState.value.deletedItems = [];
-    undoState.value.timeoutId = null;
+    
+    // Trigger refresh for both table and recent bookmarks
+    appStore.triggerBookmarkRefresh();
+    
+    showNotification('success', 'Items restored successfully.');
+    
+  } catch (error) {
+    console.error('Error restoring bookmarks:', error);
+    showNotification('error', 'Failed to restore bookmarks.');
   }
 }
 
-async function dismissUndo() {
+async function commitDelete() {
+  // This function is called when the undo timeout expires
+  // At this point, the items are already deleted from the database
+  // We just need to clean up the undo state
+  undoState.value.show = false;
+  undoState.value.deletedItems = [];
+  undoState.value.timeoutId = null;
+  
+  // Optional: Show a notification that the delete is now permanent
+  showNotification('info', 'Delete operation completed.');
+}
+
+function dismissUndo() {
   // User explicitly dismisses the undo option
   commitDelete();
 }
 
 async function onBookmarkAdded() {
   try {
-    await fetchBookmarks();
     appStore.closeAddBookmarkDialog();
     // Trigger refresh for recent bookmarks in sidebar
     appStore.triggerBookmarkRefresh();
+    showNotification('success', 'Bookmark added successfully!');
   } catch (error) {
     console.error('Failed to refresh bookmarks:', error);
     showNotification('error', 'Failed to refresh bookmarks');
   }
-  showNotification('success', 'Bookmark added successfully!');
 }
 
-async function fetchBookmarks() {
-  loading.value = true;
-  let { data, error } = await supabase
-    .from('bookmarks')
-    .select('id, url, title, tags, favicon, created_at')
-    .order('created_at', { ascending: false });
-  if (!error) bookmarks.value = data;
-  loading.value = false;
+// Dummy function for keyboard shortcuts (table handles its own refresh now)
+function refreshBookmarks() {
+  // Trigger refresh for recent bookmarks in sidebar
+  appStore.triggerBookmarkRefresh();
 }
-
-onMounted(() => {
-  fetchBookmarks();
-});
 
 onUnmounted(() => {
   // Clean up timeout if component unmounts
@@ -242,7 +215,7 @@ onUnmounted(() => {
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
   onAddBookmark: () => { appStore.openAddBookmarkDialog(); },
-  onRefreshBookmarks: fetchBookmarks,
+  onRefreshBookmarks: refreshBookmarks,
   onDeleteSelected: deleteSelectedItems,
   onUndoDelete: () => {
     if (undoState.value.show) {
@@ -258,8 +231,6 @@ useKeyboardShortcuts({
     class="pa-1"
   >
     <BookmarkTable
-      :bookmarks="filteredBookmarks"
-      :loading="loading"
       :dialog-open="appStore.addBookmarkDialog"
       v-model:selected-items="appStore.selectedItems"
       @bookmark-updated="onBookmarkUpdated"

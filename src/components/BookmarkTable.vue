@@ -1,20 +1,30 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import { useAppStore } from '@/stores/app';
 
 const props = defineProps({
-  bookmarks: Array,
-  loading: Boolean,
-  selectedItems: Array,
-  dialogOpen: Boolean
+  dialogOpen: Boolean,
+  selectedItems: Array
 });
 
 const emit = defineEmits(['update:selected-items', 'bookmark-updated']);
 
 const appStore = useAppStore();
 
-const itemsPerPage = ref(20);
+// Server-side data table state
+const loading = ref(false);
+const bookmarks = ref([]);
+const totalItems = ref(0);
+const serverOptions = ref({
+  page: 1,
+  itemsPerPage: 15,
+  sortBy: [{ key: 'created_at', order: 'desc' }],
+  search: ''
+});
+
+const itemsPerPageOptions = [15, 30, 45, 60, -1];
+
 const focusedRowIndex = ref(-1);
 
 // Edit dialog state
@@ -29,19 +39,31 @@ const editForm = ref({
 const editError = ref('');
 const editSuccess = ref(false);
 
+// Watch for search changes from the store
+watch(() => appStore.bookmarkSearch, (newSearch) => {
+  serverOptions.value.search = newSearch;
+  serverOptions.value.page = 1; // Reset to first page when searching
+  loadBookmarks();
+});
+
+// Watch for bookmark refresh trigger
+watch(() => appStore.bookmarkRefreshTrigger, () => {
+  loadBookmarks();
+});
+
 const isAllSelected = computed(() => {
-  return props.bookmarks.length > 0 && props.selectedItems.length === props.bookmarks.length;
+  return bookmarks.value.length > 0 && props.selectedItems.length === bookmarks.value.length;
 });
 
 const isIndeterminate = computed(() => {
-  return props.selectedItems.length > 0 && props.selectedItems.length < props.bookmarks.length;
+  return props.selectedItems.length > 0 && props.selectedItems.length < bookmarks.value.length;
 });
 
 function toggleSelectAll() {
   if (isAllSelected.value) {
     emit('update:selected-items', []);
   } else {
-    emit('update:selected-items', [...props.bookmarks.map(item => item.id)]);
+    emit('update:selected-items', [...bookmarks.value.map(item => item.id)]);
   }
 }
 
@@ -203,6 +225,9 @@ async function handleEditBookmark() {
     // Emit event to parent to refresh bookmarks
     emit('bookmark-updated', data);
     
+    // Refresh current page data
+    await loadBookmarks();
+    
     closeEditDialog();
 
   } catch (error) {
@@ -218,13 +243,73 @@ async function handleEditBookmark() {
   }
 }
 
+// Server-side data loading
+async function loadBookmarks() {
+  loading.value = true;
+  
+  try {
+    const { page, itemsPerPage, sortBy, search } = serverOptions.value;
+    
+    // Build the query
+    let query = supabase
+      .from('bookmarks')
+      .select('id, url, title, tags, favicon, created_at', { count: 'exact' });
+    
+    // Apply search if provided
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      query = query.or(`title.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%,tags.cs.{${searchTerm}}`);
+    }
+    
+    // Apply sorting
+    if (sortBy && sortBy.length > 0) {
+      const sort = sortBy[0];
+      query = query.order(sort.key, { ascending: sort.order === 'asc' });
+    } else {
+      // Default sort by created_at desc
+      query = query.order('created_at', { ascending: false });
+    }
+    
+    // Apply pagination (handle "show all" case)
+    if (itemsPerPage !== -1) {
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+    }
+    // If itemsPerPage is -1, don't apply range() to get all items
+    
+    const { data, error, count } = await query;
+    
+    if (error) {
+      console.error('Error loading bookmarks:', error);
+      throw error;
+    }
+    
+    bookmarks.value = data || [];
+    totalItems.value = count || 0;
+    
+  } catch (error) {
+    console.error('Failed to load bookmarks:', error);
+    bookmarks.value = [];
+    totalItems.value = 0;
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Handle server options update (pagination, sorting, etc.)
+function updateServerOptions(newOptions) {
+  serverOptions.value = { ...serverOptions.value, ...newOptions };
+  loadBookmarks();
+}
+
 // Keyboard navigation
 const handleKeydown = (event) => {
   // Tab to focus on table rows
   if (event.key === 'Tab' && !event.shiftKey && !props.dialogOpen && !editDialog.value) {
-    if (props.bookmarks.length > 0) {
+    if (bookmarks.value.length > 0) {
       event.preventDefault();
-      focusedRowIndex.value = focusedRowIndex.value < props.bookmarks.length - 1 
+      focusedRowIndex.value = focusedRowIndex.value < bookmarks.value.length - 1 
         ? focusedRowIndex.value + 1 
         : 0;
     }
@@ -232,41 +317,51 @@ const handleKeydown = (event) => {
   
   // Shift+Tab to go backwards through table rows
   if (event.key === 'Tab' && event.shiftKey && !props.dialogOpen && !editDialog.value) {
-    if (props.bookmarks.length > 0) {
+    if (bookmarks.value.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value > 0 
         ? focusedRowIndex.value - 1 
-        : props.bookmarks.length - 1;
+        : bookmarks.value.length - 1;
     }
   }
   
   // Spacebar to select/deselect focused row
   if (event.key === ' ' && focusedRowIndex.value >= 0 && !props.dialogOpen && !editDialog.value) {
     event.preventDefault();
-    const item = props.bookmarks[focusedRowIndex.value];
+    const item = bookmarks.value[focusedRowIndex.value];
     if (item) {
       toggleItemSelection(item.id);
     }
   }
   
   // Arrow keys for navigation
-  if (event.key === 'ArrowDown' && props.bookmarks.length > 0 && !editDialog.value) {
+  if (event.key === 'ArrowDown' && bookmarks.value.length > 0 && !editDialog.value) {
     event.preventDefault();
-    focusedRowIndex.value = focusedRowIndex.value < props.bookmarks.length - 1 
+    focusedRowIndex.value = focusedRowIndex.value < bookmarks.value.length - 1 
       ? focusedRowIndex.value + 1 
       : 0;
   }
   
-  if (event.key === 'ArrowUp' && props.bookmarks.length > 0 && !editDialog.value) {
+  if (event.key === 'ArrowUp' && bookmarks.value.length > 0 && !editDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = focusedRowIndex.value > 0 
       ? focusedRowIndex.value - 1 
-      : props.bookmarks.length - 1;
+      : bookmarks.value.length - 1;
   }
+
+  if (event.key === 'ArrowLeft' && bookmarks.value.length > 0 && !editDialog.value) {
+    event.preventDefault();
+    focusedRowIndex.value = -1;
+  }
+
+  
+//const focusedRowIndex = ref(-1);
+
 };
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown);
+  loadBookmarks();
 });
 
 onUnmounted(() => {
@@ -292,7 +387,6 @@ const headers = [
     key: 'title',
     sortable: true,
     width: '400px'
-
   },
   {
     title: 'URL',
@@ -303,7 +397,8 @@ const headers = [
   {
     title: 'Tags',
     key: 'tags',
-    sortable: true
+    sortable: true,
+    width: '600px'
   },
   {
     title: 'Created',
@@ -335,25 +430,30 @@ function searchByTag(tag) {
 </script>
 
 <template>
-  <v-data-table
+  <v-data-table-server
     :headers="headers"
     :items="bookmarks"
-    :items-per-page="itemsPerPage === -1 ? bookmarks.length : itemsPerPage"
+    :items-length="totalItems"
     :loading="loading"
+    :search="serverOptions.search"
+    :items-per-page-options="itemsPerPageOptions"
+    v-model:options="serverOptions"
+    @update:options="updateServerOptions"
     class="elevation-1 bg-transparent"
     density="compact"
     show-current-page
     :mobile-breakpoint="600"
   >
-  <template v-slot:top="{ pagination, options, updateOptions }">
-    <v-data-table-footer
-      :pagination="pagination" 
-      :options="options"
-      @update:options="updateOptions"
-      show-current-page
-      items-per-page-text="$vuetify.dataTable.itemsPerPageText"
-    />
-  </template>
+
+      <template v-slot:top="{ pagination, options, updateOptions }">
+        <v-data-table-footer
+          :pagination="pagination" 
+          :options="options"
+          @update:options="updateOptions"
+          show-current-page
+          items-per-page-text="$vuetify.dataTable.itemsPerPageText"
+        />
+      </template>
 
     <!-- Select all checkbox in header -->
     <template #header.select="">
@@ -443,7 +543,7 @@ function searchByTag(tag) {
     <template #no-data>
       <v-alert type="info">No bookmarks found.</v-alert>
     </template>
-  </v-data-table>
+  </v-data-table-server>
 
   <!-- Edit Dialog -->
   <v-dialog 
@@ -520,5 +620,4 @@ function searchByTag(tag) {
 .v-table__wrapper table tr td {
   user-select: auto;
 }
-
 </style>

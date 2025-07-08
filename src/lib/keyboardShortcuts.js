@@ -46,6 +46,11 @@ export const keyboardShortcuts = [
         key: '↑ / ↓',
         description: 'Navigate table rows with arrow keys',
         action: 'arrowNavigation'
+      },
+      {
+        key: '←',
+        description: 'Remove highlight from table row (after using tab or ↑ / ↓)',
+        action: 'arrowNavigation'
       }
     ]
   },
