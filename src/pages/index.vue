@@ -179,7 +179,7 @@ async function commitDelete() {
   undoState.value.timeoutId = null;
   
   // Optional: Show a notification that the delete is now permanent
-  showNotification('info', 'Delete operation completed.');
+  showNotification('primary', 'Bookmarks permanently deleted.');
 }
 
 function dismissUndo() {

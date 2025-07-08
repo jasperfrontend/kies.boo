@@ -39,11 +39,22 @@ const editForm = ref({
 const editError = ref('');
 const editSuccess = ref(false);
 
-// Watch for search changes from the store
+// Debounced search state
+const searchTimeout = ref(null);
+
+// Watch for search changes from the store with debouncing
 watch(() => appStore.bookmarkSearch, (newSearch) => {
-  serverOptions.value.search = newSearch;
-  serverOptions.value.page = 1; // Reset to first page when searching
-  loadBookmarks();
+  // Clear any existing timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
+  
+  // Set up new timeout for debounced search
+  searchTimeout.value = setTimeout(() => {
+    serverOptions.value.search = newSearch;
+    serverOptions.value.page = 1; // Reset to first page when searching
+    loadBookmarks();
+  }, 1000); // 1000ms delay
 });
 
 // Watch for bookmark refresh trigger
@@ -353,10 +364,6 @@ const handleKeydown = (event) => {
     event.preventDefault();
     focusedRowIndex.value = -1;
   }
-
-  
-//const focusedRowIndex = ref(-1);
-
 };
 
 onMounted(() => {
@@ -366,6 +373,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
+  
+  // Clear any pending search timeout when component unmounts
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
 });
 
 // Define headers for the data table
