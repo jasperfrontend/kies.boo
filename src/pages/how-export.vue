@@ -110,6 +110,7 @@ function closeNotification() {
             <li>On the "Export Browsing Data" window deselect everything <strong>except Bookmarks</strong>.</li>
             <li>Click Export.</li>
             <li>This saves a .zip file. Extract that zip to find the file containing your bookmarks html file.</li>
+            <li>To extract a .zip file on a Mac, simply double-click the zip file. The unzipped file will be placed in the same folder as the original .zip file.</li>
           </ol>
           <p><strong>Do not upload the zip file to kies.boo, it won't work</strong>.</p>
           <hr class="my-4 text-primary">
