@@ -340,11 +340,20 @@ function searchByTag(tag) {
     :items="bookmarks"
     :items-per-page="itemsPerPage === -1 ? bookmarks.length : itemsPerPage"
     :loading="loading"
-    class="elevation-1"
+    class="elevation-1 bg-transparent"
     density="compact"
+    show-current-page
     :mobile-breakpoint="600"
   >
-
+  <template v-slot:top="{ pagination, options, updateOptions }">
+    <v-data-table-footer
+      :pagination="pagination" 
+      :options="options"
+      @update:options="updateOptions"
+      show-current-page
+      items-per-page-text="$vuetify.dataTable.itemsPerPageText"
+    />
+  </template>
 
     <!-- Select all checkbox in header -->
     <template #header.select="">

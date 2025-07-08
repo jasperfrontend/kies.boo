@@ -66,13 +66,11 @@ javascript:(function(){
   const url = window.location.href;
   const apiUrl = '${this.apiEndpoint}';
   
-  // You would need to handle authentication here
-  // This is just a basic example
   const data = {
     title: title,
     url: url,
     tags: ['bookmarklet'],
-    user_id: 'USER_ID_HERE' // This would need to be handled properly
+    user_id: 'USER_ID_HERE'
   };
   
   fetch(apiUrl, {

@@ -54,17 +54,48 @@ onUnmounted(() => {
     <v-app-bar-title>
       <v-container fluid class="py-0">
         <v-row align="center" no-gutters>
-          <v-col cols="12" md="6" lg="6">
+          <v-col cols="2">
             <v-text-field
               ref="searchInputRef"
               v-model="appStore.bookmarkSearch"
               label="Search bookmarks (Alt+k)"
               prepend-inner-icon="mdi-magnify"
-              variant="outlined"
+              variant="solo-inverted"
               density="compact"
               hide-details
               clearable
             />
+          </v-col>
+          <v-col cols="4">
+            <v-btn 
+              to="/"
+              variant="tonal"
+              color="primary"
+              class="mr-2"
+            >
+              <v-icon class="mr-2" size="16">mdi-bookmark</v-icon>
+              <span>Bookmarks</span>
+            </v-btn>
+
+            <v-btn 
+              to="/profile"
+              variant="tonal"
+              color="primary"
+              class="mr-2"
+            >
+              <v-icon class="mr-2" size="16">mdi-account</v-icon>
+              <span>Profile</span>
+            </v-btn>
+
+            <v-btn 
+              to="/import"
+              variant="tonal"
+              color="primary"
+            >
+              <v-icon class="mr-2" size="16">mdi-cloud-upload</v-icon>
+              <span>Import</span>
+            </v-btn>
+
           </v-col>
           <v-spacer />
           <v-col cols="auto" class="d-flex gap-2">
