@@ -62,6 +62,7 @@ onUnmounted(() => {
               prepend-inner-icon="mdi-magnify"
               variant="solo-inverted"
               density="compact"
+              class="mr-2"
               hide-details
               clearable
             />
