@@ -630,6 +630,10 @@ function searchByTag(tag) {
   background: #2a3236;
 }
 
+.v-data-table__th:nth-of-type(4) .v-data-table-header__content {
+	padding-left: 16px;
+}
+
 .v-table__wrapper table tr td {
   user-select: auto;
 }

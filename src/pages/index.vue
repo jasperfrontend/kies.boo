@@ -178,12 +178,12 @@ async function commitDelete() {
   undoState.value.deletedItems = [];
   undoState.value.timeoutId = null;
   
-  // Optional: Show a notification that the delete is now permanent
+  // Show a notification that the delete is now permanent
   showNotification('primary', 'Bookmarks permanently deleted.');
 }
 
 function dismissUndo() {
-  // User explicitly dismisses the undo option
+  // User explicitly dismisses the undo option so we can go ahead and commitDelete() the selected bookmarks
   commitDelete();
 }
 
