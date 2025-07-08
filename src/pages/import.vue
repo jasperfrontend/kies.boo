@@ -9,12 +9,7 @@
           
           <v-card-text class="mb-6">
             <p>Upload an HTML bookmark file exported from your browser to import your bookmarks.
-            Supported formats include 
-            <a href="https://support.google.com/chrome/thread/171823628/export-chrome-bookmarks" target="_blank">Chrome</a>,  
-            <a href="https://support.mozilla.org/en-US/kb/export-firefox-bookmarks-to-backup-or-transfer" target="_blank">Firefox</a>, 
-            <a href="https://www.asurion.com/connect/tech-tips/safari-bookmarks/" target="_blank">Safari</a>, and 
-            <a href="https://www.ju.edu/it/Browser_Favorites_Microsoft_Edge-How_To.pdf" target="_blank">Edge</a> 
-            bookmark exports.</p>
+            Supported formats include Chrome, Edge, Firefox and Safari bookmark exports.</p>
           </v-card-text>
 
           <v-form @submit.prevent="handleFileUpload">
@@ -100,7 +95,7 @@
                 </v-card-text>
               </v-card>
             </div>
-
+            <p v-if="!success">Learn how to <RouterLink to="/how-export" class="text-primary-lighten-3">export your bookmarks</RouterLink> from your browser into kies.boo or click the field above to upload your bookmarks.</p>
             <v-card-actions class="px-0 pt-6">
               <v-spacer />
               
@@ -134,6 +129,7 @@
 import { ref } from 'vue'
 import supabase from '@/lib/supabaseClient'
 import { BookmarkParser } from '@/lib/bookmarkParser'
+import { RouterLink } from 'vue-router'
 
 const selectedFile = ref(null)
 const uploading = ref(false)
@@ -311,3 +307,9 @@ function readFileAsText(file) {
   })
 }
 </script>
+
+<style>
+p {
+  margin-bottom: 1rem;
+}
+</style>
