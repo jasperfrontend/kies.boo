@@ -15,6 +15,7 @@ declare module 'vue' {
     AppTips: typeof import('./src/components/AppTips.vue')['default']
     AppTopBar: typeof import('./src/components/AppTopBar.vue')['default']
     BookmarkTable: typeof import('./src/components/BookmarkTable.vue')['default']
+    JasperApiDemo: typeof import('./src/components/JasperApiDemo.vue')['default']
     KeyboardShortcutsDialog: typeof import('./src/components/KeyboardShortcutsDialog.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     NotificationComponent: typeof import('./src/components/NotificationComponent.vue')['default']

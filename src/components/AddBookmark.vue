@@ -3,26 +3,14 @@
     <v-card-title>Add Bookmark</v-card-title>
 
     <v-form @submit.prevent="onSubmit">
-      <v-text-field
-        v-model="form.title"
-        label="Title"
-        prepend-icon="mdi-bookmark"
-        autofocus
-      ></v-text-field>
-      <v-text-field
-        v-model="form.url"
-        label="URL"
-        prepend-icon="mdi-link"
-        @focus="tryReadClipboard"
-      />
 
       <v-alert
         v-if="clipboardNotice"
         type="info"
         density="compact"
-        class="mt-2"
         border="start"
         variant="tonal"
+        class="mb-1"
       >
         Link detected on your clipboard, we went ahead and pasted that for you.
         <v-btn
@@ -34,6 +22,26 @@
           Undo
         </v-btn>
       </v-alert>
+
+      <v-text-field
+        v-model="form.url"
+        label="URL"
+        prepend-icon="mdi-link"
+        :loading="harvestLoading"
+        @focus="tryReadClipboard"
+        @blur="handleUrlBlur"
+        persistent-hint
+        autofocus
+      />
+
+
+      <v-text-field
+        v-model="form.title"
+        label="Title"
+        prepend-icon="mdi-bookmark"
+        
+      ></v-text-field>
+
 
       <v-text-field
         v-model="form.tags"
@@ -92,6 +100,9 @@ async function tryReadClipboard() {
         form.value.url = normalizeUrl(clipboardText)
         clipboardNotice.value = true
         
+        // Auto-harvest metadata when URL is pasted from clipboard
+        await harvestMetadata(normalizeUrl(clipboardText))
+        
         // Auto-hide the notice after 5 seconds
         setTimeout(() => {
           clipboardNotice.value = false
@@ -107,6 +118,15 @@ async function tryReadClipboard() {
 function undoClipboardPaste() {
   form.value.url = previousUrl.value
   clipboardNotice.value = false
+  harvestedData.value = null // Clear harvested data when undoing
+}
+
+// Handle URL field blur to harvest metadata
+async function handleUrlBlur() {
+  const url = form.value.url.trim()
+  if (url && isValidUrl(normalizeUrl(url))) {
+    await harvestMetadata(normalizeUrl(url))
+  }
 }
 
 // Auth
@@ -133,8 +153,61 @@ const form = ref({
 const loading = ref(false)
 const error = ref('')
 const success = ref(false)
+const harvestLoading = ref(false)
+const harvestedData = ref(null)
 
-// Helpers
+// Metadata harvesting
+async function harvestMetadata(url) {
+  if (!url || !isValidUrl(url)) return
+  
+  harvestLoading.value = true
+  
+  try {
+    const response = await fetch(`https://jasper.monster/harvest/harvest.php?url=${encodeURIComponent(url)}`)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    harvestedData.value = data
+    
+    // Auto-fill title if it's empty and we got a title
+    if (!form.value.title && data.title) {
+      form.value.title = data.title
+    }
+    
+    // Auto-fill tags from keywords if tags are empty
+    if (!form.value.tags && data.meta?.keywords) {
+      // Split keywords by comma and clean them up
+      const keywords = data.meta.keywords
+        .split(',')
+        .map(keyword => keyword.trim())
+        .filter(keyword => keyword.length > 0)
+        .slice(0, 5) // Limit to first 5 keywords to avoid overwhelming
+      
+      if (keywords.length > 0) {
+        form.value.tags = keywords.join(', ')
+      }
+    }
+    
+  } catch (err) {
+    console.error('Failed to harvest metadata:', err)
+    // Don't show error to user as this is optional functionality
+  } finally {
+    harvestLoading.value = false
+  }
+}
+
+// Helper to get the best favicon URL
+function getBestFavicon() {
+  if (!harvestedData.value) {
+    // Fallback to Google favicon service
+    return `https://www.google.com/s2/favicons?domain=${normalizeUrl(form.value.url)}&sz=128`
+  }
+  
+  return harvestedData.value.favicon || `https://www.google.com/s2/favicons?domain=${normalizeUrl(form.value.url)}&sz=128`
+}
 function normalizeUrl(url) {
   if (!url) return url
   url = url.trim()
@@ -186,7 +259,7 @@ async function onSubmit() {
 
   loading.value = true
 
-  const faviconUrl = `https://www.google.com/s2/favicons?domain=${normalizedUrl}&sz=128`
+  const faviconUrl = getBestFavicon()
   const tagsArray = form.value.tags 
     ? form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
     : []
@@ -209,6 +282,7 @@ async function onSubmit() {
     success.value = true
     form.value = { title: '', url: '', tags: '' }
     clipboardNotice.value = false
+    harvestedData.value = null // Clear harvested data
     emit('bookmarkAdded')
 
   } catch (e) {
