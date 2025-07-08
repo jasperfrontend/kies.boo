@@ -449,6 +449,7 @@ function searchByTag(tag) {
     :loading="loading"
     :search="serverOptions.search"
     :items-per-page-options="itemsPerPageOptions"
+    items-per-page="15"
     v-model:options="serverOptions"
     @update:options="updateServerOptions"
     class="elevation-1 bg-transparent"
