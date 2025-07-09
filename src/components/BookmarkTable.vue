@@ -626,13 +626,20 @@ function searchByTag(tag) {
             @error="e => e.target.src = '/favicon.png'"
           />
         </v-avatar>
-        {{ detailsBookmark.title }}
+        Bookmark Details
       </v-card-title>
 
       <v-divider />
 
       <v-card-text class="pa-6">
         <div class="d-flex flex-column ga-4">
+          <div>
+            <div class="text-caption text-grey-darken-1 mb-1">Title</div>
+            <div class="text-h6 text-white" style="line-height: 1.4;">
+              {{ detailsBookmark.title }}
+            </div>
+          </div>
+
           <div>
             <div class="text-caption text-grey-darken-1 mb-1">URL</div>
             <div class="text-white">
