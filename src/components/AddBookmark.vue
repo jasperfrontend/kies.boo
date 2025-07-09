@@ -82,6 +82,10 @@ import supabase from '@/lib/supabaseClient'
 const clipboardNotice = ref(false)
 const previousUrl = ref('')
 
+const tagData = ref([])
+const bookmarkData = ref(null)
+const junctionData = ref(null)
+
 async function tryReadClipboard() {
   // Check if clipboard API is supported
   if (!navigator.clipboard || !navigator.clipboard.readText) {
@@ -264,13 +268,34 @@ async function onSubmit() {
     ? form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
     : []
 
+  const tagInserts = tagsArray.map(tag => ({ title: tag.toLowerCase() }))
+
+  // step 1: insert tags into public.tags
   try {
-    const { error: insertError } = await supabase
+    const { data: insertTagData, error: insertTagError } = await supabase
+      .from('tags')
+      .upsert(tagInserts, {ignoreDuplicates: true})
+      .select()
+
+    if (insertTagError) throw insertTagError
+    tagData.value = insertTagData;
+
+    console.log("tagData.value: ", tagData.value);
+  
+  } catch (e) {
+    error.value = e.message || 'Failed to add tag.'
+  } finally {
+    loading.value = false
+  }
+
+  // step 2: insert bookmark into public.bookmarks
+  try {
+
+    const { data: insertData, error: insertError } = await supabase
       .from('bookmarks')
       .insert([{
         title: form.value.title,
         url: normalizedUrl,
-        tags: tagsArray,
         favicon: faviconUrl,
         user_id: user.value.id
       }])
@@ -278,6 +303,9 @@ async function onSubmit() {
       .single()
 
     if (insertError) throw insertError
+    bookmarkData.value = insertData;
+    console.log("bookmarkData.value:", bookmarkData.value);
+    
 
     success.value = true
     form.value = { title: '', url: '', tags: '' }
@@ -286,9 +314,31 @@ async function onSubmit() {
     emit('bookmarkAdded')
 
   } catch (e) {
-    error.value = e.code === '23505'
-      ? 'This URL is already bookmarked.'
-      : e.message || 'Failed to add bookmark.'
+    error.value = e.message || 'Failed to add bookmark.'
+  } finally {
+    loading.value = false
+  }
+
+  // step 3: associate bookmark with tags
+  try {
+    const bookmarkId = bookmarkData.value.id
+    const bookmarkTagLinks = tagData.value.map(tag => ({
+      bookmark_id: bookmarkId,
+      tag_id: tag.id
+    }))
+    console.log("bookmarkTagLinks: ", bookmarkTagLinks);
+    
+    const { data: insertLinkData, error: insertLinkError } = await supabase
+      .from('bookmark_tags')
+      .insert(bookmarkTagLinks)
+      .select()
+
+    if (insertLinkError) throw insertLinkError
+    junctionData.value = insertLinkData;
+    console.log("insertLinkData: ", junctionData.value);
+    
+  } catch (e) {
+    error.value = e.message || 'Failed to associate bookmark with tag(s).'
   } finally {
     loading.value = false
   }
