@@ -160,6 +160,11 @@ async function commitDelete() {
   showNotification('primary', 'Bookmarks permanently deleted.');
 }
 
+function dismissUndo() {
+  // User explicitly dismisses the undo option so we can go ahead and commitDelete() the selected bookmarks
+  commitDelete();
+}
+
 // Listen for delete events from the layout
 onMounted(() => {
   document.addEventListener('delete-selected-bookmarks', deleteSelectedItems);

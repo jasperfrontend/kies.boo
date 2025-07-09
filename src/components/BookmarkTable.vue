@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 import { useAppStore } from '@/stores/app';
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 const props = defineProps({
   dialogOpen: Boolean,
@@ -472,6 +473,13 @@ function displayUrl(url) {
 function searchByTag(tag) {
   appStore.setBookmarkSearch(tag);
 }
+
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+  onAddBookmark: () => { appStore.openAddBookmarkDialog() },
+  onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
+});
+
 </script>
 
 <template>
@@ -491,15 +499,15 @@ function searchByTag(tag) {
     :mobile-breakpoint="600"
   >
 
-      <template v-slot:top="{ pagination, options, updateServerOptions }">
-        <v-data-table-footer
-          :pagination="pagination" 
-          :options="options"
-          :items-per-page-options="itemsPerPageOptions"
-          @update:options="updateServerOptions"
-          show-current-page
-        />
-      </template>
+    <template v-slot:top="{ pagination, options, updateServerOptions }">
+      <v-data-table-footer
+        :pagination="pagination" 
+        :options="options"
+        :items-per-page-options="itemsPerPageOptions"
+        @update:options="updateServerOptions"
+        show-current-page
+      />
+    </template>
 
     <!-- Select all checkbox in header -->
     <template #header.select="">

@@ -6,8 +6,7 @@ import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 import { useAppStore } from '@/stores/app';
 
-const appStore = useAppStore();
-
+const appStore = useAppStore()
 
 // Notification state
 const notification = ref({
@@ -50,6 +49,7 @@ function onBookmarkUpdated() {
 async function onBookmarkAdded() {
   try {
     appStore.closeAddBookmarkDialog();
+
     // Trigger refresh for recent bookmarks in sidebar
     appStore.triggerBookmarkRefresh();
     showNotification('success', 'Bookmark added successfully!');
@@ -61,9 +61,9 @@ async function onBookmarkAdded() {
 
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
-  onAddBookmark: () => { appStore.openAddBookmarkDialog(); },
-  onRefreshBookmarks: appStore.triggerBookmarkRefresh()
+  onAddBookmark: () => { appStore.openAddBookmarkDialog() }
 });
+
 </script>
 
 <template>

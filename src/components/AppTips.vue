@@ -6,14 +6,15 @@ const randomTip = appTips[Math.floor(Math.random() * appTips.length)]
 <template>
 <v-card
   class="mt-1 user-tips"
-  color="white"
+  color="primary"
   :text="randomTip"
-  variant="tonal"
+  variant="flat"
 />
 </template>
 
 <style>
 .user-tips {
   margin-bottom: 10rem;
+  opacity: .9;
 }
 </style>
