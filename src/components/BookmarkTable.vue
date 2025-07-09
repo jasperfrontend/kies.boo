@@ -315,7 +315,19 @@ async function loadBookmarks() {
     // Apply search if provided
     if (search && search.trim()) {
       const searchTerm = search.trim();
-      query = query.or(`title.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%,tags.cs.{${searchTerm}}`);
+      const { data, error } = await supabase.rpc('search_bookmarks', { term: searchTerm });
+
+      if (error) {
+        console.error(error)
+        throw error
+      }
+
+      bookmarks.value = (data || []).map(b => ({
+        ...b,
+        tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
+      }));
+      totalItems.value = data?.length || 0;
+      return; // <- important!
     }
     
     // Apply sorting
