@@ -39,6 +39,13 @@ const editForm = ref({
 const editError = ref('');
 const editSuccess = ref(false);
 
+// Details dialog state
+const detailsDialog = ref(false);
+const detailsBookmark = ref(null);
+
+// Actions menu state
+const actionsMenus = ref({});
+
 // Debounced search state
 const searchTimeout = ref(null);
 
@@ -171,6 +178,7 @@ function openEditDialog(bookmark) {
   };
   
   editDialog.value = true;
+  closeActionsMenu(bookmark.id);
 }
 
 function closeEditDialog() {
@@ -183,6 +191,31 @@ function closeEditDialog() {
   };
   editError.value = '';
   editSuccess.value = false;
+}
+
+function openDetailsDialog(bookmark) {
+  detailsBookmark.value = bookmark;
+  detailsDialog.value = true;
+  closeActionsMenu(bookmark.id);
+}
+
+function closeDetailsDialog() {
+  detailsDialog.value = false;
+  detailsBookmark.value = null;
+}
+
+function openActionsMenu(bookmarkId) {
+  // Close all other menus first
+  Object.keys(actionsMenus.value).forEach(id => {
+    if (id !== bookmarkId) {
+      actionsMenus.value[id] = false;
+    }
+  });
+  actionsMenus.value[bookmarkId] = true;
+}
+
+function closeActionsMenu(bookmarkId) {
+  actionsMenus.value[bookmarkId] = false;
 }
 
 async function handleEditBookmark() {
@@ -317,7 +350,7 @@ function updateServerOptions(newOptions) {
 // Keyboard navigation
 const handleKeydown = (event) => {
   // Tab to focus on table rows
-  if (event.key === 'Tab' && !event.shiftKey && !props.dialogOpen && !editDialog.value) {
+  if (event.key === 'Tab' && !event.shiftKey && !props.dialogOpen && !editDialog.value && !detailsDialog.value) {
     if (bookmarks.value.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value < bookmarks.value.length - 1 
@@ -327,7 +360,7 @@ const handleKeydown = (event) => {
   }
   
   // Shift+Tab to go backwards through table rows
-  if (event.key === 'Tab' && event.shiftKey && !props.dialogOpen && !editDialog.value) {
+  if (event.key === 'Tab' && event.shiftKey && !props.dialogOpen && !editDialog.value && !detailsDialog.value) {
     if (bookmarks.value.length > 0) {
       event.preventDefault();
       focusedRowIndex.value = focusedRowIndex.value > 0 
@@ -337,7 +370,7 @@ const handleKeydown = (event) => {
   }
   
   // Spacebar to select/deselect focused row
-  if (event.key === ' ' && focusedRowIndex.value >= 0 && !props.dialogOpen && !editDialog.value) {
+  if (event.key === ' ' && focusedRowIndex.value >= 0 && !props.dialogOpen && !editDialog.value && !detailsDialog.value) {
     event.preventDefault();
     const item = bookmarks.value[focusedRowIndex.value];
     if (item) {
@@ -346,21 +379,21 @@ const handleKeydown = (event) => {
   }
   
   // Arrow keys for navigation
-  if (event.key === 'ArrowDown' && bookmarks.value.length > 0 && !editDialog.value) {
+  if (event.key === 'ArrowDown' && bookmarks.value.length > 0 && !editDialog.value && !detailsDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = focusedRowIndex.value < bookmarks.value.length - 1 
       ? focusedRowIndex.value + 1 
       : 0;
   }
   
-  if (event.key === 'ArrowUp' && bookmarks.value.length > 0 && !editDialog.value) {
+  if (event.key === 'ArrowUp' && bookmarks.value.length > 0 && !editDialog.value && !detailsDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = focusedRowIndex.value > 0 
       ? focusedRowIndex.value - 1 
       : bookmarks.value.length - 1;
   }
 
-  if (event.key === 'ArrowLeft' && bookmarks.value.length > 0 && !editDialog.value) {
+  if (event.key === 'ArrowLeft' && bookmarks.value.length > 0 && !editDialog.value && !detailsDialog.value) {
     event.preventDefault();
     focusedRowIndex.value = -1;
   }
@@ -537,18 +570,37 @@ function searchByTag(tag) {
           {{ formatDate(item.created_at) }}
         </td>
         <td>
-          <v-tooltip :text="`Edit ${item.title}`">
+          <v-menu
+            v-model="actionsMenus[item.id]"
+            :close-on-content-click="true"
+            location="bottom end"
+            offset="8"
+          >
             <template v-slot:activator="{ props }">
               <v-btn
                 variant="flat"
                 size="small"
                 v-bind="props"
-                @click="openEditDialog(item)"
+                @click="openActionsMenu(item.id)"
+                :title="`Actions for ${item.title}`"
               >
-                <v-icon icon="mdi-note-edit"></v-icon>
+                <v-icon icon="mdi-dots-vertical"></v-icon>
               </v-btn>
             </template>
-          </v-tooltip>
+            
+            <v-list density="compact" min-width="160">
+              <v-list-item
+                @click="openDetailsDialog(item)"
+                prepend-icon="mdi-eye"
+                title="View Details"
+              />
+              <v-list-item
+                @click="openEditDialog(item)"
+                prepend-icon="mdi-note-edit"
+                title="Edit Bookmark"
+              />
+            </v-list>
+          </v-menu>
         </td>
       </tr>
     </template>
@@ -557,6 +609,101 @@ function searchByTag(tag) {
       <v-alert type="info">No bookmarks found.</v-alert>
     </template>
   </v-data-table-server>
+
+  <!-- Details Dialog -->
+  <v-dialog 
+    v-model="detailsDialog" 
+    max-width="600"
+  >
+    <v-card v-if="detailsBookmark">
+      <v-card-title class="d-flex align-center pa-4">
+        <v-avatar rounded="0" size="32" class="me-3">
+          <img
+            :src="detailsBookmark.favicon"
+            alt="favicon"
+            width="32"
+            height="32"
+            @error="e => e.target.src = '/favicon.png'"
+          />
+        </v-avatar>
+        {{ detailsBookmark.title }}
+      </v-card-title>
+
+      <v-divider />
+
+      <v-card-text class="pa-6">
+        <div class="d-flex flex-column ga-4">
+          <div>
+            <div class="text-caption text-grey-darken-1 mb-1">URL</div>
+            <div class="text-white">
+              <a 
+                :href="detailsBookmark.url" 
+                target="_blank" 
+                class="text-primary-lighten-3 text-decoration-none"
+              >
+                {{ detailsBookmark.url }}
+                <v-icon icon="mdi-open-in-new" size="14" class="ml-1" />
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-caption text-grey-darken-1 mb-1">Tags</div>
+            <div>
+              <div v-if="detailsBookmark.tags && detailsBookmark.tags.length > 0">
+                <v-chip
+                  v-for="tag in detailsBookmark.tags"
+                  :key="tag"
+                  size="small"
+                  variant="tonal"
+                  color="primary-lighten-3"
+                  class="mr-1 mb-1"
+                >
+                  {{ tag }}
+                </v-chip>
+              </div>
+              <span v-else class="text-grey-darken-1">No tags</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-caption text-grey-darken-1 mb-1">Created</div>
+            <div class="text-white">
+              {{ formatDate(detailsBookmark.created_at) }}
+            </div>
+          </div>
+        </div>
+      </v-card-text>
+
+      <v-divider />
+
+      <v-card-actions class="pa-4">
+        <v-btn
+          color="primary"
+          variant="flat"
+          :href="detailsBookmark.url"
+          target="_blank"
+          prepend-icon="mdi-open-in-new"
+        >
+          Open Link
+        </v-btn>
+        
+        <v-spacer />
+        
+        <v-btn
+          variant="text"
+          @click="closeDetailsDialog"
+        >
+          Close this dialog
+          <v-badge
+            color="grey-darken-3"
+            content="Esc"
+            inline
+          />
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
   <!-- Edit Dialog -->
   <v-dialog 
