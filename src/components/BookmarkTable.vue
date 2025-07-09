@@ -689,6 +689,7 @@ function searchByTag(tag) {
           color="primary"
           variant="flat"
           :href="detailsBookmark.url"
+          @click="closeDetailsDialog"
           target="_blank"
           prepend-icon="mdi-open-in-new"
         >

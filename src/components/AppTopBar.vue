@@ -7,6 +7,9 @@ const drawer = ref(null)
 const appStore = useAppStore()
 const searchInputRef = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // Emit event for delete action
 const emit = defineEmits(['delete-selected'])
@@ -21,10 +24,18 @@ const handleKeydown = (event) => {
     event.preventDefault()
     searchInputRef.value?.focus()
   }
-}
-
-function openShortcutsDialog() {
-  showShortcutsDialog.value = true
+  if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'b') {
+    event.preventDefault()
+    router.push('/')
+  }
+  if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'p') {
+    event.preventDefault()
+    router.push('/profile')
+  }
+  if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'i') {
+    event.preventDefault()
+    router.push('/import')
+  }
 }
 
 onMounted(() => {
@@ -75,7 +86,15 @@ onUnmounted(() => {
               class="mr-2"
             >
               <v-icon class="mr-2" size="16">mdi-bookmark</v-icon>
-              <span>Bookmarks</span>
+              <span>
+                Bookmarks 
+                <v-badge
+                  color="grey-darken-3"
+                  title="Shift+Alt+b"
+                  content="(sa-b)"
+                  inline
+                ></v-badge>
+              </span>
             </v-btn>
 
             <v-btn 
@@ -85,7 +104,15 @@ onUnmounted(() => {
               class="mr-2"
             >
               <v-icon class="mr-2" size="16">mdi-account</v-icon>
-              <span>Profile</span>
+              <span>
+                Profile 
+                <v-badge
+                  color="grey-darken-3"
+                  title="Shift+Alt+p"
+                  content="(sa-p)"
+                  inline
+                ></v-badge>
+              </span>
             </v-btn>
 
             <v-btn 
@@ -94,7 +121,15 @@ onUnmounted(() => {
               color="primary"
             >
               <v-icon class="mr-2" size="16">mdi-cloud-upload</v-icon>
-              <span>Import</span>
+              <span>
+                Import 
+                <v-badge
+                  color="grey-darken-3"
+                  title="Shift+Alt+i"
+                  content="(sa-i)"
+                  inline
+                ></v-badge>
+              </span>
             </v-btn>
 
           </v-col>
