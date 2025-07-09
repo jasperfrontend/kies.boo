@@ -1,0 +1,215 @@
+<template>
+  <v-dialog 
+    :model-value="modelValue" 
+    @update:model-value="$emit('update:modelValue', $event)"
+    max-width="500"
+    persistent
+  >
+    <v-form @submit.prevent="handleSave">
+      <v-card title="Edit Bookmark">
+        <v-card-text>
+          <v-text-field
+            v-model="form.title"
+            label="Title"
+            prepend-icon="mdi-bookmark"
+            :disabled="loading"
+            autofocus
+          />
+          <v-text-field
+            v-model="form.url"
+            label="URL"
+            prepend-icon="mdi-link"
+            :disabled="loading"
+          />
+          <v-text-field
+            v-model="form.tags"
+            label="Tags (comma separated)"
+            prepend-icon="mdi-tag"
+            :disabled="loading"
+            hint="Enter tags separated by commas, e.g., programming, vue, tutorial"
+            persistent-hint
+          />
+          
+          <v-alert v-if="error" type="error" class="mt-4">
+            {{ error }}
+          </v-alert>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            :loading="loading"
+            :disabled="loading"
+            text="Save Changes"
+            color="primary"
+            type="submit"
+          />
+          <v-btn
+            text="Cancel"
+            @click="handleCancel"
+            :disabled="loading"
+          />
+        </v-card-actions>
+      </v-card>
+    </v-form>
+  </v-dialog>
+</template>
+
+<script setup>
+import { ref, watch } from 'vue'
+import supabase from '@/lib/supabaseClient'
+
+const props = defineProps({
+  modelValue: Boolean,
+  bookmark: Object
+})
+
+const emit = defineEmits(['update:modelValue', 'bookmark-updated'])
+
+const form = ref({
+  id: null,
+  title: '',
+  url: '',
+  tags: ''
+})
+
+const loading = ref(false)
+const error = ref('')
+
+// Watch for bookmark changes to populate form
+watch(() => props.bookmark, (newBookmark) => {
+  if (newBookmark) {
+    form.value = {
+      id: newBookmark.id,
+      title: newBookmark.title,
+      url: newBookmark.url,
+      tags: formatTags(newBookmark.tags)
+    }
+    error.value = ''
+  }
+}, { immediate: true })
+
+function formatTags(tags) {
+  if (!tags) return ''
+  if (Array.isArray(tags)) {
+    return tags.join(', ')
+  }
+  if (typeof tags === 'string') {
+    return tags
+  }
+  return ''
+}
+
+function normalizeUrl(url) {
+  if (!url) return url
+  url = url.trim()
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const urlPattern = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
+  if (urlPattern.test(url)) return `https://${url}`
+  return url
+}
+
+function isValidUrl(url) {
+  if (!url) return false
+  const normalizedUrl = normalizeUrl(url)
+  try {
+    new URL(normalizedUrl)
+    return true
+  } catch {
+    const basicPattern = /^https?:\/\/[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+/
+    return basicPattern.test(normalizedUrl)
+  }
+}
+
+async function handleSave() {
+  error.value = ''
+  
+  // Validation
+  if (!form.value.title.trim()) {
+    error.value = 'Please enter a title for the bookmark.'
+    return
+  }
+
+  if (!form.value.url.trim()) {
+    error.value = 'Please enter a URL for the bookmark.'
+    return
+  }
+
+  if (!form.value.tags.trim()) {
+    error.value = 'Please enter 1 or more tags for the bookmark.'
+    return
+  }
+
+  const normalizedUrl = normalizeUrl(form.value.url)
+  if (!isValidUrl(normalizedUrl)) {
+    error.value = 'Please enter a valid URL (e.g., example.com or https://example.com).'
+    return
+  }
+
+  loading.value = true
+
+  try {
+    // Parse tags from comma-separated string
+    const tagsArray = form.value.tags.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag.length > 0)
+    
+    // Step 1: Update the bookmark itself
+    const { error: bookmarkUpdateError } = await supabase
+      .from('bookmarks')
+      .update({ 
+        title: form.value.title.trim(), 
+        url: normalizedUrl
+      })
+      .eq('id', form.value.id)
+
+    if (bookmarkUpdateError) throw bookmarkUpdateError
+
+    // Step 2: Insert/upsert tags
+    const tagInserts = tagsArray.map(tag => ({ title: tag }))
+    const { data: upsertedTags, error: tagUpsertError } = await supabase
+      .from('tags')
+      .upsert(tagInserts, { ignoreDuplicates: true })
+      .select()
+
+    if (tagUpsertError) throw tagUpsertError
+
+    // Step 3: Remove existing bookmark-tag relationships for this bookmark
+    const { error: deleteRelationshipsError } = await supabase
+      .from('bookmark_tags')
+      .delete()
+      .eq('bookmark_id', form.value.id)
+
+    if (deleteRelationshipsError) throw deleteRelationshipsError
+
+    // Step 4: Create new bookmark-tag relationships
+    const bookmarkTagLinks = upsertedTags.map(tag => ({
+      bookmark_id: form.value.id,
+      tag_id: tag.id
+    }))
+
+    const { error: linkInsertError } = await supabase
+      .from('bookmark_tags')
+      .insert(bookmarkTagLinks)
+
+    if (linkInsertError) throw linkInsertError
+
+    emit('bookmark-updated')
+    emit('update:modelValue', false)
+
+  } catch (error) {
+    console.error('Error updating bookmark:', error)
+    
+    if (error.code === '23505') {
+      error.value = 'This URL is already bookmarked.'
+    } else {
+      error.value = error.message || 'Failed to update bookmark.'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+function handleCancel() {
+  emit('update:modelValue', false)
+  error.value = ''
+}
+</script>
