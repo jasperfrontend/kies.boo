@@ -1,20 +1,14 @@
 <template>
-  <AppTopBar @delete-selected="handleDeleteSelected" />
+  <AppTopBar />
     <v-app id="inspire" class="mt-16">
     <v-main>
-      <router-view @delete-selected="handleDeleteSelected"></router-view>
+      <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-// Handle the delete event from AppTopBar and pass it to the current route
-function handleDeleteSelected() {
-  // This will be handled by the router-view component (index.vue)
-  // We need to emit this event to the active route component
-  const event = new CustomEvent('delete-selected-bookmarks')
-  document.dispatchEvent(event)
-}
+
 </script>
 
 <style>

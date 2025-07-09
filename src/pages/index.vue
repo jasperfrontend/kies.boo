@@ -1,21 +1,13 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import supabase from '@/lib/supabaseClient';
+import { ref, watch } from 'vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
-import UndoSnackbar from '@/components/UndoSnackbar.vue';
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 import { useAppStore } from '@/stores/app';
 
 const appStore = useAppStore();
 
-// Undo delete state
-const undoState = ref({
-  show: false,
-  deletedItems: [],
-  timeoutId: null
-});
 
 // Notification state
 const notification = ref({
@@ -24,21 +16,13 @@ const notification = ref({
   message: ''
 });
 
+
 // Watch for dialog state changes from store
 watch(() => appStore.addBookmarkDialog, (newValue) => {
   if (!newValue) {
     // Dialog was closed, trigger bookmark refresh
     appStore.triggerBookmarkRefresh();
   }
-});
-
-// Listen for delete events from the layout
-onMounted(() => {
-  document.addEventListener('delete-selected-bookmarks', deleteSelectedItems);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('delete-selected-bookmarks', deleteSelectedItems);
 });
 
 function showNotification(type, message) {
@@ -61,131 +45,7 @@ function onBookmarkUpdated() {
   showNotification('success', 'Bookmark updated successfully!');
 }
 
-async function deleteSelectedItems() {
-  if (appStore.selectedItems.length === 0) return;
-  
-  appStore.setDeleting(true);
-  
-  try {
-    // Get the items that are being deleted from the database
-    const { data: itemsToDelete, error: fetchError } = await supabase
-      .from('bookmarks')
-      .select('*')
-      .in('id', appStore.selectedItems);
-    
-    if (fetchError) {
-      console.error('Error fetching items to delete:', fetchError);
-      showNotification('error', 'Failed to delete items.');
-      appStore.setDeleting(false);
-      return;
-    }
-    
-    // Store in undo state BEFORE deleting
-    undoState.value.deletedItems = itemsToDelete || [];
-    undoState.value.show = true;
-    
-    // Delete from database
-    const { error: deleteError } = await supabase
-      .from('bookmarks')
-      .delete()
-      .in('id', appStore.selectedItems);
-    
-    if (deleteError) {
-      console.error('Error deleting bookmarks:', deleteError);
-      showNotification('error', 'Failed to delete bookmarks.');
-      undoState.value.show = false;
-      undoState.value.deletedItems = [];
-      appStore.setDeleting(false);
-      return;
-    }
-    
-    // Clear selections
-    appStore.clearSelectedItems();
-    
-    // Trigger refresh for both table and recent bookmarks
-    appStore.triggerBookmarkRefresh();
-    
-    // Set timeout to permanently delete (clear undo state)
-    if (undoState.value.timeoutId) {
-      clearTimeout(undoState.value.timeoutId);
-    }
-    
-    undoState.value.timeoutId = setTimeout(() => {
-      commitDelete();
-    }, 10000); // 10 seconds to undo
-    
-  } catch (error) {
-    console.error('Error deleting bookmarks:', error);
-    showNotification('error', 'Failed to delete bookmarks.');
-  } finally {
-    appStore.setDeleting(false);
-  }
-}
 
-async function undoDelete() {
-  // Clear the timeout
-  if (undoState.value.timeoutId) {
-    clearTimeout(undoState.value.timeoutId);
-    undoState.value.timeoutId = null;
-  }
-  
-  const itemsToRestore = undoState.value.deletedItems;
-  
-  if (itemsToRestore.length === 0) return;
-  
-  try {
-    // Prepare items for insertion (remove any auto-generated fields that might cause conflicts)
-    const itemsForInsertion = itemsToRestore.map(item => {
-      const { ...itemCopy } = item;
-      // Keep all original fields including the original id, created_at, etc.
-      return itemCopy;
-    });
-
-    // Restore items to the database
-    const { error } = await supabase
-      .from('bookmarks')
-      .upsert(itemsToRestore, { 
-        onConflict: 'id',
-        ignoreDuplicates: false 
-      });
-    
-    if (error) {
-      console.error('Error restoring bookmarks:', error);
-      showNotification('error', 'Failed to restore bookmarks.');
-      return;
-    }
-    
-    // Clear undo state
-    undoState.value.show = false;
-    undoState.value.deletedItems = [];
-    
-    // Trigger refresh for both table and recent bookmarks
-    appStore.triggerBookmarkRefresh();
-    
-    showNotification('success', 'Items restored successfully.');
-    
-  } catch (error) {
-    console.error('Error restoring bookmarks:', error);
-    showNotification('error', 'Failed to restore bookmarks.');
-  }
-}
-
-async function commitDelete() {
-  // This function is called when the undo timeout expires
-  // At this point, the items are already deleted from the database
-  // We just need to clean up the undo state
-  undoState.value.show = false;
-  undoState.value.deletedItems = [];
-  undoState.value.timeoutId = null;
-  
-  // Show a notification that the delete is now permanent
-  showNotification('primary', 'Bookmarks permanently deleted.');
-}
-
-function dismissUndo() {
-  // User explicitly dismisses the undo option so we can go ahead and commitDelete() the selected bookmarks
-  commitDelete();
-}
 
 async function onBookmarkAdded() {
   try {
@@ -199,29 +59,10 @@ async function onBookmarkAdded() {
   }
 }
 
-// Dummy function for keyboard shortcuts (table handles its own refresh now)
-function refreshBookmarks() {
-  // Trigger refresh for recent bookmarks in sidebar
-  appStore.triggerBookmarkRefresh();
-}
-
-onUnmounted(() => {
-  // Clean up timeout if component unmounts
-  if (undoState.value.timeoutId) {
-    clearTimeout(undoState.value.timeoutId);
-  }
-});
-
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
   onAddBookmark: () => { appStore.openAddBookmarkDialog(); },
-  onRefreshBookmarks: refreshBookmarks,
-  onDeleteSelected: deleteSelectedItems,
-  onUndoDelete: () => {
-    if (undoState.value.show) {
-      undoDelete();
-    }
-  }
+  onRefreshBookmarks: appStore.triggerBookmarkRefresh()
 });
 </script>
 
@@ -241,12 +82,6 @@ useKeyboardShortcuts({
       @bookmark-added="onBookmarkAdded"
     />
 
-    <UndoSnackbar
-      v-model="undoState.show"
-      :deleted-items="undoState.deletedItems"
-      @undo="undoDelete"
-      @dismiss="dismissUndo"
-    />
 
     <NotificationComponent
       :show="notification.show"
