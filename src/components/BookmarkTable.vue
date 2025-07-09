@@ -298,7 +298,19 @@ async function loadBookmarks() {
     // Build the query
     let query = supabase
       .from('bookmarks')
-      .select('id, url, title, tags, favicon, created_at', { count: 'exact' });
+      .select(`
+        id,
+        url,
+        title,
+        favicon,
+        created_at,
+        bookmark_tags ( 
+          tags (
+            id,
+            title
+          )
+        )
+      `, { count: 'exact' });
     
     // Apply search if provided
     if (search && search.trim()) {
@@ -330,8 +342,12 @@ async function loadBookmarks() {
       throw error;
     }
     
-    bookmarks.value = data || [];
+    bookmarks.value = (data || []).map(b => ({
+      ...b,
+      tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
+    }));
     totalItems.value = count || 0;
+    
     
   } catch (error) {
     console.error('Failed to load bookmarks:', error);
