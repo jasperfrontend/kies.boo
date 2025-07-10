@@ -163,14 +163,46 @@ async function handleSave() {
 
     if (bookmarkUpdateError) throw bookmarkUpdateError
 
-    // Step 2: Insert/upsert tags
-    const tagInserts = tagsArray.map(tag => ({ title: tag }))
-    const { data: upsertedTags, error: tagUpsertError } = await supabase
-      .from('tags')
-      .upsert(tagInserts, { ignoreDuplicates: true })
-      .select()
+    // Step 2: Handle tags - check existing and create new ones
+    let tagIds = []
+    
+    if (tagsArray.length > 0) {
+      // First, check which tags already exist
+      const { data: existingTags, error: fetchError } = await supabase
+        .from('tags')
+        .select('id, title')
+        .in('title', tagsArray)
 
-    if (tagUpsertError) throw tagUpsertError
+      if (fetchError) {
+        console.error('Error fetching existing tags:', fetchError)
+        throw fetchError
+      }
+
+      // Get the titles of existing tags
+      const existingTagTitles = existingTags.map(tag => tag.title)
+      tagIds = existingTags.map(tag => tag.id)
+
+      // Find tags that don't exist yet
+      const newTagTitles = tagsArray.filter(tag => !existingTagTitles.includes(tag))
+
+      // Insert only the new tags
+      if (newTagTitles.length > 0) {
+        const newTagInserts = newTagTitles.map(tag => ({ title: tag }))
+        
+        const { data: insertedTags, error: insertError } = await supabase
+          .from('tags')
+          .insert(newTagInserts)
+          .select('id, title')
+
+        if (insertError) {
+          console.error('Error inserting new tags:', insertError)
+          throw insertError
+        }
+
+        // Add the new tag IDs to our list
+        tagIds = [...tagIds, ...insertedTags.map(tag => tag.id)]
+      }
+    }
 
     // Step 3: Remove existing bookmark-tag relationships for this bookmark
     const { error: deleteRelationshipsError } = await supabase
@@ -180,17 +212,19 @@ async function handleSave() {
 
     if (deleteRelationshipsError) throw deleteRelationshipsError
 
-    // Step 4: Create new bookmark-tag relationships
-    const bookmarkTagLinks = upsertedTags.map(tag => ({
-      bookmark_id: form.value.id,
-      tag_id: tag.id
-    }))
+    // Step 4: Create new bookmark-tag relationships (only if there are tags)
+    if (tagIds.length > 0) {
+      const bookmarkTagLinks = tagIds.map(tagId => ({
+        bookmark_id: form.value.id,
+        tag_id: tagId
+      }))
 
-    const { error: linkInsertError } = await supabase
-      .from('bookmark_tags')
-      .insert(bookmarkTagLinks)
+      const { error: linkInsertError } = await supabase
+        .from('bookmark_tags')
+        .insert(bookmarkTagLinks)
 
-    if (linkInsertError) throw linkInsertError
+      if (linkInsertError) throw linkInsertError
+    }
 
     emit('bookmark-updated')
     emit('update:modelValue', false)

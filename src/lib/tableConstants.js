@@ -28,7 +28,7 @@ export const BOOKMARK_TABLE_HEADERS = [
   {
     title: 'Tags',
     key: 'tags',
-    sortable: true,
+    sortable: false,
     width: '600px'
   },
   {

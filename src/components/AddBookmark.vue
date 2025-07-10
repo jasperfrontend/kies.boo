@@ -265,32 +265,52 @@ async function onSubmit() {
 
   const faviconUrl = getBestFavicon()
   const tagsArray = form.value.tags 
-    ? form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+    ? form.value.tags.split(',').map(tag => tag.trim().toLowerCase()).filter(Boolean)
     : []
 
-  const tagInserts = tagsArray.map(tag => ({ title: tag.toLowerCase() }))
-
-  // step 1: insert tags into public.tags
   try {
-    const { data: insertTagData, error: insertTagError } = await supabase
-      .from('tags')
-      .upsert(tagInserts, {ignoreDuplicates: true})
-      .select()
+    // Step 1: Handle tags - check existing and create new ones
+    let tagIds = []
+    
+    if (tagsArray.length > 0) {
+      // First, check which tags already exist
+      const { data: existingTags, error: fetchError } = await supabase
+        .from('tags')
+        .select('id, title')
+        .in('title', tagsArray)
 
-    if (insertTagError) throw insertTagError
-    tagData.value = insertTagData;
+      if (fetchError) {
+        console.error('Error fetching existing tags:', fetchError)
+        throw fetchError
+      }
 
-    console.log("tagData.value: ", tagData.value);
-  
-  } catch (e) {
-    error.value = e.message || 'Failed to add tag.'
-  } finally {
-    loading.value = false
-  }
+      // Get the titles of existing tags
+      const existingTagTitles = existingTags.map(tag => tag.title)
+      tagIds = existingTags.map(tag => tag.id)
 
-  // step 2: insert bookmark into public.bookmarks
-  try {
+      // Find tags that don't exist yet
+      const newTagTitles = tagsArray.filter(tag => !existingTagTitles.includes(tag))
 
+      // Insert only the new tags
+      if (newTagTitles.length > 0) {
+        const newTagInserts = newTagTitles.map(tag => ({ title: tag }))
+        
+        const { data: insertedTags, error: insertError } = await supabase
+          .from('tags')
+          .insert(newTagInserts)
+          .select('id, title')
+
+        if (insertError) {
+          console.error('Error inserting new tags:', insertError)
+          throw insertError
+        }
+
+        // Add the new tag IDs to our list
+        tagIds = [...tagIds, ...insertedTags.map(tag => tag.id)]
+      }
+    }
+
+    // Step 2: Insert the bookmark
     const { data: insertData, error: insertError } = await supabase
       .from('bookmarks')
       .insert([{
@@ -302,43 +322,37 @@ async function onSubmit() {
       .select()
       .single()
 
-    if (insertError) throw insertError
-    bookmarkData.value = insertData;
-    console.log("bookmarkData.value:", bookmarkData.value);
-    
+    if (insertError) {
+      console.error('Error inserting bookmark:', insertError)
+      throw insertError
+    }
+
+    // Step 3: Associate bookmark with tags (only if there are tags)
+    if (tagIds.length > 0) {
+      const bookmarkTagLinks = tagIds.map(tagId => ({
+        bookmark_id: insertData.id,
+        tag_id: tagId
+      }))
+
+      const { error: linkError } = await supabase
+        .from('bookmark_tags')
+        .insert(bookmarkTagLinks)
+
+      if (linkError) {
+        console.error('Error linking bookmark with tags:', linkError)
+        throw linkError
+      }
+    }
 
     success.value = true
     form.value = { title: '', url: '', tags: '' }
     clipboardNotice.value = false
-    harvestedData.value = null // Clear harvested data
+    harvestedData.value = null
     emit('bookmarkAdded')
 
   } catch (e) {
+    console.error('Error in onSubmit:', e)
     error.value = e.message || 'Failed to add bookmark.'
-  } finally {
-    loading.value = false
-  }
-
-  // step 3: associate bookmark with tags
-  try {
-    const bookmarkId = bookmarkData.value.id
-    const bookmarkTagLinks = tagData.value.map(tag => ({
-      bookmark_id: bookmarkId,
-      tag_id: tag.id
-    }))
-    console.log("bookmarkTagLinks: ", bookmarkTagLinks);
-    
-    const { data: insertLinkData, error: insertLinkError } = await supabase
-      .from('bookmark_tags')
-      .insert(bookmarkTagLinks)
-      .select()
-
-    if (insertLinkError) throw insertLinkError
-    junctionData.value = insertLinkData;
-    console.log("insertLinkData: ", junctionData.value);
-    
-  } catch (e) {
-    error.value = e.message || 'Failed to associate bookmark with tag(s).'
   } finally {
     loading.value = false
   }

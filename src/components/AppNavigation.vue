@@ -50,4 +50,16 @@
     Tags 
   </span>
 </v-btn>
+
+<v-btn 
+  to="/saved-searches"
+  variant="tonal"
+  color="primary"
+  class="mr-2"
+>
+  <v-icon class="mr-2" size="16">mdi-magnify-plus</v-icon>
+  <span>
+    Saved Searches 
+  </span>
+</v-btn>
 </template>

@@ -51,9 +51,11 @@
 
       <template #no-data>
         <v-alert type="info">
-          {{ searchType === 'search' ? `No bookmarks found matching "${searchTerm}"` : 
-             searchType === 'tag' ? `No bookmarks found with tag "${searchTerm}"` : 
-             'No bookmarks found.' }}
+          {{ 
+            searchType === 'search' ? `No bookmarks found matching "${searchTerm}"` : 
+            searchType === 'tag' ? `No bookmarks found with tag "${searchTerm}"` : 
+            'No bookmarks found.' 
+          }}
         </v-alert>
       </template>
     </v-data-table-server>
