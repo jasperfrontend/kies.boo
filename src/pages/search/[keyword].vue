@@ -8,6 +8,16 @@
             <div>
               <div class="text-h6">Search Results for: "{{ searchKeyword }}"</div>
               <div class="text-caption">Searching in bookmark titles and URLs</div>
+              <v-btn
+                variant="tonal"
+                size="small"
+                @click="handleSaveSearch"
+                :disabled="buttonDisabled"
+                :loading="saving"
+              >
+                <v-icon icon="mdi-content-save-plus"></v-icon> 
+                {{ buttonText }}
+              </v-btn>
             </div>
             <v-spacer />
             <v-btn
@@ -44,6 +54,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BookmarkTable from '@/components/BookmarkTable.vue'
 import NotificationComponent from '@/components/NotificationComponent.vue'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const route = useRoute()
 const selectedItems = ref([])
@@ -52,6 +63,15 @@ const selectedItems = ref([])
 const searchKeyword = computed(() => {
   return decodeURIComponent(route.params.keyword || '')
 })
+
+// Saved searches functionality
+const {
+  isCurrentPathSaved,
+  buttonText,
+  buttonDisabled,
+  saving,
+  saveCurrentSearch
+} = useSavedSearches()
 
 // Notification state
 const notification = ref({
@@ -74,5 +94,15 @@ function closeNotification() {
 
 function onBookmarkUpdated() {
   showNotification('success', 'Bookmark updated successfully!')
+}
+
+async function handleSaveSearch() {
+  const result = await saveCurrentSearch()
+  
+  if (result.success) {
+    showNotification('success', result.message)
+  } else {
+    showNotification('error', result.message)
+  }
 }
 </script>

@@ -1,20 +1,15 @@
 <script setup>
-import supabase from '@/lib/supabaseClient';
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue'
+import { useAppStore } from '@/stores/app'
 
-const savedSearches = ref([])
+const appStore = useAppStore()
 
-async function getSavedSearches() {
-  const { data, error } = await supabase
-    .from('saved_searches')
-    .select('*')
+// Use the store's saved searches instead of local state
+const savedSearches = computed(() => appStore.savedSearches)
 
-  if(error) return console.error("Error retrieving saved searches:", error);
-  savedSearches.value = data;
-}
-
-onMounted(() => {
-  getSavedSearches()
+onMounted(async () => {
+  // Ensure saved searches are loaded
+  await appStore.ensureSavedSearchesLoaded()
 })
 </script>
 
@@ -24,20 +19,25 @@ onMounted(() => {
       <v-col cols="12" md="8" lg="6">
         <v-card class="pa-6" outlined>
           <v-card-title class="text-h4 mb-4">
-            Your saved searches
+            Your saved <code>/paths</code>
           </v-card-title>
 
           <v-card-text class="mb-6">
+            <div v-if="savedSearches.length === 0" class="text-center text-grey-darken-1">
+              <v-icon icon="mdi-magnify-plus-outline" size="48" class="mb-2" />
+              <p>No saved searches yet</p>
+              <p class="text-caption">Save paths from tag or search result pages to access them quickly later</p>
+            </div>
+            
             <v-chip
-              v-for="(searches, index) in savedSearches"
+              v-for="(search, index) in savedSearches"
               :key="index"
-              
               variant="tonal"
               color="primary-lighten-3"
               class="cursor-pointer mr-2 mb-2"
-              :to="searches.url"
+              :to="search.url"
             >
-              {{ searches.url }}
+              {{ search.url }}
             </v-chip>
           </v-card-text>
         </v-card>

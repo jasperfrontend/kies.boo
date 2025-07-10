@@ -11,11 +11,13 @@
               <v-btn
                 variant="tonal"
                 size="small"
-                @click="saveSearch"
-                :disabled="currentPathSaved"
+                @click="handleSaveSearch"
+                :disabled="buttonDisabled"
+                :loading="saving"
               >
-              <v-icon icon="mdi-content-save-plus"></v-icon> {{ currentPathSaved ? `${router.currentRoute.value.path} saved` : 'Save search' }}
-            </v-btn>
+                <v-icon icon="mdi-content-save-plus"></v-icon> 
+                {{ buttonText }}
+              </v-btn>
             </div>
             <v-spacer />
             <v-btn
@@ -49,20 +51,27 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import BookmarkTable from '@/components/BookmarkTable.vue'
 import NotificationComponent from '@/components/NotificationComponent.vue'
-import supabase from '@/lib/supabaseClient'
+import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const route = useRoute()
-const router = useRouter();
 const selectedItems = ref([])
-const currentPathSaved = ref(false)
 
 // Get tag title from route params
 const tagTitle = computed(() => {
   return decodeURIComponent(route.params.tagtitle || '')
 })
+
+// Saved searches functionality
+const {
+  isCurrentPathSaved,
+  buttonText,
+  buttonDisabled,
+  saving,
+  saveCurrentSearch
+} = useSavedSearches()
 
 // Notification state
 const notification = ref({
@@ -87,35 +96,13 @@ function onBookmarkUpdated() {
   showNotification('success', 'Bookmark updated successfully!')
 }
 
-
-async function saveSearch() {
-  let path = router.currentRoute.value.path;
+async function handleSaveSearch() {
+  const result = await saveCurrentSearch()
   
-  const {data, error} = await supabase
-    .from('saved_searches')
-    .insert({url: path})
-    .select()
-  
-  if (error) return console.error("error saving search:", error)
-  console.log("save search data:", data);
-  showNotification('success', `Saved: ${data[0].url}`)
-  isCurrentPathSaved(); // call to disable button after successful save of current path
+  if (result.success) {
+    showNotification('success', result.message)
+  } else {
+    showNotification('error', result.message)
+  }
 }
-
-async function isCurrentPathSaved() {
-  let path = router.currentRoute.value.path;
-  const {data, error} = await supabase
-    .from('saved_searches')
-    .select('url')
-    .eq('url', path)
-    .select()
-  
-  if(error) return console.error("error:", error);  
-  data?.length === 1 ? currentPathSaved.value = true : currentPathSaved.value = false;
-}
-
-onMounted(() => {
-  isCurrentPathSaved();
-})
-
 </script>
