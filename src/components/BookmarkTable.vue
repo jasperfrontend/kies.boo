@@ -100,6 +100,7 @@ const {
   serverOptions,
   loadBookmarks,
   updateServerOptions,
+  triggerImmediateSearch, // NEW: Get the immediate search function
   cleanup
 } = useBookmarkData(appStore)
 
@@ -135,6 +136,8 @@ const { focusedRowIndex } = useBookmarkTableKeyboard(
 // Event handlers
 function handleSearchTag(tag) {
   appStore.setBookmarkSearch(tag)
+  // NEW: Trigger immediate search when clicking a tag
+  triggerImmediateSearch()
 }
 
 function handleViewDetails(bookmark) {
@@ -152,18 +155,26 @@ function handleBookmarkUpdated() {
   loadBookmarks()
 }
 
-// Setup keyboard shortcuts
-useKeyboardShortcuts({
-  onAddBookmark: () => { appStore.openAddBookmarkDialog() },
-  onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
-})
-
-// Lifecycle
+// NEW: Listen for programmatic search events
 onMounted(() => {
+  // Listen for the custom event from external pages
+  document.addEventListener('trigger-bookmark-search', () => {
+    triggerImmediateSearch()
+  })
+  
   loadBookmarks()
 })
 
 onUnmounted(() => {
+  document.removeEventListener('trigger-bookmark-search', () => {
+    triggerImmediateSearch()
+  })
   cleanup()
+})
+
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+  onAddBookmark: () => { appStore.openAddBookmarkDialog() },
+  onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
 })
 </script>

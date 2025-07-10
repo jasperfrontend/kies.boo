@@ -14,12 +14,19 @@ export function useBookmarkData(appStore) {
 
   // Debounced search state
   const searchTimeout = ref(null)
+  const skipNextDebouncedSearch = ref(false)
 
   // Watch for search changes from the store with debouncing
   watch(() => appStore.bookmarkSearch, (newSearch) => {
     // Clear any existing timeout
     if (searchTimeout.value) {
       clearTimeout(searchTimeout.value)
+    }
+    
+    // Skip debounced search if we just did an immediate search
+    if (skipNextDebouncedSearch.value) {
+      skipNextDebouncedSearch.value = false
+      return
     }
     
     // Set up new timeout for debounced search
@@ -74,7 +81,7 @@ export function useBookmarkData(appStore) {
           tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
         }))
         totalItems.value = data?.length || 0
-        return // <- important!
+        return;
       }
       
       // Apply sorting
@@ -122,6 +129,22 @@ export function useBookmarkData(appStore) {
     loadBookmarks()
   }
 
+  // NEW: Trigger immediate search (for programmatic search changes)
+  function triggerImmediateSearch() {
+    // Clear any existing timeout
+    if (searchTimeout.value) {
+      clearTimeout(searchTimeout.value)
+    }
+    
+    // Set flag to skip the next debounced search
+    skipNextDebouncedSearch.value = true
+    
+    // Update server options and search immediately
+    serverOptions.value.search = appStore.bookmarkSearch
+    serverOptions.value.page = 1
+    loadBookmarks()
+  }
+
   // Cleanup function
   function cleanup() {
     if (searchTimeout.value) {
@@ -136,6 +159,7 @@ export function useBookmarkData(appStore) {
     serverOptions,
     loadBookmarks,
     updateServerOptions,
+    triggerImmediateSearch, // NEW: Export the immediate search function
     cleanup
   }
 }

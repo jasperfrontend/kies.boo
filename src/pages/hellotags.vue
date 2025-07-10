@@ -15,12 +15,20 @@ const notification = ref({
 });
 
 const router = useRouter()
-
 const appStore = useAppStore()
 
 function handleSearchTag(tag) {
   appStore.setBookmarkSearch(tag)
+  
+  // Navigate to the home page
   router.push('/')
+  
+  // NEW: Dispatch a custom event to trigger immediate search
+  // Use nextTick to ensure the navigation happens first
+  setTimeout(() => {
+    const event = new CustomEvent('trigger-bookmark-search')
+    document.dispatchEvent(event)
+  }, 100) // Small delay to ensure the page has loaded
 }
 
 function showNotification(type, message) {
