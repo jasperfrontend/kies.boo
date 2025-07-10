@@ -195,11 +195,13 @@ async function importBookmarks(bookmarks) {
       return
     }
 
+    const userId = session.user.id
+
     // First, get all existing URLs for this user to check for duplicates
     const { data: existingBookmarks, error: fetchError } = await supabase
       .from('bookmarks')
       .select('url')
-      .eq('user_id', session.user.id)
+      .eq('user_id', userId)
 
     if (fetchError) {
       console.error('Error fetching existing bookmarks:', fetchError)
@@ -237,34 +239,129 @@ async function importBookmarks(bookmarks) {
       return
     }
 
-    // Transform bookmarks to match your database schema
-    const bookmarksToInsert = newBookmarks.map(bookmark => ({
-      title: bookmark.title,
-      url: bookmark.url,
-      tags: bookmark.tags, // Keep as array
-      favicon: bookmark.favicon_url,
-      user_id: session.user.id,
-      created_at: bookmark.created_at
-    }))
-
-    // Insert bookmarks in batches to avoid overwhelming the database
-    const batchSize = 100
+    // Process bookmarks in batches to avoid overwhelming the database
+    const batchSize = 50
     let importedCount = 0
     let errorCount = 0
 
-    for (let i = 0; i < bookmarksToInsert.length; i += batchSize) {
-      const batch = bookmarksToInsert.slice(i, i + batchSize)
+    for (let i = 0; i < newBookmarks.length; i += batchSize) {
+      const batch = newBookmarks.slice(i, i + batchSize)
       
-      const { data, error: insertError } = await supabase
-        .from('bookmarks')
-        .insert(batch)
-        .select()
+      try {
+        // Step 1: Collect all unique tags from this batch
+        const allTagTitles = new Set()
+        batch.forEach(bookmark => {
+          bookmark.tags.forEach(tag => {
+            if (tag && tag.trim()) {
+              allTagTitles.add(tag.trim().toLowerCase())
+            }
+          })
+        })
 
-      if (insertError) {
-        console.error('Batch insert error:', insertError)
-        errorCount += batch.length
-      } else {
+        // Step 2: Get existing tags or create new ones
+        const tagTitleArray = Array.from(allTagTitles)
+        let tagMap = new Map() // Map from tag title to tag ID
+
+        if (tagTitleArray.length > 0) {
+          // Check which tags already exist for this user
+          const { data: existingTags, error: fetchTagsError } = await supabase
+            .from('tags')
+            .select('id, title')
+            .eq('user_id', userId)
+            .in('title', tagTitleArray)
+
+          if (fetchTagsError) {
+            console.error('Error fetching existing tags:', fetchTagsError)
+            throw fetchTagsError
+          }
+
+          // Add existing tags to map
+          existingTags.forEach(tag => {
+            tagMap.set(tag.title, tag.id)
+          })
+
+          // Find tags that don't exist yet
+          const existingTagTitles = new Set(existingTags.map(tag => tag.title))
+          const newTagTitles = tagTitleArray.filter(title => !existingTagTitles.has(title))
+
+          // Create new tags if needed
+          if (newTagTitles.length > 0) {
+            const newTagInserts = newTagTitles.map(title => ({ 
+              title, 
+              user_id: userId 
+            }))
+
+            const { data: insertedTags, error: insertTagsError } = await supabase
+              .from('tags')
+              .insert(newTagInserts)
+              .select('id, title')
+
+            if (insertTagsError) {
+              console.error('Error inserting new tags:', insertTagsError)
+              throw insertTagsError
+            }
+
+            // Add new tags to map
+            insertedTags.forEach(tag => {
+              tagMap.set(tag.title, tag.id)
+            })
+          }
+        }
+
+        // Step 3: Insert bookmarks
+        const bookmarksToInsert = batch.map(bookmark => ({
+          title: bookmark.title,
+          url: bookmark.url,
+          favicon: bookmark.favicon_url,
+          user_id: userId,
+          created_at: bookmark.created_at
+        }))
+
+        const { data: insertedBookmarks, error: insertBookmarksError } = await supabase
+          .from('bookmarks')
+          .insert(bookmarksToInsert)
+          .select('id')
+
+        if (insertBookmarksError) {
+          console.error('Error inserting bookmarks:', insertBookmarksError)
+          throw insertBookmarksError
+        }
+
+        // Step 4: Create bookmark-tag relationships
+        const bookmarkTagLinks = []
+        
+        insertedBookmarks.forEach((insertedBookmark, index) => {
+          const originalBookmark = batch[index]
+          originalBookmark.tags.forEach(tagTitle => {
+            if (tagTitle && tagTitle.trim()) {
+              const tagId = tagMap.get(tagTitle.trim().toLowerCase())
+              if (tagId) {
+                bookmarkTagLinks.push({
+                  bookmark_id: insertedBookmark.id,
+                  tag_id: tagId
+                })
+              }
+            }
+          })
+        })
+
+        // Insert bookmark-tag relationships if any exist
+        if (bookmarkTagLinks.length > 0) {
+          const { error: insertLinksError } = await supabase
+            .from('bookmark_tags')
+            .insert(bookmarkTagLinks)
+
+          if (insertLinksError) {
+            console.error('Error inserting bookmark-tag links:', insertLinksError)
+            // Don't throw here - bookmarks are already inserted, tags just won't be linked
+          }
+        }
+
         importedCount += batch.length
+
+      } catch (batchError) {
+        console.error('Error processing batch:', batchError)
+        errorCount += batch.length
       }
     }
 
