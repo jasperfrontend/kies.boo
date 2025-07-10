@@ -5,7 +5,6 @@
       :items="bookmarks"
       :items-length="totalItems"
       :loading="loading"
-      :search="serverOptions.search"
       :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
       items-per-page="15"
       v-model:options="serverOptions"
@@ -51,7 +50,11 @@
       </template>
 
       <template #no-data>
-        <v-alert type="info">No bookmarks found.</v-alert>
+        <v-alert type="info">
+          {{ searchType === 'search' ? `No bookmarks found matching "${searchTerm}"` : 
+             searchType === 'tag' ? `No bookmarks found with tag "${searchTerm}"` : 
+             'No bookmarks found.' }}
+        </v-alert>
       </template>
     </v-data-table-server>
 
@@ -67,12 +70,13 @@
       @bookmark-updated="handleBookmarkUpdated"
     />
 
-    <AppTips />
+    <AppTips v-if="searchType === 'all'" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, toRef } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
@@ -85,12 +89,21 @@ import BookmarkEditDialog from '@/components/BookmarkEditDialog.vue'
 
 const props = defineProps({
   dialogOpen: Boolean,
-  selectedItems: Array
+  selectedItems: Array,
+  searchType: {
+    type: String,
+    default: 'all' // 'all', 'search', 'tag'
+  },
+  searchTerm: {
+    type: String,
+    default: ''
+  }
 })
 
 const emit = defineEmits(['update:selected-items', 'bookmark-updated'])
 
 const appStore = useAppStore()
+const router = useRouter()
 
 // Data management
 const {
@@ -99,10 +112,8 @@ const {
   totalItems,
   serverOptions,
   loadBookmarks,
-  updateServerOptions,
-  triggerImmediateSearch, // NEW: Get the immediate search function
-  cleanup
-} = useBookmarkData(appStore)
+  updateServerOptions
+} = useBookmarkData(appStore, props.searchType, props.searchTerm)
 
 // Selection logic
 const {
@@ -135,9 +146,8 @@ const { focusedRowIndex } = useBookmarkTableKeyboard(
 
 // Event handlers
 function handleSearchTag(tag) {
-  appStore.setBookmarkSearch(tag)
-  // NEW: Trigger immediate search when clicking a tag
-  triggerImmediateSearch()
+  // Navigate to tag route instead of setting search
+  router.push(`/tag/${encodeURIComponent(tag)}`)
 }
 
 function handleViewDetails(bookmark) {
@@ -155,41 +165,15 @@ function handleBookmarkUpdated() {
   loadBookmarks()
 }
 
-// NEW: Listen for programmatic search events
 onMounted(() => {
-  // Listen for the custom event from external pages
-  document.addEventListener('trigger-bookmark-search', () => {
-    triggerImmediateSearch()
-  })
-  
-  // Check if there's already a search term when mounting
-  // If so, wait a bit for the trigger event, otherwise load immediately
-  if (appStore.bookmarkSearch && appStore.bookmarkSearch.trim()) {
-    // Wait for the trigger event from external navigation
-    setTimeout(() => {
-      // If no trigger event came, load with the search term
-      if (serverOptions.value.search !== appStore.bookmarkSearch) {
-        serverOptions.value.search = appStore.bookmarkSearch
-        serverOptions.value.page = 1
-        loadBookmarks()
-      }
-    }, 200)
-  } else {
-    // No search term, load normally
-    loadBookmarks()
-  }
+  loadBookmarks()
 })
 
-onUnmounted(() => {
-  document.removeEventListener('trigger-bookmark-search', () => {
-    triggerImmediateSearch()
+// Setup keyboard shortcuts (only for main bookmark page)
+if (props.searchType === 'all') {
+  useKeyboardShortcuts({
+    onAddBookmark: () => { appStore.openAddBookmarkDialog() },
+    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
   })
-  cleanup()
-})
-
-// Setup keyboard shortcuts
-useKeyboardShortcuts({
-  onAddBookmark: () => { appStore.openAddBookmarkDialog() },
-  onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
-})
+}
 </script>

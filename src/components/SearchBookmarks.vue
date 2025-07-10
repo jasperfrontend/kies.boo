@@ -1,8 +1,17 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
-import { useAppStore } from '@/stores/app'
-const appStore = useAppStore()
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const searchInputRef = ref(null)
+const searchQuery = ref('')
+
+// Handle search submission
+function handleSearch() {
+  if (searchQuery.value.trim()) {
+    router.push(`/search/${encodeURIComponent(searchQuery.value.trim())}`)
+  }
+}
 
 // Keyboard shortcut
 const handleKeydown = (event) => {
@@ -12,6 +21,7 @@ const handleKeydown = (event) => {
     searchInputRef.value?.focus()
   }
 }
+
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
 })
@@ -22,15 +32,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-<v-text-field
-  ref="searchInputRef"
-  v-model="appStore.bookmarkSearch"
-  label="Search bookmarks (Alt+k)"
-  prepend-inner-icon="mdi-magnify"
-  variant="solo-inverted"
-  density="compact"
-  class="mr-2"
-  hide-details
-  clearable
-/>
+  <v-text-field
+    ref="searchInputRef"
+    v-model="searchQuery"
+    label="Search bookmarks (Alt+k)"
+    prepend-inner-icon="mdi-magnify"
+    variant="solo-inverted"
+    density="compact"
+    class="mr-2"
+    hide-details
+    clearable
+    @keydown.enter="handleSearch"
+  />
 </template>

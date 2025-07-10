@@ -23,5 +23,7 @@ declare module 'vue-router/auto-routes' {
     '/how-export': RouteRecordInfo<'/how-export', '/how-export', Record<never, never>, Record<never, never>>,
     '/import': RouteRecordInfo<'/import', '/import', Record<never, never>, Record<never, never>>,
     '/profile': RouteRecordInfo<'/profile', '/profile', Record<never, never>, Record<never, never>>,
+    '/search/[keyword]': RouteRecordInfo<'/search/[keyword]', '/search/:keyword', { keyword: ParamValue<true> }, { keyword: ParamValue<false> }>,
+    '/tag/[tagtitle]': RouteRecordInfo<'/tag/[tagtitle]', '/tag/:tagtitle', { tagtitle: ParamValue<true> }, { tagtitle: ParamValue<false> }>,
   }
 }

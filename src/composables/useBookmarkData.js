@@ -1,40 +1,14 @@
 import { ref, watch } from 'vue'
 import supabase from '@/lib/supabaseClient'
 
-export function useBookmarkData(appStore) {
+export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
   const loading = ref(false)
   const bookmarks = ref([])
   const totalItems = ref(0)
   const serverOptions = ref({
     page: 1,
     itemsPerPage: 15,
-    sortBy: [{ key: 'created_at', order: 'desc' }],
-    search: ''
-  })
-
-  // Debounced search state
-  const searchTimeout = ref(null)
-  const skipNextDebouncedSearch = ref(false)
-
-  // Watch for search changes from the store with debouncing
-  watch(() => appStore.bookmarkSearch, (newSearch) => {
-    // Clear any existing timeout
-    if (searchTimeout.value) {
-      clearTimeout(searchTimeout.value)
-    }
-    
-    // Skip debounced search if we just did an immediate search
-    if (skipNextDebouncedSearch.value) {
-      skipNextDebouncedSearch.value = false
-      return
-    }
-    
-    // Set up new timeout for debounced search
-    searchTimeout.value = setTimeout(() => {
-      serverOptions.value.search = newSearch
-      serverOptions.value.page = 1 // Reset to first page when searching
-      loadBookmarks()
-    }, 1000) // 1000ms delay
+    sortBy: [{ key: 'created_at', order: 'desc' }]
   })
 
   // Watch for bookmark refresh trigger
@@ -47,7 +21,7 @@ export function useBookmarkData(appStore) {
     loading.value = true
     
     try {
-      const { page, itemsPerPage, sortBy, search } = serverOptions.value
+      const { page, itemsPerPage, sortBy } = serverOptions.value
       
       // Build the query
       let query = supabase
@@ -66,22 +40,38 @@ export function useBookmarkData(appStore) {
           )
         `, { count: 'exact' })
       
-      // Apply search if provided
-      if (search && search.trim()) {
-        const searchTerm = search.trim()
-        const { data, error } = await supabase.rpc('search_bookmarks', { term: searchTerm })
+      // Apply search based on type
+      if (searchTerm && searchTerm.trim()) {
+        const term = searchTerm.trim()
+        
+        if (searchType === 'search') {
+          // Search in title and URL only
+          query = query.or(`title.ilike.%${term}%,url.ilike.%${term}%`)
+        } else if (searchType === 'tag') {
+          // Search in tags only - use the existing RPC function but filter for tags
+          const { data, error } = await supabase.rpc('search_bookmarks', { term })
 
-        if (error) {
-          console.error(error)
-          throw error
+          if (error) {
+            console.error(error)
+            throw error
+          }
+
+          // Filter results to only include bookmarks that have the exact tag
+          const tagFilteredData = (data || []).filter(bookmark => 
+            bookmark.bookmark_tags && 
+            bookmark.bookmark_tags.some(bt => 
+              bt.tags && bt.tags.title && bt.tags.title.toLowerCase() === term.toLowerCase()
+            )
+          )
+
+          bookmarks.value = tagFilteredData.map(b => ({
+            ...b,
+            tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
+          }))
+          totalItems.value = tagFilteredData.length
+          loading.value = false
+          return
         }
-
-        bookmarks.value = (data || []).map(b => ({
-          ...b,
-          tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
-        }))
-        totalItems.value = data?.length || 0
-        return // <- important!
       }
       
       // Apply sorting
@@ -99,7 +89,6 @@ export function useBookmarkData(appStore) {
         const to = from + itemsPerPage - 1
         query = query.range(from, to)
       }
-      // If itemsPerPage is -1, don't apply range() to get all items
       
       const { data, error, count } = await query
       
@@ -129,37 +118,12 @@ export function useBookmarkData(appStore) {
     loadBookmarks()
   }
 
-  // NEW: Trigger immediate search (for programmatic search changes)
-  function triggerImmediateSearch() {
-    // Clear any existing timeout
-    if (searchTimeout.value) {
-      clearTimeout(searchTimeout.value)
-    }
-    
-    // Set flag to skip the next debounced search
-    skipNextDebouncedSearch.value = true
-    
-    // Update server options and search immediately
-    serverOptions.value.search = appStore.bookmarkSearch
-    serverOptions.value.page = 1
-    loadBookmarks()
-  }
-
-  // Cleanup function
-  function cleanup() {
-    if (searchTimeout.value) {
-      clearTimeout(searchTimeout.value)
-    }
-  }
-
   return {
     loading,
     bookmarks,
     totalItems,
     serverOptions,
     loadBookmarks,
-    updateServerOptions,
-    triggerImmediateSearch, // NEW: Export the immediate search function
-    cleanup
+    updateServerOptions
   }
 }
