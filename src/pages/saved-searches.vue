@@ -26,6 +26,27 @@
             >
               {{ search.url }}
             </v-chip>
+
+            <h2 class="mt-6 mb-2">What are Saved Paths?</h2>
+            <p>Saved Paths are like shortcut portals to specific sets of bookmarks.</p>
+            <p>They help you quickly jump back to:</p>
+            <ul class="ml-4 mt-2 mb-2">
+              <li>Search results you found useful (based on keywords in title/URL).</li>
+              <li>Tags you've used to group bookmarks.</li>
+            </ul>
+            
+            <p>In short: instead of hunting again, you just click a saved Path and boom—you're back in the zone.</p>
+
+            <h2 class="mt-6 mb-2">Tags vs Search (what's the difference?)</h2>
+            <p>Tags are labels you manually assign to bookmarks. Think: #reading, #design, #later.</p>
+            <p>Search looks at the bookmark's title and URL.</p>
+            <p>So while they often overlap, tags are your own organizing system, and search is more like a smart filter.</p>
+            
+            <h2 class="mt-6 mb-2">Why use Paths?</h2>
+            <p>Because remembering stuff is overrated.</p>
+            <p>If you saved a great search or a useful tag group, just save the Path. Next time, no typing—just click and go.</p>
+            <p class="mt-6">You kinda just have to experience it to admire its greatness. I guess.</p>
+
           </v-card-text>
         </v-card>
       </v-col>

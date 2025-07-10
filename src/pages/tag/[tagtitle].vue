@@ -46,9 +46,6 @@
       position="bottom-right"
       @close="closeNotification"
     />
-
-    <!-- Global Delete Handler -->
-    <GlobalDeleteHandler />
   </v-container>
 </template>
 
@@ -57,7 +54,6 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import BookmarkTable from '@/components/BookmarkTable.vue'
 import NotificationComponent from '@/components/NotificationComponent.vue'
-import GlobalDeleteHandler from '@/components/GlobalDeleteHandler.vue'
 import { useSavedSearches } from '@/composables/useSavedSearches'
 
 const route = useRoute()
@@ -101,12 +97,6 @@ function onBookmarkUpdated() {
 }
 
 function onBookmarkDeleted(bookmarkIds) {
-  // Dispatch global delete event
-  const deleteEvent = new CustomEvent('global-delete-bookmarks', {
-    detail: { bookmarkIds }
-  })
-  document.dispatchEvent(deleteEvent)
-  
   // Clear selected items
   selectedItems.value = []
 }

@@ -1,21 +1,12 @@
 <template>
   <div>
     <!-- Delete Button - Shows when items are selected -->
-    <div v-if="selectedItems.length > 0" class="mb-4">
-      <v-btn
-        color="red-darken-4"
-        variant="outlined"
-        @click="handleDeleteSelected"
-        prepend-icon="mdi-delete"
-      >
-        Delete {{ selectedItems.length }} item{{ selectedItems.length === 1 ? '' : 's' }} 
-        <v-badge
-          color="grey-darken-3"
-          content="Alt+I"
-          inline
-        />
-      </v-btn>
-    </div>
+    <BookmarkDeleteButton
+      :selected-items="selectedItems"
+      :use-store-selection="false"
+      class="mb-4"
+      @delete-completed="handleDeleteCompleted"
+    />
 
     <v-data-table-server
       :headers="BOOKMARK_TABLE_HEADERS"
@@ -94,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, toRef } from 'vue'
+import { ref, computed, onMounted, toRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -105,6 +96,7 @@ import { ITEMS_PER_PAGE_OPTIONS, BOOKMARK_TABLE_HEADERS } from '@/lib/tableConst
 import BookmarkTableRow from '@/components/BookmarkTableRow.vue'
 import BookmarkDetailsDialog from '@/components/BookmarkDetailsDialog.vue'
 import BookmarkEditDialog from '@/components/BookmarkEditDialog.vue'
+import BookmarkDeleteButton from '@/components/BookmarkDeleteButton.vue'
 
 const props = defineProps({
   dialogOpen: Boolean,
@@ -198,11 +190,8 @@ function handleDeleteCompleted(deletedIds) {
   emit('update:selected-items', [])
   // Refresh the bookmarks
   loadBookmarks()
-}
-
-function handleDeleteSelected() {
-  // Emit the delete event to parent with selected items
-  emit('delete-selected', props.selectedItems)
+  // Emit for backwards compatibility
+  emit('delete-selected', deletedIds)
 }
 
 onMounted(() => {
@@ -213,13 +202,7 @@ onMounted(() => {
 if (props.searchType === 'all') {
   useKeyboardShortcuts({
     onAddBookmark: () => { appStore.openAddBookmarkDialog() },
-    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() },
-    onDeleteSelected: () => { handleDeleteSelected() }
-  })
-} else {
-  // For search and tag pages, still enable delete shortcut
-  useKeyboardShortcuts({
-    onDeleteSelected: () => { handleDeleteSelected() }
+    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
   })
 }
 </script>

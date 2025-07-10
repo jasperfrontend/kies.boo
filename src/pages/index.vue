@@ -1,3 +1,33 @@
+<template>
+  <v-container 
+    fluid
+    class="pa-1"
+  >
+    <BookmarkTable
+      :dialog-open="appStore.addBookmarkDialog"
+      v-model:selected-items="appStore.selectedItems"
+      @bookmark-updated="onBookmarkUpdated"
+      @delete-selected="onBookmarkDeleted"
+    />
+
+    <AddBookmarkDialog
+      v-model="appStore.addBookmarkDialog"
+      @bookmark-added="onBookmarkAdded"
+    />
+
+    <!-- Global Delete Handler (now just handles undo functionality) -->
+    <GlobalDeleteHandler />
+
+    <NotificationComponent
+      :show="notification.show"
+      :type="notification.type"
+      :message="notification.message"
+      position="bottom-right"
+      @close="closeNotification"
+    />
+  </v-container>
+</template>
+
 <script setup>
 import { ref, watch } from 'vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
@@ -58,13 +88,7 @@ async function onBookmarkAdded() {
 }
 
 function onBookmarkDeleted(bookmarkIds) {
-  // Dispatch global delete event
-  const deleteEvent = new CustomEvent('global-delete-bookmarks', {
-    detail: { bookmarkIds }
-  })
-  document.dispatchEvent(deleteEvent)
-  
-  // Clear selected items
+  // Just clear selected items, delete component handles everything else
   appStore.clearSelectedItems()
 }
 
@@ -73,33 +97,3 @@ useKeyboardShortcuts({
   onAddBookmark: () => { appStore.openAddBookmarkDialog() }
 });
 </script>
-
-<template>
-  <v-container 
-    fluid
-    class="pa-1"
-  >
-    <BookmarkTable
-      :dialog-open="appStore.addBookmarkDialog"
-      v-model:selected-items="appStore.selectedItems"
-      @bookmark-updated="onBookmarkUpdated"
-      @delete-selected="onBookmarkDeleted"
-    />
-
-    <AddBookmarkDialog
-      v-model="appStore.addBookmarkDialog"
-      @bookmark-added="onBookmarkAdded"
-    />
-
-    <!-- Global Delete Handler -->
-    <GlobalDeleteHandler />
-
-    <NotificationComponent
-      :show="notification.show"
-      :type="notification.type"
-      :message="notification.message"
-      position="bottom-right"
-      @close="closeNotification"
-    />
-  </v-container>
-</template>

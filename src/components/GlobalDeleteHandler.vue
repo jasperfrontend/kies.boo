@@ -1,3 +1,22 @@
+<template>
+  <!-- Global Undo Snackbar - Always available for any remaining global deletes -->
+  <UndoSnackbar
+    v-model="undoState.show"
+    :deleted-items="undoState.deletedItems"
+    @undo="undoDelete"
+    @dismiss="dismissUndo"
+  />
+
+  <!-- Global Notification Component -->
+  <NotificationComponent
+    :show="notification.show"
+    :type="notification.type"
+    :message="notification.message"
+    position="bottom-right"
+    @close="closeNotification"
+  />
+</template>
+
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { useBookmarkDelete } from '@/composables/useBookmarkDelete'
@@ -15,7 +34,7 @@ const {
   closeNotification
 } = useBookmarkDelete()
 
-// Global delete handler
+// Global delete handler (backward compatibility)
 async function handleGlobalDelete(event) {
   const bookmarkIds = event.detail?.bookmarkIds || []
   if (bookmarkIds.length > 0) {
@@ -23,7 +42,7 @@ async function handleGlobalDelete(event) {
   }
 }
 
-// Setup global event listeners
+// Setup global event listeners (backward compatibility)
 onMounted(() => {
   // Listen for global delete events
   document.addEventListener('global-delete-bookmarks', handleGlobalDelete)
@@ -42,22 +61,3 @@ useKeyboardShortcuts({
   }
 })
 </script>
-
-<template>
-  <!-- Global Undo Snackbar - Always available -->
-  <UndoSnackbar
-    v-model="undoState.show"
-    :deleted-items="undoState.deletedItems"
-    @undo="undoDelete"
-    @dismiss="dismissUndo"
-  />
-
-  <!-- Global Notification Component -->
-  <NotificationComponent
-    :show="notification.show"
-    :type="notification.type"
-    :message="notification.message"
-    position="bottom-right"
-    @close="closeNotification"
-  />
-</template>

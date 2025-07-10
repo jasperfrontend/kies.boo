@@ -1,5 +1,4 @@
-// src/composables/useBookmarkDelete.js
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import supabase from '@/lib/supabaseClient'
 import { useAppStore } from '@/stores/app'
 
