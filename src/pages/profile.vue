@@ -55,7 +55,7 @@ const statsCards = computed(() => [
     loading: stats.value.tags.loading
   },
   {
-    title: 'Saved Searches',
+    title: 'Saved Paths',
     value: stats.value.savedSearches.total,
     icon: 'mdi-magnify-plus',
     color: 'info',
@@ -522,13 +522,6 @@ function formatDate(dateString) {
             </v-col>
           </v-row>
         </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- API Demo Section (keeping original content) -->
-    <v-row justify="center" class="mt-6">
-      <v-col cols="12">
-        <JasperApiDemo />
       </v-col>
     </v-row>
   </v-container>
