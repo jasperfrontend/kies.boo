@@ -168,22 +168,29 @@ async function loadTagStats() {
     if (totalError) throw totalError
     stats.value.tags.total = totalCount || 0
     
-    // Get most used tags (tags with most bookmark associations)
+    // Get most used tags by properly counting bookmark_tags relationships
+    // We need to join through bookmark_tags and ensure we only count user's bookmarks
     const { data: tagUsage, error: usageError } = await supabase
       .from('tags')
       .select(`
         id,
         title,
-        bookmark_tags(count)
+        bookmark_tags!inner(
+          bookmark_id,
+          bookmarks!inner(
+            user_id
+          )
+        )
       `)
       .eq('user_id', user.value.id)
-      .limit(5)
+      .eq('bookmark_tags.bookmarks.user_id', user.value.id)
     
     if (usageError) throw usageError
     
     // Calculate usage count and sort
     const tagsWithCount = (tagUsage || []).map(tag => ({
-      ...tag,
+      id: tag.id,
+      title: tag.title,
       usage_count: tag.bookmark_tags?.length || 0
     }))
     .filter(tag => tag.usage_count > 0)
@@ -194,6 +201,46 @@ async function loadTagStats() {
     
   } catch (err) {
     console.error('Error loading tag stats:', err)
+    // Fallback method if the complex query fails
+    try {
+      console.log('Trying fallback method for tag usage...')
+      const { data: fallbackTags, error: fallbackError } = await supabase
+        .from('tags')
+        .select('id, title')
+        .eq('user_id', user.value.id)
+      
+      if (fallbackError) throw fallbackError
+      
+      // For each tag, count its usage manually
+      const tagCounts = []
+      for (const tag of fallbackTags || []) {
+        const { count, error: countError } = await supabase
+          .from('bookmark_tags')
+          .select('bookmark_id', { count: 'exact', head: true })
+          .eq('tag_id', tag.id)
+          .in('bookmark_id', 
+            supabase
+              .from('bookmarks')
+              .select('id')
+              .eq('user_id', user.value.id)
+          )
+        
+        if (!countError && count > 0) {
+          tagCounts.push({
+            id: tag.id,
+            title: tag.title,
+            usage_count: count
+          })
+        }
+      }
+      
+      stats.value.tags.mostUsed = tagCounts
+        .sort((a, b) => b.usage_count - a.usage_count)
+        .slice(0, 3)
+        
+    } catch (fallbackErr) {
+      console.error('Fallback method also failed:', fallbackErr)
+    }
   } finally {
     stats.value.tags.loading = false
   }
@@ -371,9 +418,10 @@ function formatDate(dateString) {
                       v-if="stats.tags.mostUsed.length > 0"
                       v-for="(tag, index) in stats.tags.mostUsed"
                       :key="tag.id"
-                      class="d-flex justify-space-between align-center mb-2"
+                      class="d-flex justify-space-between align-center pa-2 rounded cursor-pointer hover-bg"
+                      @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
                     >
-                      <span class="text-caption">{{ tag.title }}</span>
+                      <span class="text-caption text-primary">{{ tag.title }}</span>
                       <v-chip size="x-small" color="secondary" variant="tonal">
                         {{ tag.usage_count }}
                       </v-chip>
@@ -476,5 +524,26 @@ function formatDate(dateString) {
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- API Demo Section (keeping original content) -->
+    <v-row justify="center" class="mt-6">
+      <v-col cols="12">
+        <JasperApiDemo />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
+
+<style scoped>
+.hover-bg {
+  transition: background-color 0.2s ease;
+}
+
+.hover-bg:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
