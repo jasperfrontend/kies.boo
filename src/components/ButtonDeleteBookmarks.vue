@@ -9,6 +9,7 @@ const appStore = useAppStore()
 const undoState = ref({
   show: false,
   deletedItems: [],
+  deletedBookmarkTags: [], // Store the bookmark-tag relationships
   timeoutId: null
 });
 
@@ -45,10 +46,19 @@ async function deleteSelectedItems() {
   appStore.setDeleting(true);
   
   try {
-    // Get the items that are being deleted from the database
+    // Get the items that are being deleted from the database WITH their tag relationships
     const { data: itemsToDelete, error: fetchError } = await supabase
       .from('bookmarks')
-      .select('*')
+      .select(`
+        *,
+        bookmark_tags (
+          tag_id,
+          tags (
+            id,
+            title
+          )
+        )
+      `)
       .in('id', appStore.selectedItems);
     
     if (fetchError) {
@@ -58,11 +68,43 @@ async function deleteSelectedItems() {
       return;
     }
     
+    // Get the bookmark-tag relationships that will be deleted
+    const { data: bookmarkTagRelationships, error: fetchRelError } = await supabase
+      .from('bookmark_tags')
+      .select('bookmark_id, tag_id')
+      .in('bookmark_id', appStore.selectedItems);
+    
+    if (fetchRelError) {
+      console.error('Error fetching bookmark-tag relationships:', fetchRelError);
+      showNotification('error', 'Failed to delete items.');
+      appStore.setDeleting(false);
+      return;
+    }
+    
     // Store in undo state BEFORE deleting
     undoState.value.deletedItems = itemsToDelete || [];
+    undoState.value.deletedBookmarkTags = bookmarkTagRelationships || [];
     undoState.value.show = true;
     
-    // Delete from database
+    // Delete bookmark-tag relationships first (due to foreign key constraints)
+    if (bookmarkTagRelationships && bookmarkTagRelationships.length > 0) {
+      const { error: deleteRelError } = await supabase
+        .from('bookmark_tags')
+        .delete()
+        .in('bookmark_id', appStore.selectedItems);
+      
+      if (deleteRelError) {
+        console.error('Error deleting bookmark-tag relationships:', deleteRelError);
+        showNotification('error', 'Failed to delete bookmark relationships.');
+        undoState.value.show = false;
+        undoState.value.deletedItems = [];
+        undoState.value.deletedBookmarkTags = [];
+        appStore.setDeleting(false);
+        return;
+      }
+    }
+    
+    // Delete bookmarks from database
     const { error: deleteError } = await supabase
       .from('bookmarks')
       .delete()
@@ -73,6 +115,7 @@ async function deleteSelectedItems() {
       showNotification('error', 'Failed to delete bookmarks.');
       undoState.value.show = false;
       undoState.value.deletedItems = [];
+      undoState.value.deletedBookmarkTags = [];
       appStore.setDeleting(false);
       return;
     }
@@ -108,39 +151,61 @@ async function undoDelete() {
   }
   
   const itemsToRestore = undoState.value.deletedItems;
+  const relationshipsToRestore = undoState.value.deletedBookmarkTags;
   
   if (itemsToRestore.length === 0) return;
   
   try {
-    // Prepare items for insertion (remove any auto-generated fields that might cause conflicts)
+    // Step 1: Restore bookmarks first
+    // Prepare items for insertion (clean up the data structure)
     const itemsForInsertion = itemsToRestore.map(item => {
-      const { ...itemCopy } = item;
-      // Keep all original fields including the original id, created_at, etc.
-      return itemCopy;
+      const { bookmark_tags, ...bookmarkData } = item;
+      return bookmarkData;
     });
 
-    // Restore items to the database
-    const { error } = await supabase
+    // Restore bookmarks to the database
+    const { error: restoreBookmarksError } = await supabase
       .from('bookmarks')
       .upsert(itemsForInsertion, { 
         onConflict: 'id',
         ignoreDuplicates: false 
       });
     
-    if (error) {
-      console.error('Error restoring bookmarks:', error);
+    if (restoreBookmarksError) {
+      console.error('Error restoring bookmarks:', restoreBookmarksError);
       showNotification('error', 'Failed to restore bookmarks.');
       return;
+    }
+    
+    // Step 2: Restore bookmark-tag relationships
+    if (relationshipsToRestore.length > 0) {
+      const { error: restoreRelationshipsError } = await supabase
+        .from('bookmark_tags')
+        .upsert(relationshipsToRestore, {
+          onConflict: 'bookmark_id,tag_id',
+          ignoreDuplicates: false
+        });
+      
+      if (restoreRelationshipsError) {
+        console.error('Error restoring bookmark-tag relationships:', restoreRelationshipsError);
+        // Don't fail completely - bookmarks are restored, just warn about tags
+        showNotification('warning', 'Bookmarks restored but some tag relationships may be missing.');
+      }
     }
     
     // Clear undo state
     undoState.value.show = false;
     undoState.value.deletedItems = [];
+    undoState.value.deletedBookmarkTags = [];
     
     // Trigger refresh for both table and recent bookmarks
     appStore.triggerBookmarkRefresh();
     
-    showNotification('success', 'Items restored successfully.');
+    if (!relationshipsToRestore.length || relationshipsToRestore.length === 0) {
+      showNotification('success', 'Items restored successfully.');
+    } else {
+      showNotification('success', 'Items and their tags restored successfully.');
+    }
     
   } catch (error) {
     console.error('Error restoring bookmarks:', error);
@@ -154,6 +219,7 @@ async function commitDelete() {
   // We just need to clean up the undo state
   undoState.value.show = false;
   undoState.value.deletedItems = [];
+  undoState.value.deletedBookmarkTags = [];
   undoState.value.timeoutId = null;
   
   // Show a notification that the delete is now permanent
