@@ -31,10 +31,23 @@
   to="/import"
   variant="tonal"
   color="primary"
+  class="mr-2"
 >
   <v-icon class="mr-2" size="16">mdi-cloud-upload</v-icon>
   <span>
     Import 
+  </span>
+</v-btn>
+
+<v-btn 
+  to="/hellotags"
+  variant="tonal"
+  color="primary"
+  class="mr-2"
+>
+  <v-icon class="mr-2" size="16">mdi-tag</v-icon>
+  <span>
+    Tags 
   </span>
 </v-btn>
 </template>
