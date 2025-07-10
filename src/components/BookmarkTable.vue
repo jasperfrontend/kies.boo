@@ -162,7 +162,22 @@ onMounted(() => {
     triggerImmediateSearch()
   })
   
-  loadBookmarks()
+  // Check if there's already a search term when mounting
+  // If so, wait a bit for the trigger event, otherwise load immediately
+  if (appStore.bookmarkSearch && appStore.bookmarkSearch.trim()) {
+    // Wait for the trigger event from external navigation
+    setTimeout(() => {
+      // If no trigger event came, load with the search term
+      if (serverOptions.value.search !== appStore.bookmarkSearch) {
+        serverOptions.value.search = appStore.bookmarkSearch
+        serverOptions.value.page = 1
+        loadBookmarks()
+      }
+    }, 200)
+  } else {
+    // No search term, load normally
+    loadBookmarks()
+  }
 })
 
 onUnmounted(() => {

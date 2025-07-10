@@ -81,7 +81,7 @@ export function useBookmarkData(appStore) {
           tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
         }))
         totalItems.value = data?.length || 0
-        return;
+        return // <- important!
       }
       
       // Apply sorting
