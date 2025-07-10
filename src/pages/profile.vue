@@ -51,5 +51,4 @@ async function logout() {
       </v-col>
     </v-row>
   </v-container>
-  <JasperApiDemo />
 </template>
