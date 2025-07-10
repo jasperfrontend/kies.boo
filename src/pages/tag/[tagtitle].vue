@@ -7,7 +7,6 @@
             <v-icon class="mr-2">mdi-tag</v-icon>
             <div>
               <div class="text-h6">Tag: "{{ tagTitle }}"</div>
-              <div class="text-caption">Showing bookmarks tagged {{ tagTitle }}</div>
               <v-btn
                 variant="tonal"
                 size="small"

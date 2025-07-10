@@ -124,7 +124,11 @@ const emit = defineEmits(['update:selected-items', 'bookmark-updated', 'delete-s
 const appStore = useAppStore()
 const router = useRouter()
 
-// Data management
+// Create reactive refs from props so they can be watched
+const reactiveSearchType = toRef(props, 'searchType')
+const reactiveSearchTerm = toRef(props, 'searchTerm')
+
+// Data management - pass reactive refs
 const {
   loading,
   bookmarks,
@@ -132,7 +136,12 @@ const {
   serverOptions,
   loadBookmarks,
   updateServerOptions
-} = useBookmarkData(appStore, props.searchType, props.searchTerm)
+} = useBookmarkData(appStore, reactiveSearchType, reactiveSearchTerm)
+
+// Watch for prop changes and reload data
+watch([reactiveSearchType, reactiveSearchTerm], () => {
+  loadBookmarks()
+}, { immediate: false })
 
 // Selection logic
 const {

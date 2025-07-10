@@ -59,7 +59,7 @@
 >
   <v-icon class="mr-2" size="16">mdi-magnify-plus</v-icon>
   <span>
-    Saved 
+    Paths 
   </span>
 </v-btn>
 </template>

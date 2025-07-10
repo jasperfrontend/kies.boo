@@ -11,10 +11,26 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     sortBy: [{ key: 'created_at', order: 'desc' }]
   })
 
+  // Helper function to get the actual values (handles both refs and primitive values)
+  const getSearchType = () => {
+    return typeof searchType === 'object' && searchType.value !== undefined ? searchType.value : searchType
+  }
+  
+  const getSearchTerm = () => {
+    return typeof searchTerm === 'object' && searchTerm.value !== undefined ? searchTerm.value : searchTerm
+  }
+
   // Watch for bookmark refresh trigger
   watch(() => appStore.bookmarkRefreshTrigger, () => {
     loadBookmarks()
   })
+
+  // Watch for search parameter changes
+  watch(() => [getSearchType(), getSearchTerm()], () => {
+    // Reset to first page when search parameters change
+    serverOptions.value.page = 1
+    loadBookmarks()
+  }, { immediate: false })
 
   // Server-side data loading
   async function loadBookmarks() {
@@ -22,6 +38,8 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     
     try {
       const { page, itemsPerPage, sortBy } = serverOptions.value
+      const currentSearchType = getSearchType()
+      const currentSearchTerm = getSearchTerm()
       
       // Build the query
       let query = supabase
@@ -41,13 +59,13 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
         `, { count: 'exact' })
       
       // Apply search based on type
-      if (searchTerm && searchTerm.trim()) {
-        const term = searchTerm.trim()
+      if (currentSearchTerm && currentSearchTerm.trim()) {
+        const term = currentSearchTerm.trim()
         
-        if (searchType === 'search') {
+        if (currentSearchType === 'search') {
           // Search in title and URL only
           query = query.or(`title.ilike.%${term}%,url.ilike.%${term}%`)
-        } else if (searchType === 'tag') {
+        } else if (currentSearchType === 'tag') {
           // Search in tags only - use the existing RPC function but filter for tags
           const { data, error } = await supabase.rpc('search_bookmarks', { term })
 
