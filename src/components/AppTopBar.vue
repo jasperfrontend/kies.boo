@@ -1,13 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
+
 const drawer = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
-
-function handleDeleteSelected() {
-  const event = new CustomEvent('delete-selected-bookmarks')
-  document.dispatchEvent(event)
-}
 </script>
 
 <template>
@@ -32,7 +28,6 @@ function handleDeleteSelected() {
           </v-col>
           <v-spacer />
           <v-col cols="auto" class="d-flex gap-2">
-            <ButtonDeleteBookmarks @delete-selected="handleDeleteSelected" />
             <ButtonAddBookmark />
           </v-col>
         </v-row>

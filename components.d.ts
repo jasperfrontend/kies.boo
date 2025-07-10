@@ -22,6 +22,8 @@ declare module 'vue' {
     ButtonAddBookmark: typeof import('./src/components/ButtonAddBookmark.vue')['default']
     ButtonDeleteBookmarks: typeof import('./src/components/ButtonDeleteBookmarks.vue')['default']
     ButtonDeleteBookmars: typeof import('./src/components/ButtonDeleteBookmars.vue')['default']
+    DeleteBookmarksButton: typeof import('./src/components/DeleteBookmarksButton.vue')['default']
+    GlobalDeleteHandler: typeof import('./src/components/GlobalDeleteHandler.vue')['default']
     JasperApiDemo: typeof import('./src/components/JasperApiDemo.vue')['default']
     KeyboardShortcutsDialog: typeof import('./src/components/KeyboardShortcutsDialog.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']

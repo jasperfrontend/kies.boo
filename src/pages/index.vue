@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
+import GlobalDeleteHandler from '@/components/GlobalDeleteHandler.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 import { useAppStore } from '@/stores/app';
 
@@ -14,7 +15,6 @@ const notification = ref({
   type: 'success',
   message: ''
 });
-
 
 // Watch for dialog state changes from store
 watch(() => appStore.addBookmarkDialog, (newValue) => {
@@ -44,8 +44,6 @@ function onBookmarkUpdated() {
   showNotification('success', 'Bookmark updated successfully!');
 }
 
-
-
 async function onBookmarkAdded() {
   try {
     appStore.closeAddBookmarkDialog();
@@ -59,11 +57,21 @@ async function onBookmarkAdded() {
   }
 }
 
+function onBookmarkDeleted(bookmarkIds) {
+  // Dispatch global delete event
+  const deleteEvent = new CustomEvent('global-delete-bookmarks', {
+    detail: { bookmarkIds }
+  })
+  document.dispatchEvent(deleteEvent)
+  
+  // Clear selected items
+  appStore.clearSelectedItems()
+}
+
 // Setup keyboard shortcuts
 useKeyboardShortcuts({
   onAddBookmark: () => { appStore.openAddBookmarkDialog() }
 });
-
 </script>
 
 <template>
@@ -75,6 +83,7 @@ useKeyboardShortcuts({
       :dialog-open="appStore.addBookmarkDialog"
       v-model:selected-items="appStore.selectedItems"
       @bookmark-updated="onBookmarkUpdated"
+      @delete-selected="onBookmarkDeleted"
     />
 
     <AddBookmarkDialog
@@ -82,6 +91,8 @@ useKeyboardShortcuts({
       @bookmark-added="onBookmarkAdded"
     />
 
+    <!-- Global Delete Handler -->
+    <GlobalDeleteHandler />
 
     <NotificationComponent
       :show="notification.show"

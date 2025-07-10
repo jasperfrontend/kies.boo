@@ -31,7 +31,7 @@ async function logout() {
           </v-card-title>
           <v-card-text class="mb-6">
             <div v-if="isAuthenticated && user">
-              <v-card class="mx-auto">
+              <v-card class="mx-auto pa-0" elevation="0">
                 <v-card-title class="d-flex align-center">
                   <v-avatar size="56" class="me-4">
                     <img :src="user.user_metadata?.avatar_url" alt="User avatar" />

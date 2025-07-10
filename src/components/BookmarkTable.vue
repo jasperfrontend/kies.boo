@@ -1,5 +1,22 @@
 <template>
   <div>
+    <!-- Delete Button - Shows when items are selected -->
+    <div v-if="selectedItems.length > 0" class="mb-4">
+      <v-btn
+        color="red-darken-4"
+        variant="outlined"
+        @click="handleDeleteSelected"
+        prepend-icon="mdi-delete"
+      >
+        Delete {{ selectedItems.length }} item{{ selectedItems.length === 1 ? '' : 's' }} 
+        <v-badge
+          color="grey-darken-3"
+          content="Alt+I"
+          inline
+        />
+      </v-btn>
+    </div>
+
     <v-data-table-server
       :headers="BOOKMARK_TABLE_HEADERS"
       :items="bookmarks"
@@ -77,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, toRef } from 'vue'
+import { ref, computed, onMounted, toRef } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
@@ -102,7 +119,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:selected-items', 'bookmark-updated'])
+const emit = defineEmits(['update:selected-items', 'bookmark-updated', 'delete-selected'])
 
 const appStore = useAppStore()
 const router = useRouter()
@@ -167,6 +184,18 @@ function handleBookmarkUpdated() {
   loadBookmarks()
 }
 
+function handleDeleteCompleted(deletedIds) {
+  // Clear the selected items after successful deletion
+  emit('update:selected-items', [])
+  // Refresh the bookmarks
+  loadBookmarks()
+}
+
+function handleDeleteSelected() {
+  // Emit the delete event to parent with selected items
+  emit('delete-selected', props.selectedItems)
+}
+
 onMounted(() => {
   loadBookmarks()
 })
@@ -175,7 +204,13 @@ onMounted(() => {
 if (props.searchType === 'all') {
   useKeyboardShortcuts({
     onAddBookmark: () => { appStore.openAddBookmarkDialog() },
-    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
+    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() },
+    onDeleteSelected: () => { handleDeleteSelected() }
+  })
+} else {
+  // For search and tag pages, still enable delete shortcut
+  useKeyboardShortcuts({
+    onDeleteSelected: () => { handleDeleteSelected() }
   })
 }
 </script>
