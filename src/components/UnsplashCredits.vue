@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 
 const userObject = ref()
@@ -28,6 +28,10 @@ async function getUserBackground(uid) {
     return
   }
   userPreferences.value = data.preferences
+  updateAttribution()
+}
+
+function updateAttribution() {
   // Check of het een Unsplash image is, en of attribution bestaat
   if (
     userPreferences.value?.background?.type === 'image' &&
@@ -39,7 +43,46 @@ async function getUserBackground(uid) {
   }
 }
 
-onMounted(getCurrentlyLoggedInUser)
+// Watch for changes in userPreferences to update attribution reactively
+watch(() => userPreferences.value?.background, (newBackground) => {
+  updateAttribution()
+}, { deep: true })
+
+// Listen for real-time changes to user_preferences table
+function setupRealtimeSubscription() {
+  if (!userObject.value?.id) return
+
+  const channel = supabase
+    .channel('user-preferences-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'user_preferences',
+        filter: `user_id=eq.${userObject.value.id}`
+      },
+      (payload) => {
+        // Update local data when database changes
+        userPreferences.value = payload.new.preferences
+      }
+    )
+    .subscribe()
+
+  // Return unsubscribe function
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}
+
+onMounted(async () => {
+  await getCurrentlyLoggedInUser()
+  
+  // Set up real-time subscription after user is loaded
+  if (userObject.value?.id) {
+    setupRealtimeSubscription()
+  }
+})
 </script>
 
 <template>
