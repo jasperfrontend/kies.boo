@@ -124,6 +124,33 @@
 
             <v-divider />
 
+            <!-- Double Click Behavior Section -->
+            <v-card-text class="py-2">
+              <div class="text-caption text-medium-emphasis mb-2">Double-click behavior</div>
+              <v-btn-toggle
+                v-model="doubleClickBehavior"
+                @update:model-value="changeDoubleClickBehavior"
+                variant="outlined"
+                density="compact"
+                divided
+                class="w-100"
+              >
+                <v-btn value="select" size="small" class="flex-grow-1">
+                  <v-icon icon="mdi-cursor-default-click" class="mr-1" size="16" />
+                  Select
+                </v-btn>
+                <v-btn value="open" size="small" class="flex-grow-1">
+                  <v-icon icon="mdi-open-in-new" class="mr-1" size="16" />
+                  Open
+                </v-btn>
+              </v-btn-toggle>
+              <div class="text-caption text-medium-emphasis mt-2">
+                Choose what happens when you double-click a bookmark row
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
             <!-- Menu Items -->
             <v-list density="compact" class="py-0">
               <v-list-item
@@ -219,9 +246,11 @@ import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
 import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 
 const drawer = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
+const { doubleClickBehavior, saveDoubleClickBehavior } = useUserPreferences()
 
 const route = useRoute()
 const theme = useTheme()
@@ -268,6 +297,14 @@ function changeTheme(newTheme) {
   
   // Save preference to localStorage
   localStorage.setItem('theme-preference', newTheme)
+}
+
+// Double-click behavior management
+async function changeDoubleClickBehavior(newBehavior) {
+  const success = await saveDoubleClickBehavior(newBehavior)
+  if (!success) {
+    console.error('Failed to save double-click behavior preference')
+  }
 }
 
 // Initialize theme
