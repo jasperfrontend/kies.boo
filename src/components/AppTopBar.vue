@@ -154,6 +154,12 @@
             <!-- Menu Items -->
             <v-list density="compact" class="py-0">
               <v-list-item
+                to="/profile"
+                prepend-icon="mdi-account"
+              >
+                <v-list-item-title>Your Profile</v-list-item-title>
+              </v-list-item>
+              <v-list-item
                 @click="showBackgroundDialog = true; profileMenu = false"
                 prepend-icon="mdi-image"
               >

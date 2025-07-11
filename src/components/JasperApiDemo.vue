@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row justify="center">
-      <v-col cols="12" md="8">
+      <v-col>
         <v-card class="pa-6">
           <v-card-title>API Bookmark Manager</v-card-title>
           <v-card-subtitle>Test the external bookmark API endpoint</v-card-subtitle>
@@ -41,6 +41,8 @@
               label="Title"
               prepend-icon="mdi-bookmark"
               :disabled="loading"
+              hint="Leave empty to auto-harvest from URL"
+              persistent-hint
             />
             
             <v-text-field
@@ -48,6 +50,7 @@
               label="URL"
               prepend-icon="mdi-link"
               :disabled="loading"
+              :rules="[rules.required, rules.url]"
             />
             
             <v-text-field
@@ -65,6 +68,8 @@
               prepend-icon="mdi-text"
               rows="3"
               :disabled="loading"
+              hint="Leave empty to auto-harvest from URL"
+              persistent-hint
             />
 
             <v-alert v-if="error" type="error" class="mt-4">
@@ -102,6 +107,22 @@
                     <v-list-item-title>Social Image</v-list-item-title>
                     <v-list-item-subtitle>{{ harvestedData.og_image }}</v-list-item-subtitle>
                   </v-list-item>
+                  <v-list-item v-if="harvestedData.keywords && harvestedData.keywords.length > 0">
+                    <v-list-item-title>Suggested Tags</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <div class="d-flex flex-wrap gap-1 mt-1">
+                        <v-chip
+                          v-for="keyword in harvestedData.keywords.slice(0, 5)"
+                          :key="keyword"
+                          size="x-small"
+                          variant="tonal"
+                          color="primary"
+                        >
+                          {{ keyword }}
+                        </v-chip>
+                      </div>
+                    </v-list-item-subtitle>
+                  </v-list-item>
                 </v-list>
               </v-card-text>
             </v-card>
@@ -111,7 +132,7 @@
               color="primary"
               class="mt-4"
               :loading="loading"
-              :disabled="loading || !form.title || !form.url"
+              :disabled="loading || !form.url"
               block
             >
               Add Bookmark via API
@@ -133,7 +154,7 @@
                 :model-value="bookmarkletCode"
                 label="Bookmarklet Code"
                 readonly
-                rows="6"
+                rows="8"
                 variant="outlined"
               />
               
@@ -163,17 +184,19 @@ POST https://jasper.monster/harvest/addbookmark.php
 Content-Type: application/json
 
 {
-  "title": "Page Title",
+  "title": "Page Title (optional - will be harvested if empty)",
   "url": "https://example.com",
-  "tags": ["tag1", "tag2"],
-  "description": "Optional description",
+  "tags": ["tag1", "tag2"] or "tag1,tag2",
+  "description": "Optional description (will be harvested if empty)",
   "user_id": "user_uuid_from_supabase"
 }
               </v-code>
               
-              <p><strong>Required fields:</strong> title, url, user_id</p>
-              <p><strong>Optional fields:</strong> tags, description</p>
-              <p><strong>Response:</strong> JSON with success/error status</p>
+              <p><strong>Required fields:</strong> url, user_id</p>
+              <p><strong>Optional fields:</strong> title, tags, description</p>
+              <p><strong>Tags format:</strong> Array of strings or comma-separated string</p>
+              <p><strong>Response:</strong> JSON with success/error status and harvested metadata</p>
+              <p><strong>Database:</strong> Uses normalized schema with separate tags and bookmark_tags tables</p>
             </v-card-text>
           </v-card>
         </v-card>
@@ -183,7 +206,7 @@ Content-Type: application/json
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import apiBookmarkService from '@/lib/apiBookmarkService'
 
 const form = ref({
@@ -198,8 +221,22 @@ const testingConnection = ref(false)
 const error = ref('')
 const success = ref('')
 const apiStatus = ref('testing')
-const bookmarkletCode = ref('')
 const harvestedData = ref(null)
+
+// Form validation rules
+const rules = {
+  required: value => !!value || 'Required.',
+  url: value => {
+    if (!value) return true // Allow empty for optional fields
+    const pattern = /^https?:\/\/.+/
+    return pattern.test(value) || 'Must be a valid URL starting with http:// or https://'
+  }
+}
+
+// Computed bookmarklet code
+const bookmarkletCode = computed(() => {
+  return apiBookmarkService.generateBookmarkletUrl()
+})
 
 async function testApiConnection() {
   testingConnection.value = true
@@ -221,10 +258,10 @@ async function addBookmarkViaApi() {
 
   try {
     const result = await apiBookmarkService.addBookmark({
-      title: form.value.title,
-      url: form.value.url,
-      tags: form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      description: form.value.description
+      title: form.value.title.trim() || null, // Send null if empty to trigger harvesting
+      url: form.value.url.trim(),
+      tags: form.value.tags.trim() ? form.value.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+      description: form.value.description.trim() || null // Send null if empty to trigger harvesting
     })
 
     success.value = result.message || 'Bookmark added successfully!'
@@ -266,6 +303,5 @@ async function copyBookmarklet() {
 
 onMounted(() => {
   testApiConnection()
-  bookmarkletCode.value = apiBookmarkService.generateBookmarkletUrl()
 })
 </script>
