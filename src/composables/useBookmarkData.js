@@ -25,12 +25,23 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     loadBookmarks()
   })
 
-  // Watch for search parameter changes
+  // Watch for search parameter changes and reset pagination
   watch(() => [getSearchType(), getSearchTerm()], () => {
     // Reset to first page when search parameters change
-    serverOptions.value.page = 1
+    serverOptions.value = {
+      ...serverOptions.value,
+      page: 1
+    }
     loadBookmarks()
   }, { immediate: false })
+
+  // Function to reset pagination (can be called externally)
+  function resetPagination() {
+    serverOptions.value = {
+      ...serverOptions.value,
+      page: 1
+    }
+  }
 
   // Server-side data loading
   async function loadBookmarks() {
@@ -66,29 +77,34 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
           // Search in title and URL only
           query = query.or(`title.ilike.%${term}%,url.ilike.%${term}%`)
         } else if (currentSearchType === 'tag') {
-          // Search in tags only - use the existing RPC function but filter for tags
-          const { data, error } = await supabase.rpc('search_bookmarks', { term })
+          // For tag search, we need to join with bookmark_tags and filter by tag title
+          // First, get all bookmark IDs that have this tag
+          const { data: bookmarkIdsWithTag, error: tagError } = await supabase
+            .from('bookmark_tags')
+            .select(`
+              bookmark_id,
+              tags!inner(title)
+            `)
+            .ilike('tags.title', term)
 
-          if (error) {
-            console.error(error)
-            throw error
+          if (tagError) {
+            console.error('Error fetching bookmarks by tag:', tagError)
+            throw tagError
           }
 
-          // Filter results to only include bookmarks that have the exact tag
-          const tagFilteredData = (data || []).filter(bookmark => 
-            bookmark.bookmark_tags && 
-            bookmark.bookmark_tags.some(bt => 
-              bt.tags && bt.tags.title && bt.tags.title.toLowerCase() === term.toLowerCase()
-            )
-          )
+          // Extract bookmark IDs
+          const bookmarkIds = (bookmarkIdsWithTag || []).map(bt => bt.bookmark_id)
+          
+          if (bookmarkIds.length === 0) {
+            // No bookmarks found with this tag
+            bookmarks.value = []
+            totalItems.value = 0
+            loading.value = false
+            return
+          }
 
-          bookmarks.value = tagFilteredData.map(b => ({
-            ...b,
-            tags: (b.bookmark_tags || []).map(bt => bt.tags?.title).filter(Boolean)
-          }))
-          totalItems.value = tagFilteredData.length
-          loading.value = false
-          return
+          // Filter the main query to only include these bookmark IDs
+          query = query.in('id', bookmarkIds)
         }
       }
       
@@ -142,6 +158,7 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     totalItems,
     serverOptions,
     loadBookmarks,
-    updateServerOptions
+    updateServerOptions,
+    resetPagination
   }
 }

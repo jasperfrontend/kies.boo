@@ -28,6 +28,7 @@ declare module 'vue' {
     JasperApiDemo: typeof import('./src/components/JasperApiDemo.vue')['default']
     KeyboardShortcutsDialog: typeof import('./src/components/KeyboardShortcutsDialog.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
+    MdiDiscord: typeof import('./src/components/icons/MdiDiscord.vue')['default']
     NotificationComponent: typeof import('./src/components/NotificationComponent.vue')['default']
     RecentBookmarks: typeof import('./src/components/RecentBookmarks.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

@@ -9,6 +9,7 @@
     />
 
     <v-data-table-server
+      :key="tableKey"
       :headers="BOOKMARK_TABLE_HEADERS"
       :items="bookmarks"
       :items-length="totalItems"
@@ -120,6 +121,12 @@ const router = useRouter()
 const reactiveSearchType = toRef(props, 'searchType')
 const reactiveSearchTerm = toRef(props, 'searchTerm')
 
+// Create a table key that changes when search parameters change
+// This forces the v-data-table-server to completely re-render and reset its pagination
+const tableKey = computed(() => {
+  return `${props.searchType}-${props.searchTerm}-table`
+})
+
 // Data management - pass reactive refs
 const {
   loading,
@@ -127,11 +134,14 @@ const {
   totalItems,
   serverOptions,
   loadBookmarks,
-  updateServerOptions
+  updateServerOptions,
+  resetPagination
 } = useBookmarkData(appStore, reactiveSearchType, reactiveSearchTerm)
 
 // Watch for prop changes and reload data
 watch([reactiveSearchType, reactiveSearchTerm], () => {
+  // Reset pagination when search parameters change
+  resetPagination()
   loadBookmarks()
 }, { immediate: false })
 
