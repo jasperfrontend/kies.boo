@@ -73,13 +73,13 @@ onMounted(getCurrentlyLoggedInUser)
 
 </template>
 <style lang="css" scoped>
-::v-deep .unsplash-attribution a {
+:deep .unsplash-attribution a {
   color: #fff !important;
   text-decoration: underline;
   opacity: 0.9;
   transition: color 0.2s;
 }
-::v-deep .unsplash-attribution a:hover {
+:deep .unsplash-attribution a:hover {
   color: #ffe082 !important;
 }
 </style>
