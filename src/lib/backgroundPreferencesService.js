@@ -36,6 +36,103 @@ class BackgroundPreferencesService {
   }
 
   /**
+   * Get all user preferences (background, double-click behavior, etc.)
+   * @returns {Promise<Object|null>} User preferences object or null
+   */
+  async getAllUserPreferences() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        return null
+      }
+
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('preferences')
+        .eq('user_id', session.user.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching user preferences:', error)
+        return null
+      }
+
+      return data?.preferences || null
+    } catch (error) {
+      console.error('Error getting all user preferences:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get user's double-click behavior preference
+   * @returns {Promise<string>} 'select' or 'open' (defaults to 'select')
+   */
+  async getDoubleClickBehavior() {
+    try {
+      const preferences = await this.getAllUserPreferences()
+      return preferences?.doubleClickBehavior || 'select'
+    } catch (error) {
+      console.error('Error getting double-click behavior:', error)
+      return 'select' // Default fallback
+    }
+  }
+
+  /**
+   * Save user's double-click behavior preference
+   * @param {string} behavior - 'select' or 'open'
+   * @returns {Promise<boolean>} Success status
+   */
+  async saveDoubleClickBehavior(behavior) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        throw new Error('User must be authenticated')
+      }
+
+      // First, try to get existing preferences
+      const { data: existingData, error: fetchError } = await supabase
+        .from('user_preferences')
+        .select('preferences')
+        .eq('user_id', session.user.id)
+        .single()
+
+      const currentPreferences = existingData?.preferences || {}
+      const updatedPreferences = {
+        ...currentPreferences,
+        doubleClickBehavior: behavior
+      }
+
+      let result
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // No existing preferences, create new record
+        result = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: session.user.id,
+            preferences: updatedPreferences
+          })
+      } else {
+        // Update existing record
+        result = await supabase
+          .from('user_preferences')
+          .update({ preferences: updatedPreferences })
+          .eq('user_id', session.user.id)
+      }
+
+      if (result.error) {
+        console.error('Error saving double-click behavior:', result.error)
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error saving double-click behavior:', error)
+      return false
+    }
+  }
+
+  /**
    * Save user's background preference
    * @param {Object} backgroundData - Background preference object
    * @returns {Promise<boolean>} Success status
@@ -202,8 +299,6 @@ class BackgroundPreferencesService {
       { key: '#c65d7b', label: 'Rosewood', color: '#c65d7b' }
     ]
   }
-
-
 }
 
 export default new BackgroundPreferencesService()

@@ -2,7 +2,7 @@
   <tr
     :class="rowClasses"
     tabindex="0"
-    @dblclick="$emit('toggle-selection', item.id)"
+    @dblclick="handleDoubleClick"
     class="cursor-pointer"
   >
     <td>
@@ -90,7 +90,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 
 const props = defineProps({
   item: {
@@ -114,6 +115,9 @@ const props = defineProps({
 const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit'])
 
 const actionsMenu = ref(false)
+
+// Get user preferences for double-click behavior
+const { doubleClickBehavior } = useUserPreferences()
 
 const rowClasses = computed(() => {
   const classes = []
@@ -143,6 +147,16 @@ function formatDate(dateString) {
   const d = new Date(dateString)
   const pad = n => String(n).padStart(2, '0')
   return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().substring(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function handleDoubleClick() {
+  if (doubleClickBehavior.value === 'open') {
+    // Open bookmark in new tab
+    window.open(props.item.url, '_blank')
+  } else {
+    // Default behavior: select/deselect the row
+    emit('toggle-selection', props.item.id)
+  }
 }
 
 function handleViewDetails() {

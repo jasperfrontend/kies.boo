@@ -124,6 +124,33 @@
 
             <v-divider />
 
+            <!-- Double-click Behavior Section -->
+            <v-card-text class="py-2">
+              <div class="text-caption text-medium-emphasis mb-2">Double-click behavior</div>
+              <v-btn-toggle
+                v-model="selectedDoubleClickBehavior"
+                @update:model-value="changeDoubleClickBehavior"
+                variant="outlined"
+                density="compact"
+                divided
+                class="w-100"
+              >
+                <v-btn value="select" size="small" class="flex-grow-1">
+                  <v-icon icon="mdi-checkbox-marked-circle" class="mr-1" size="16" />
+                  Select
+                </v-btn>
+                <v-btn value="open" size="small" class="flex-grow-1">
+                  <v-icon icon="mdi-open-in-new" class="mr-1" size="16" />
+                  Open
+                </v-btn>
+              </v-btn-toggle>
+              <div class="text-caption text-medium-emphasis mt-1">
+                {{ selectedDoubleClickBehavior === 'select' ? 'Double-click selects row' : 'Double-click opens bookmark' }}
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
             <!-- Menu Items -->
             <v-list density="compact" class="py-0">
               <v-list-item
@@ -364,18 +391,21 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    
     <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
   </v-app-bar>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
 import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
+import KeyboardShortcutsDialog from '@/components/KeyboardShortcutsDialog.vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 
 const drawer = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
@@ -383,10 +413,14 @@ const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
 const route = useRoute()
 const theme = useTheme()
 
+// User preferences
+const { doubleClickBehavior, saveDoubleClickBehavior } = useUserPreferences()
+
 // Reactive data
 const user = ref(null)
 const profileMenu = ref(false)
 const selectedTheme = ref('system')
+const selectedDoubleClickBehavior = ref('select')
 
 // Dialog states
 const showBackgroundDialog = ref(false)
@@ -432,6 +466,14 @@ function changeTheme(newTheme) {
   localStorage.setItem('theme-preference', newTheme)
 }
 
+// Double-click behavior management
+async function changeDoubleClickBehavior(newBehavior) {
+  const success = await saveDoubleClickBehavior(newBehavior)
+  if (success) {
+    selectedDoubleClickBehavior.value = newBehavior
+  }
+}
+
 // Initialize theme
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme-preference') || 'system'
@@ -473,10 +515,18 @@ function setupSystemThemeListener() {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadUserData()
   initializeTheme()
   setupSystemThemeListener()
+  
+  // Initialize double-click behavior from composable
+  selectedDoubleClickBehavior.value = doubleClickBehavior.value
+})
+
+// Watch for changes in the composable's doubleClickBehavior
+watch(doubleClickBehavior, (newValue) => {
+  selectedDoubleClickBehavior.value = newValue
 })
 </script>
 
