@@ -135,7 +135,7 @@
     </v-row>
     
     <!-- Clean Unused Tags Section -->
-    <v-row justify="center" class="mt-4">
+    <v-row justify="center" class="mt-4 mb-16">
       <v-col cols="12" md="10" lg="8">
         <v-card class="pa-6" outlined>
           <v-card-title class="text-h5 mb-4 d-flex align-center">

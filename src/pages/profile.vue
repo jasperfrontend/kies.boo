@@ -341,7 +341,7 @@ function formatDate(dateString) {
     </v-row>
 
     <!-- Statistics Overview -->
-    <v-row justify="center" class="mt-4">
+    <v-row justify="center" class="mt-4 mb-16">
       <v-col cols="12" md="8" lg="6">
         <v-card class="pa-6" outlined>
           <v-card-title class="text-h5 mb-4 d-flex align-center">
