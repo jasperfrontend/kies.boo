@@ -1,6 +1,6 @@
 <template>
   <AppTopBar />
-    <v-app id="inspire" class="mt-16">
+  <v-app id="inspire" class="mt-16">
     <v-main>
       <router-view></router-view>
     </v-main>
@@ -8,16 +8,21 @@
 </template>
 
 <script setup>
+import { useBackground } from '@/composables/useBackground'
 
+// Initialize background management
+useBackground()
 </script>
 
 <style>
-/* table, tr, td {
-  background-color: rgba(15,15,15,.5);
-} */
+/* Remove hardcoded background - now handled by useBackground composable */
 #inspire {
-  background: url(https://images.unsplash.com/photo-1488415032361-b7e238421f1b?q=80&w=1920) center center no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
+  /* Default background will be handled by Vuetify theme */
+  min-height: 100vh;
+}
+
+/* Ensure smooth transitions when background changes */
+#inspire {
+  transition: background 0.3s ease-in-out;
 }
 </style>

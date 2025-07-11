@@ -127,6 +127,13 @@
             <!-- Menu Items -->
             <v-list density="compact" class="py-0">
               <v-list-item
+                @click="showBackgroundDialog = true; profileMenu = false"
+                prepend-icon="mdi-image"
+              >
+                <v-list-item-title>Change background</v-list-item-title>
+              </v-list-item>
+              
+              <v-list-item
                 @click="showAboutDialog = true"
                 prepend-icon="mdi-information-outline"
               >
@@ -188,6 +195,12 @@
         </v-menu>
       </div>
     </v-container>
+
+    <!-- Background Selection Dialog -->
+    <BackgroundSelectionDialog
+      v-model="showBackgroundDialog"
+      @background-changed="onBackgroundChanged"
+    />
 
     <!-- About Dialog -->
     <v-dialog v-model="showAboutDialog" max-width="500">
@@ -361,6 +374,7 @@ import { useRoute } from 'vue-router'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
+import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
 
 const drawer = ref(null)
@@ -375,6 +389,7 @@ const profileMenu = ref(false)
 const selectedTheme = ref('system')
 
 // Dialog states
+const showBackgroundDialog = ref(false)
 const showAboutDialog = ref(false)
 const showHelpDialog = ref(false)
 const showPrivacyDialog = ref(false)
@@ -391,6 +406,13 @@ const memberSince = computed(() => {
     day: 'numeric' 
   })
 })
+
+// Background change handler
+function onBackgroundChanged(backgroundData) {
+  // Background is already applied by the dialog component
+  // We could emit an event here if other components need to know
+  console.log('Background changed:', backgroundData)
+}
 
 // Theme management
 function changeTheme(newTheme) {

@@ -19,6 +19,9 @@
       v-model:options="serverOptions"
       @update:options="updateServerOptions"
       class="elevation-1 bg-surface-darken"
+      :style="{
+        backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
+      }"
       density="compact"
       show-current-page
       :mobile-breakpoint="600"
