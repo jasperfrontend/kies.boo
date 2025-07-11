@@ -5,7 +5,7 @@
         <v-card class="pa-6" outlined>
           <v-card-title class="text-h4 mb-4 d-flex align-center">
             <v-icon icon="mdi-magnify-plus" class="mr-3" />
-            Your saved <code>/paths</code>
+            Your saved <code class="ml-2">/paths</code>
             <v-spacer />
             <v-chip 
               color="primary" 
