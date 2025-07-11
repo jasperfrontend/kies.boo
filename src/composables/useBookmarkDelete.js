@@ -171,7 +171,7 @@ export function useBookmarkDelete() {
     const relationshipsToRestore = undoState.value.deletedBookmarkTags
     
     if (itemsToRestore.length === 0) {
-      showNotification('warning', 'No items to restore')
+      // showNotification('warning', 'No items to restore')
       return false
     }
     

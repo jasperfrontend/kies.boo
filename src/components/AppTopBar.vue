@@ -124,33 +124,6 @@
 
             <v-divider />
 
-            <!-- Double-click Behavior Section -->
-            <v-card-text class="py-2">
-              <div class="text-caption text-medium-emphasis mb-2">Double-click behavior</div>
-              <v-btn-toggle
-                v-model="selectedDoubleClickBehavior"
-                @update:model-value="changeDoubleClickBehavior"
-                variant="outlined"
-                density="compact"
-                divided
-                class="w-100"
-              >
-                <v-btn value="select" size="small" class="flex-grow-1">
-                  <v-icon icon="mdi-checkbox-marked-circle" class="mr-1" size="16" />
-                  Select
-                </v-btn>
-                <v-btn value="open" size="small" class="flex-grow-1">
-                  <v-icon icon="mdi-open-in-new" class="mr-1" size="16" />
-                  Open
-                </v-btn>
-              </v-btn-toggle>
-              <div class="text-caption text-medium-emphasis mt-1">
-                {{ selectedDoubleClickBehavior === 'select' ? 'Double-click selects row' : 'Double-click opens bookmark' }}
-              </div>
-            </v-card-text>
-
-            <v-divider />
-
             <!-- Menu Items -->
             <v-list density="compact" class="py-0">
               <v-list-item
@@ -161,14 +134,16 @@
               </v-list-item>
               
               <v-list-item
-                @click="showAboutDialog = true"
+                to="/about"
+                @click="profileMenu = false"
                 prepend-icon="mdi-information-outline"
               >
                 <v-list-item-title>About</v-list-item-title>
               </v-list-item>
               
               <v-list-item
-                @click="showHelpDialog = true"
+                to="/help"
+                @click="profileMenu = false"
                 prepend-icon="mdi-help-circle-outline"
               >
                 <v-list-item-title>Help</v-list-item-title>
@@ -192,7 +167,8 @@
             <!-- Footer Links -->
             <v-card-actions class="justify-center pa-2">
               <v-btn
-                @click="showPrivacyDialog = true"
+                to="/privacy"
+                @click="profileMenu = false"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -201,7 +177,8 @@
               </v-btn>
               <span class="text-caption mx-1">·</span>
               <v-btn
-                @click="showTermsDialog = true"
+                to="/terms"
+                @click="profileMenu = false"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -210,7 +187,8 @@
               </v-btn>
               <span class="text-caption mx-1">·</span>
               <v-btn
-                @click="showCookieDialog = true"
+                to="/cookies"
+                @click="profileMenu = false"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -229,183 +207,18 @@
       @background-changed="onBackgroundChanged"
     />
 
-    <!-- About Dialog -->
-    <v-dialog v-model="showAboutDialog" max-width="500">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon icon="mdi-information-outline" class="mr-2" />
-          About kies.boo
-        </v-card-title>
-        <v-card-text>
-          <p class="mb-4">
-            kies.boo is a modern bookmark management application that helps you organize, 
-            search, and manage your bookmarks efficiently.
-          </p>
-          <p class="mb-2"><strong>Features:</strong></p>
-          <ul class="ml-4">
-            <li>Import bookmarks from any browser</li>
-            <li>Smart tagging and search</li>
-            <li>Keyboard shortcuts for power users</li>
-            <li>Save frequently used search paths</li>
-            <li>Clean, modern interface</li>
-          </ul>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showAboutDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Help Dialog -->
-    <v-dialog v-model="showHelpDialog" max-width="600">
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon icon="mdi-help-circle-outline" class="mr-2" />
-          Help & Support
-        </v-card-title>
-        <v-card-text>
-          <div class="mb-4">
-            <h3 class="text-h6 mb-2">Keyboard Shortcuts</h3>
-            <p class="mb-2">Press <kbd>Ctrl</kbd> + <kbd>/</kbd> to view all available keyboard shortcuts.</p>
-          </div>
-          
-          <div class="mb-4">
-            <h3 class="text-h6 mb-2">Getting Started</h3>
-            <ul class="ml-4">
-              <li>Import bookmarks from your browser using the Import page</li>
-              <li>Add new bookmarks with Alt+A or the Add Bookmark button</li>
-              <li>Use tags to organize your bookmarks</li>
-              <li>Save search paths for quick access later</li>
-            </ul>
-          </div>
-
-          <div class="mb-4">
-            <h3 class="text-h6 mb-2">Need More Help?</h3>
-            <p>Visit our documentation or contact support for additional assistance.</p>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showHelpDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Privacy Dialog -->
-    <v-dialog v-model="showPrivacyDialog" max-width="600">
-      <v-card>
-        <v-card-title>Privacy Policy</v-card-title>
-        <v-card-text>
-          <p class="mb-4">
-            Your privacy is important to us. This privacy policy explains how we collect, 
-            use, and protect your information when you use kies.boo.
-          </p>
-          <h4 class="text-subtitle-1 mb-2">Information We Collect</h4>
-          <p class="mb-3">
-            We collect only the information necessary to provide our bookmark management service:
-          </p>
-          <ul class="ml-4 mb-4">
-            <li>Account information (email, display name, avatar from Discord authentication)</li>
-            <li>Bookmark data (URLs, titles, tags, descriptions)</li>
-            <li>Usage data to improve our service</li>
-          </ul>
-          <h4 class="text-subtitle-1 mb-2">How We Use Your Information</h4>
-          <p class="mb-3">Your information is used to:</p>
-          <ul class="ml-4">
-            <li>Provide and maintain the bookmark management service</li>
-            <li>Authenticate your account</li>
-            <li>Improve our application</li>
-          </ul>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showPrivacyDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Terms Dialog -->
-    <v-dialog v-model="showTermsDialog" max-width="600">
-      <v-card>
-        <v-card-title>Terms of Service</v-card-title>
-        <v-card-text>
-          <p class="mb-4">
-            By using kies.boo, you agree to these terms of service.
-          </p>
-          <h4 class="text-subtitle-1 mb-2">Acceptable Use</h4>
-          <p class="mb-3">You agree to:</p>
-          <ul class="ml-4 mb-4">
-            <li>Use the service only for lawful purposes</li>
-            <li>Not share your account credentials</li>
-            <li>Not attempt to hack or compromise the service</li>
-            <li>Respect the intellectual property rights of others</li>
-          </ul>
-          <h4 class="text-subtitle-1 mb-2">Service Availability</h4>
-          <p class="mb-3">
-            We strive to keep kies.boo available 24/7, but we cannot guarantee 
-            uninterrupted service. We may perform maintenance that temporarily 
-            affects availability.
-          </p>
-          <h4 class="text-subtitle-1 mb-2">Data and Privacy</h4>
-          <p>
-            Your bookmark data belongs to you. We will not share, sell, or 
-            misuse your personal information. See our Privacy Policy for details.
-          </p>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showTermsDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Cookie Policy Dialog -->
-    <v-dialog v-model="showCookieDialog" max-width="600">
-      <v-card>
-        <v-card-title>Cookie Policy</v-card-title>
-        <v-card-text>
-          <p class="mb-4">
-            This cookie policy explains how kies.boo uses cookies and similar technologies.
-          </p>
-          <h4 class="text-subtitle-1 mb-2">What Are Cookies</h4>
-          <p class="mb-3">
-            Cookies are small text files stored on your device when you visit our website. 
-            They help us provide a better user experience.
-          </p>
-          <h4 class="text-subtitle-1 mb-2">How We Use Cookies</h4>
-          <ul class="ml-4 mb-4">
-            <li><strong>Essential Cookies:</strong> Required for authentication and basic functionality</li>
-            <li><strong>Preference Cookies:</strong> Remember your settings like theme preference</li>
-            <li><strong>Analytics Cookies:</strong> Help us understand how you use our service</li>
-          </ul>
-          <h4 class="text-subtitle-1 mb-2">Managing Cookies</h4>
-          <p>
-            You can control cookies through your browser settings, but disabling 
-            essential cookies may affect the functionality of kies.boo.
-          </p>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showCookieDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    
     <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
   </v-app-bar>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
 import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
-import KeyboardShortcutsDialog from '@/components/KeyboardShortcutsDialog.vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
-import { useUserPreferences } from '@/composables/useUserPreferences'
 
 const drawer = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
@@ -413,22 +226,13 @@ const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
 const route = useRoute()
 const theme = useTheme()
 
-// User preferences
-const { doubleClickBehavior, saveDoubleClickBehavior } = useUserPreferences()
-
 // Reactive data
 const user = ref(null)
 const profileMenu = ref(false)
 const selectedTheme = ref('system')
-const selectedDoubleClickBehavior = ref('select')
 
-// Dialog states
+// Dialog states (only keeping background dialog)
 const showBackgroundDialog = ref(false)
-const showAboutDialog = ref(false)
-const showHelpDialog = ref(false)
-const showPrivacyDialog = ref(false)
-const showTermsDialog = ref(false)
-const showCookieDialog = ref(false)
 
 // Computed properties
 const memberSince = computed(() => {
@@ -464,14 +268,6 @@ function changeTheme(newTheme) {
   
   // Save preference to localStorage
   localStorage.setItem('theme-preference', newTheme)
-}
-
-// Double-click behavior management
-async function changeDoubleClickBehavior(newBehavior) {
-  const success = await saveDoubleClickBehavior(newBehavior)
-  if (success) {
-    selectedDoubleClickBehavior.value = newBehavior
-  }
 }
 
 // Initialize theme
@@ -515,18 +311,10 @@ function setupSystemThemeListener() {
   })
 }
 
-onMounted(async () => {
+onMounted(() => {
   loadUserData()
   initializeTheme()
   setupSystemThemeListener()
-  
-  // Initialize double-click behavior from composable
-  selectedDoubleClickBehavior.value = doubleClickBehavior.value
-})
-
-// Watch for changes in the composable's doubleClickBehavior
-watch(doubleClickBehavior, (newValue) => {
-  selectedDoubleClickBehavior.value = newValue
 })
 </script>
 
