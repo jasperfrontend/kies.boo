@@ -3,12 +3,14 @@
   <v-app id="inspire" class="mt-16">
     <v-main>
       <router-view></router-view>
+      <UnsplashCredits />
     </v-main>
   </v-app>
 </template>
 
 <script setup>
 import { useBackground } from '@/composables/useBackground'
+import UnsplashCredits from '@/components/UnsplashCredits.vue';
 
 // Initialize background management
 useBackground()

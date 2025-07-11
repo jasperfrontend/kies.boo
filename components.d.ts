@@ -36,6 +36,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SearchBookmarks: typeof import('./src/components/SearchBookmarks.vue')['default']
     UndoSnackbar: typeof import('./src/components/UndoSnackbar.vue')['default']
+    UnsplashCredits: typeof import('./src/components/UnsplashCredits.vue')['default']
     UserNameAvatar: typeof import('./src/components/UserNameAvatar.vue')['default']
   }
 }
