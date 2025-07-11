@@ -20,15 +20,15 @@ const supabaseDarkTheme = {
     'surface-variant': '#333333',
     'on-surface-variant': '#A1A1A1',
     // this shit reversed. darken-x gets lighter when the number increases because it didn't work with -lighten-x
-    primary: '#138353',
-    'primary-lighten-1': '#39B883',
-    'primary-lighten-2': '#41C28C',
-    'primary-lighten-3': '#85E0BA',
+    // primary: '#138353',
+    // 'primary-lighten-1': '#39B883',
+    // 'primary-lighten-2': '#41C28C',
+    // 'primary-lighten-3': '#85E0BA',
 
-    secondary: '#00C48C',          // een complementair mintgroen
-    'secondary-darken-1': '#00A37A',
+    // secondary: '#00C48C',
+    // 'secondary-darken-1': '#00A37A',
 
-    error: '#CF6679',              // Vuetify standaard errorkleur voor dark mode
+    error: '#CF6679',
     info: '#2196F3',
     success: '#4CAF50',
     warning: '#FB8C00',

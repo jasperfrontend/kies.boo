@@ -153,7 +153,9 @@ class BackgroundPreferencesService {
       'gradient-7': 'linear-gradient(135deg, #8fd3f4 0%, #84fab0 100%)',
       'gradient-8': 'linear-gradient(135deg, #c471f5 0%, #fa71cd 100%)',
       'gradient-9': 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
-      'gradient-10': 'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)'
+      'gradient-10': 'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)',
+      'gradient-11': 'linear-gradient(135deg, #20c997 0%, #b8e994 100%)',
+      'gradient-12': 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
     }
 
     return gradients[gradientKey] || gradients['gradient-1']
@@ -174,7 +176,9 @@ class BackgroundPreferencesService {
       { key: 'gradient-7', label: 'Blue Green', css: this.getGradientCss('gradient-7') },
       { key: 'gradient-8', label: 'Purple Pink', css: this.getGradientCss('gradient-8') },
       { key: 'gradient-9', label: 'Blue Ocean', css: this.getGradientCss('gradient-9') },
-      { key: 'gradient-10', label: 'Pink Orange', css: this.getGradientCss('gradient-10') }
+      { key: 'gradient-10', label: 'Pink Orange', css: this.getGradientCss('gradient-10') },
+      { key: 'gradient-11', label: 'Teal Lime', css: this.getGradientCss('gradient-11') },
+      { key: 'gradient-12', label: 'Gold Coral', css: this.getGradientCss('gradient-12') }
     ]
   }
 
@@ -184,18 +188,22 @@ class BackgroundPreferencesService {
    */
   getSolidColorOptions() {
     return [
-      { key: '#1976d2', label: 'Blue', color: '#1976d2' },
-      { key: '#388e3c', label: 'Green', color: '#388e3c' },
-      { key: '#f57c00', label: 'Orange', color: '#f57c00' },
-      { key: '#d32f2f', label: 'Red', color: '#d32f2f' },
-      { key: '#7b1fa2', label: 'Purple', color: '#7b1fa2' },
-      { key: '#303f9f', label: 'Indigo', color: '#303f9f' },
-      { key: '#0097a7', label: 'Cyan', color: '#0097a7' },
-      { key: '#689f38', label: 'Light Green', color: '#689f38' },
-      { key: '#f9a825', label: 'Amber', color: '#f9a825' },
-      { key: '#5d4037', label: 'Brown', color: '#5d4037' }
+      { key: '#007fff', label: 'Azure', color: '#007fff' },
+      { key: '#6a994e', label: 'Moss', color: '#6a994e' },
+      { key: '#f28500', label: 'Tangerine', color: '#f28500' },
+      { key: '#b80f0a', label: 'Crimson', color: '#b80f0a' },
+      { key: '#581845', label: 'Aubergine', color: '#581845' },
+      { key: '#3d5a80', label: 'Cobalt', color: '#3d5a80' },
+      { key: '#00bcd4', label: 'Ice Blue', color: '#00bcd4' },
+      { key: '#a3b18a', label: 'Sage', color: '#a3b18a' },
+      { key: '#e0c097', label: 'Sand', color: '#e0c097' },
+      { key: '#b06c49', label: 'Clay', color: '#b06c49' },
+      { key: '#62757f', label: 'Slate', color: '#62757f' },
+      { key: '#c65d7b', label: 'Rosewood', color: '#c65d7b' }
     ]
   }
+
+
 }
 
 export default new BackgroundPreferencesService()

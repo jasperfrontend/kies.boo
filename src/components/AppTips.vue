@@ -6,9 +6,11 @@ const randomTip = appTips[Math.floor(Math.random() * appTips.length)]
 <template>
 <v-card
   class="mt-1 user-tips"
-  color="primary"
-  :text="randomTip"
+  color="surface"
+  title="Kies.boo tips"
+  :subtitle="randomTip"
   variant="flat"
+  prepend-icon="mdi-lightbulb-on-90"
 />
 </template>
 
