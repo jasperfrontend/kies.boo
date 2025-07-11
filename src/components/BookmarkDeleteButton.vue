@@ -61,11 +61,11 @@ const props = defineProps({
   },
   buttonVariant: {
     type: String,
-    default: 'outlined'
+    default: 'flat'
   },
   buttonClass: {
     type: String,
-    default: 'mx-4'
+    default: 'mx-4 position-fixed z-10'
   },
   buttonIcon: {
     type: String,
@@ -171,3 +171,8 @@ useKeyboardShortcuts({
   }
 })
 </script>
+<style scoped>
+.z-10 {
+  z-index: 10;
+}
+</style>

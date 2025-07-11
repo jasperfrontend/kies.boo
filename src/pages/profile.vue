@@ -44,7 +44,7 @@ const statsCards = computed(() => [
     title: 'Total Bookmarks',
     value: stats.value.bookmarks.total,
     icon: 'mdi-bookmark',
-    color: 'primary',
+    color: 'blue-darken-1',
     loading: stats.value.bookmarks.loading
   },
   {
@@ -58,7 +58,7 @@ const statsCards = computed(() => [
     title: 'Saved Paths',
     value: stats.value.savedSearches.total,
     icon: 'mdi-magnify-plus',
-    color: 'info',
+    color: 'indigo-lighten-1',
     loading: stats.value.savedSearches.loading
   }
 ])
@@ -380,7 +380,7 @@ function formatDate(dateString) {
           <v-row>
             <!-- Bookmark Details -->
             <v-col cols="12" md="4">
-              <v-card variant="outlined" class="pa-4 h-100">
+              <v-card variant="tonal" class="pa-4 h-100 bg-black">
                 <v-card-title class="text-subtitle-1 pb-2">
                   <v-icon icon="mdi-bookmark" class="mr-2" size="20" />
                   Bookmark Activity
@@ -407,7 +407,7 @@ function formatDate(dateString) {
 
             <!-- Tag Details -->
             <v-col cols="12" md="4">
-              <v-card variant="outlined" class="pa-4 h-100">
+              <v-card variant="tonal" class="pa-4 h-100 bg-black">
                 <v-card-title class="text-subtitle-1 pb-2">
                   <v-icon icon="mdi-tag" class="mr-2" size="20" />
                   Most Used Tags
@@ -421,7 +421,7 @@ function formatDate(dateString) {
                       class="d-flex justify-space-between align-center pa-2 rounded cursor-pointer hover-bg"
                       @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
                     >
-                      <span class="text-caption text-primary">{{ tag.title }}</span>
+                      <span class="text-caption text-secondary">{{ tag.title }}</span>
                       <v-chip size="x-small" color="secondary" variant="tonal">
                         {{ tag.usage_count }}
                       </v-chip>
@@ -437,7 +437,7 @@ function formatDate(dateString) {
 
             <!-- Saved Searches Details -->
             <v-col cols="12" md="4">
-              <v-card variant="outlined" class="pa-4 h-100">
+              <v-card variant="tonal" class="pa-4 h-100 bg-black">
                 <v-card-title class="text-subtitle-1 pb-2">
                   <v-icon icon="mdi-magnify-plus" class="mr-2" size="20" />
                   Recent Saved Paths
@@ -452,7 +452,7 @@ function formatDate(dateString) {
                     >
                       <router-link 
                         :to="search.url" 
-                        class="text-caption text-primary text-decoration-none"
+                        class="text-caption text-indigo-lighten-1 text-decoration-none"
                       >
                         {{ search.url }}
                       </router-link>
@@ -473,7 +473,7 @@ function formatDate(dateString) {
           <!-- Quick Actions -->
           <v-row class="mt-4">
             <v-col cols="12">
-              <v-card variant="outlined" class="pa-4">
+              <v-card variant="tonal" class="pa-4 bg-black">
                 <v-card-title class="text-subtitle-1 pb-2">
                   <v-icon icon="mdi-lightning-bolt" class="mr-2" size="20" />
                   Quick Actions
@@ -483,7 +483,7 @@ function formatDate(dateString) {
                     <v-btn
                       to="/"
                       size="small"
-                      variant="outlined"
+                      variant="tonal"
                       prepend-icon="mdi-bookmark"
                       class="mr-2"
                     >
@@ -492,7 +492,7 @@ function formatDate(dateString) {
                     <v-btn
                       to="/hellotags"
                       size="small"
-                      variant="outlined"
+                      variant="tonal"
                       prepend-icon="mdi-tag"
                       class="mr-2"
                     >
@@ -501,7 +501,7 @@ function formatDate(dateString) {
                     <v-btn
                       to="/saved-searches"
                       size="small"
-                      variant="outlined"
+                      variant="tonal"
                       prepend-icon="mdi-magnify-plus"
                       class="mr-2"
                     >
@@ -510,7 +510,7 @@ function formatDate(dateString) {
                     <v-btn
                       to="/import"
                       size="small"
-                      variant="outlined"
+                      variant="tonal"
                       prepend-icon="mdi-cloud-upload"
                       class="mr-2"
                     >
