@@ -18,7 +18,7 @@
       items-per-page="15"
       v-model:options="serverOptions"
       @update:options="updateServerOptions"
-      class="elevation-1 bg-transparent"
+      class="elevation-1 bg-surface-darken"
       density="compact"
       show-current-page
       :mobile-breakpoint="600"

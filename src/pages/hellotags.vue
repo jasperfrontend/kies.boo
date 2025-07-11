@@ -290,7 +290,6 @@ async function getTags(pagination) {
   }
 
   tagsData.value = data || [];
-  showNotification('success', `Loaded ${data?.length || 0} tags`);
 }
 
 async function deleteUnusedTags() {
