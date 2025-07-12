@@ -1,5 +1,6 @@
 <template>
   <v-container 
+    v-if="!loading"
     fluid
     class="pa-1"
   >
@@ -26,6 +27,9 @@
       @close="closeNotification"
     />
   </v-container>
+  <v-container v-else>
+    Loading...
+  </v-container>
 </template>
 
 <script setup>
@@ -36,6 +40,7 @@ import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import GlobalDeleteHandler from '@/components/GlobalDeleteHandler.vue';
 import { useAppStore } from '@/stores/app';
 
+const loading = ref(true)
 const appStore = useAppStore()
 
 // Notification state
@@ -61,13 +66,16 @@ function closeNotification() {
 function onBookmarkUpdated() {
   // Trigger refresh for recent bookmarks in sidebar
   appStore.triggerBookmarkRefresh();
-  
   showNotification('success', 'Bookmark updated successfully!');
 }
-
 
 function onBookmarkDeleted() {
   // Just clear selected items, delete component handles everything else
   appStore.clearSelectedItems()
 }
+
+onMounted(() => {
+  loading.value = false
+})
+
 </script>

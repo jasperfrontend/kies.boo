@@ -308,31 +308,31 @@ function formatDate(dateString) {
   </v-alert>
 
   <!-- User Profile Section -->
-  <v-card class="pa-6 mb-6 bg-transparent" flat>
-    <v-card-title class="text-h4 mb-4">
-      Your Profile
-    </v-card-title>
-    
-    <v-card-text class="mb-6">
-      <div v-if="isAuthenticated && user">
-        <v-card class="mx-auto pa-0" elevation="0">
-          <v-card-title class="d-flex align-center">
-            <v-avatar size="56" class="me-4">
-              <img :src="user.user_metadata?.avatar_url" alt="User avatar" />
-            </v-avatar>
-            <div>
-              <div class="text-h6">{{ user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email }}</div>
-              <div class="text-caption">{{ user.email }}</div>
-              <div class="text-caption text-grey-darken-1">Member since {{ memberSince }}</div>
-            </div>
-          </v-card-title>
-          <v-card-actions>
-            <v-btn color="error" @click="logout">Log out</v-btn>
-          </v-card-actions>
-        </v-card>
-      </div>
-    </v-card-text>
-  </v-card>
+  <div v-if="isAuthenticated && user">
+
+    <v-card
+      v-if="user?.user_metadata?.avatar_url"
+      class="mx-auto"
+      :title="user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email"
+      :subtitle="user.email"
+    >
+      <template v-slot:append>
+        <v-avatar color="blue-darken-2">
+          <v-icon icon="mdi-alarm"></v-icon>
+        </v-avatar>
+      </template>
+      <template v-slot:prepend>
+        <v-avatar size="40">
+          <v-img
+            :alt="user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email"
+            :src="user.user_metadata.avatar_url"
+          ></v-img>
+        </v-avatar>
+      </template>
+      <v-card-text>Member since {{ memberSince }}</v-card-text>
+    </v-card>
+
+  </div>
 
 
   <!-- Statistics Overview -->

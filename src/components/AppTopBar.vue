@@ -72,14 +72,12 @@
               variant="text"
               class="ml-2"
             >
-              <v-avatar size="32">
-                <img
-                  v-if="user?.user_metadata?.avatar_url"
-                  :src="user.user_metadata.avatar_url"
-                  :alt="user.user_metadata?.custom_claims?.global_name || user.email"
-                />
-                <v-icon v-else icon="mdi-account-circle" size="32" />
-              </v-avatar>
+              <v-avatar 
+                v-if="user?.user_metadata?.avatar_url"
+                size="40" 
+                :image="user.user_metadata.avatar_url"
+              />
+              <v-icon v-else icon="mdi-account-circle" size="32" />
             </v-btn>
           </template>
 
@@ -87,14 +85,15 @@
             <!-- User Info Section -->
             <v-card-text class="pb-0">
               <div class="d-flex align-center mb-2">
-                <v-avatar size="40" class="mr-3">
-                  <img
-                    v-if="user?.user_metadata?.avatar_url"
-                    :src="user.user_metadata.avatar_url"
-                    :alt="user.user_metadata?.custom_claims?.global_name || user.email"
-                  />
-                  <v-icon v-else icon="mdi-account-circle" size="40" />
-                </v-avatar>
+                <v-avatar 
+                  v-if="user?.user_metadata?.avatar_url"
+                  size="50" 
+                  class="mr-3"
+                  :image="user.user_metadata.avatar_url"
+                />
+
+                <v-icon v-else icon="mdi-account-circle" size="40" />
+
                 <div>
                   <div class="font-weight-medium">
                     {{ user?.user_metadata?.custom_claims?.global_name || user?.user_metadata?.full_name || 'User' }}
@@ -170,6 +169,7 @@
             <v-list density="compact" class="py-0">
               <v-list-item
                 to="/profile"
+                @click="profileMenu = false"
                 prepend-icon="mdi-account"
               >
                 <v-list-item-title>Your Profile</v-list-item-title>
