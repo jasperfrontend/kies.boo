@@ -62,7 +62,7 @@
       </template>
 
       <template #no-data>
-        <v-alert type="info">
+        <v-alert type="info" class="ma-4">
           {{ 
             searchType === 'search' ? `No bookmarks found matching "${searchTerm}"` : 
             searchType === 'tag' ? `No bookmarks found with tag "${searchTerm}"` : 
@@ -89,10 +89,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, toRef, watch } from 'vue'
+import { ref, computed, toRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
 import { useBookmarkData } from '@/composables/useBookmarkData'
 import { useTableSelection } from '@/composables/useTableSelection'
@@ -179,7 +178,6 @@ const { focusedRowIndex } = useBookmarkTableKeyboard(
 
 // Event handlers
 function handleSearchTag(tag) {
-  // Navigate to tag route instead of setting search
   router.push(`/tag/${encodeURIComponent(tag)}`)
 }
 
@@ -207,14 +205,16 @@ function handleDeleteCompleted(deletedIds) {
   emit('delete-selected', deletedIds)
 }
 
+// We dont use onMounted anymore but rely on watchers.
+// See composables/useBookmarkData.js
 // onMounted(() => {
 //   loadBookmarks()
 // })
 
-if (props.searchType === 'all') {
-  useKeyboardShortcuts({
-    onAddBookmark: () => { appStore.openAddBookmarkDialog() },
-    onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
-  })
-}
+// if (props.searchType === 'all') {
+//   useKeyboardShortcuts({
+//     onAddBookmark: () => { appStore.openAddBookmarkDialog() },
+//     onRefreshBookmarks: () => { appStore.triggerBookmarkRefresh() }
+//   })
+// }
 </script>

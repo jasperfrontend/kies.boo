@@ -22,16 +22,36 @@
 
       <v-card-text class="pa-6">
         <div class="d-flex flex-column ga-4">
-          <div>
-            <div class="text-caption text-grey-darken-1 mb-1">Title</div>
-            <div class="text-h6 text-white" style="line-height: 1.4;">
+          <v-card
+            variant="flat"
+            density="compact"
+            class="pa-0"
+          >
+            <v-card-subtitle
+              class="pa-0 mb-2"
+            >
+              Title
+            </v-card-subtitle>
+            <v-card-title
+              class="pa-0"
+            >
               {{ bookmark.title }}
-            </div>
-          </div>
+            </v-card-title>
+          </v-card>
 
-          <div>
-            <div class="text-caption text-grey-darken-1 mb-1">URL</div>
-            <div class="text-white">
+          <v-card
+            variant="flat"
+            density="compact"
+            class="pa-0"
+          >
+            <v-card-subtitle
+              class="pa-0 mb-2"
+            >
+              URL
+            </v-card-subtitle>
+            <v-card-text
+              class="pa-0"
+            >
               <a 
                 :href="bookmark.url" 
                 target="_blank" 
@@ -40,34 +60,57 @@
                 {{ bookmark.url }}
                 <v-icon icon="mdi-open-in-new" size="14" class="ml-1" />
               </a>
-            </div>
-          </div>
+            </v-card-text>
+          </v-card>
 
-          <div>
-            <div class="text-caption text-grey-darken-1 mb-1">Tags</div>
-            <div>
-              <div v-if="bookmark.tags && bookmark.tags.length > 0">
-                <v-chip
-                  v-for="tag in bookmark.tags"
-                  :key="tag"
-                  size="small"
-                  variant="tonal"
-                  color="primary-lighten-3"
-                  class="mr-1 mb-1"
-                >
-                  {{ tag }}
-                </v-chip>
+          <v-card
+            variant="flat"
+            density="compact"
+            class="pa-0"
+          >
+            <v-card-subtitle
+              class="pa-0 mb-2"
+            >
+              Tags
+            </v-card-subtitle>
+            <v-card-text
+              class="pa-0"
+            >
+              <div>
+                <div v-if="bookmark.tags && bookmark.tags.length > 0">
+                  <v-chip
+                    v-for="tag in bookmark.tags"
+                    :key="tag"
+                    size="small"
+                    variant="tonal"
+                    color="primary-lighten-3"
+                    class="mr-1 mb-1"
+                  >
+                    {{ tag }}
+                  </v-chip>
+                </div>
+                <span v-else class="text-grey-darken-1">No tags</span>
               </div>
-              <span v-else class="text-grey-darken-1">No tags</span>
-            </div>
-          </div>
+            </v-card-text>
+          </v-card>
 
-          <div>
-            <div class="text-caption text-grey-darken-1 mb-1">Created</div>
-            <div class="text-white">
+          <v-card
+            variant="flat"
+            density="compact"
+            class="pa-0"
+          >
+            <v-card-subtitle
+              class="pa-0 mb-2"
+            >
+              Created
+            </v-card-subtitle>
+            <v-card-text
+              class="pa-0"
+            >
               {{ formatDate(bookmark.created_at) }}
-            </div>
-          </div>
+            </v-card-text>
+          </v-card>
+
         </div>
       </v-card-text>
 
