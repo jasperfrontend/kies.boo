@@ -68,14 +68,14 @@
         <div v-for="domain in collapsedDomainsWithCounts" :key="domain.name" class="collapse-indicator">
           <v-card
             variant="outlined"
-            class="ma-2 pa-3"
+            class="ma-2 pa-3 collapsed-domain-card"
             color="surface-variant"
           >
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
                 <v-icon icon="mdi-domain" class="mr-2" color="primary" />
                 <div>
-                  <div class="text-subtitle-2 font-weight-medium">
+                  <div class="text-subtitle-2 font-weight-medium collapsed-domain-text">
                     {{ domain.count }} more results from {{ domain.name }}
                   </div>
                   <div class="text-caption text-medium-emphasis">
@@ -90,6 +90,7 @@
                 color="primary"
                 size="small"
                 prepend-icon="mdi-chevron-down"
+                class="collapsed-domain-btn"
               >
                 Show All
               </v-btn>
@@ -152,6 +153,7 @@ import { useAppStore } from '@/stores/app'
 import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
 import { useBookmarkData } from '@/composables/useBookmarkData'
 import { useTableSelection } from '@/composables/useTableSelection'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 import { ITEMS_PER_PAGE_OPTIONS, BOOKMARK_TABLE_HEADERS } from '@/lib/tableConstants'
 import BookmarkTableRow from '@/components/BookmarkTableRow.vue'
 import BookmarkDetailsDialog from '@/components/BookmarkDetailsDialog.vue'
@@ -175,6 +177,9 @@ const emit = defineEmits(['update:selected-items', 'bookmark-updated', 'delete-s
 
 const appStore = useAppStore()
 const router = useRouter()
+
+// Get user preferences
+const { domainCollapsing } = useUserPreferences()
 
 // Create reactive refs from props so they can be watched
 const reactiveSearchType = toRef(props, 'searchType')
@@ -248,6 +253,11 @@ const visibleBookmarkCount = computed(() => {
 
 // Get collapsed domains with their counts for the bottom display
 const collapsedDomainsWithCounts = computed(() => {
+  // If domain collapsing is disabled, return empty array
+  if (!domainCollapsing.value) {
+    return []
+  }
+  
   const counts = {}
   const result = []
   
@@ -273,6 +283,11 @@ const collapsedDomainsWithCounts = computed(() => {
 
 // Count hidden bookmarks due to collapsing
 const hiddenBookmarkCount = computed(() => {
+  // If domain collapsing is disabled, no bookmarks are hidden
+  if (!domainCollapsing.value) {
+    return 0
+  }
+  
   let hidden = 0
   const counts = {}
   
@@ -294,6 +309,12 @@ const hiddenBookmarkCount = computed(() => {
 })
 
 function computeDisplayBookmarks() {
+  // If domain collapsing is disabled, show all bookmarks
+  if (!domainCollapsing.value) {
+    displayBookmarks.value = [...bookmarks.value]
+    return
+  }
+  
   const counts = {}
   bookmarks.value.forEach(b => {
     const d = extractDomain(b.url)
@@ -344,7 +365,6 @@ function checkAndLoadMoreIfNeeded() {
     !isAutoLoading.value
   ) {
     const additionalNeeded = Math.min(hidden, target - visible)
-    console.log(`Loading ${additionalNeeded} more items: visible ${visible} + hidden ${hidden}, target ${target}`)
     
     isAutoLoading.value = true
     loadBookmarks(additionalNeeded).finally(() => {
@@ -375,6 +395,31 @@ watch(bookmarks, computeDisplayBookmarks, { immediate: true })
 
 // Watch for changes in expanded domains
 watch(expandedDomains, computeDisplayBookmarks, { deep: true })
+
+// Watch for changes in domain collapsing preference
+watch(domainCollapsing, async (newValue, oldValue) => {
+  // Only retrigger if the value actually changed (not initial load)
+  if (oldValue !== undefined && newValue !== oldValue) {
+    // Clear expanded domains when toggling the setting
+    expandedDomains.value.clear()
+    
+    // Reset auto-loading guard
+    isAutoLoading.value = false
+    
+    // Just recompute the display with current data first
+    computeDisplayBookmarks()
+    
+    // Check if we need to reload based on the actual fetched data vs target
+    const target = serverOptions.value.itemsPerPage
+    const actualFetched = bookmarks.value.length // This is the real fetched count
+    const visible = visibleBookmarkCount.value   // This is what's displayed
+    
+    // Only reload if we fetched too many items and collapsing is now disabled
+    if (!newValue && target !== -1 && actualFetched > target) {
+      await loadBookmarks()
+    }
+  }
+}, { immediate: false })
 
 // Keyboard navigation
 const { focusedRowIndex } = useBookmarkTableKeyboard(
@@ -419,13 +464,83 @@ function handleDeleteCompleted(deletedIds) {
   border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 
-.collapse-indicator .v-card {
+.collapsed-domain-card {
+  border: 2px solid rgba(var(--v-theme-primary), 0.3) !important;
+  background: linear-gradient(
+    135deg, 
+    rgba(var(--v-theme-primary), 0.08) 0%, 
+    rgba(var(--v-theme-secondary), 0.05) 50%,
+    rgba(var(--v-theme-primary), 0.03) 100%
+  );
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.collapsed-domain-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg, 
+    transparent, 
+    rgba(var(--v-theme-primary), 0.1), 
+    transparent
+  );
+  transition: left 0.5s ease-in-out;
+}
+
+.collapsed-domain-card:hover {
+  border-color: rgba(var(--v-theme-primary), 0.6);
+  background: linear-gradient(
+    135deg, 
+    rgba(var(--v-theme-primary), 0.12) 0%, 
+    rgba(var(--v-theme-secondary), 0.08) 50%,
+    rgba(var(--v-theme-primary), 0.06) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(var(--v-theme-primary), 0.2),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.collapsed-domain-card:hover::before {
+  left: 100%;
+}
+
+.collapsed-domain-text {
+  color: rgba(var(--v-theme-primary), 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.collapsed-domain-btn {
+  box-shadow: 0 2px 4px rgba(var(--v-theme-primary), 0.2);
   transition: all 0.2s ease-in-out;
 }
 
-.collapse-indicator .v-card:hover {
-  background-color: rgba(var(--v-theme-primary), 0.08);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.collapsed-domain-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.3);
+}
+
+/* Add a subtle pulse animation */
+@keyframes gentle-pulse {
+  0%, 100% {
+    border-color: rgba(var(--v-theme-primary), 0.3);
+  }
+  50% {
+    border-color: rgba(var(--v-theme-primary), 0.5);
+  }
+}
+
+.collapsed-domain-card {
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+
+.collapsed-domain-card:hover {
+  animation: none;
 }
 </style>

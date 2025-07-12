@@ -4,19 +4,20 @@ import supabase from '@/lib/supabaseClient'
 
 // Global reactive state - shared across all component instances
 const globalDoubleClickBehavior = ref('select')
+const globalDomainCollapsing = ref(true)
 const globalLoading = ref(false)
 let isInitialized = false
 
 export function useUserPreferences() {
   /**
-   * Get user's double-click behavior preference
-   * @returns {Promise<string>} 'select' or 'open' (defaults to 'select')
+   * Get all user preferences
+   * @returns {Promise<Object>} User preferences object
    */
-  async function getDoubleClickBehavior() {
+  async function getAllPreferences() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
-        return 'select'
+        return { doubleClickBehavior: 'select', domainCollapsing: true }
       }
 
       const { data, error } = await supabase
@@ -27,22 +28,26 @@ export function useUserPreferences() {
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('Error fetching user preferences:', error)
-        return 'select'
+        return { doubleClickBehavior: 'select', domainCollapsing: true }
       }
 
-      return data?.preferences?.doubleClickBehavior || 'select'
+      return {
+        doubleClickBehavior: data?.preferences?.doubleClickBehavior || 'select',
+        domainCollapsing: data?.preferences?.domainCollapsing ?? true // Use nullish coalescing to default to true
+      }
     } catch (error) {
-      console.error('Error getting double-click behavior:', error)
-      return 'select' // Default fallback
+      console.error('Error getting user preferences:', error)
+      return { doubleClickBehavior: 'select', domainCollapsing: true }
     }
   }
 
   /**
-   * Save user's double-click behavior preference
-   * @param {string} behavior - 'select' or 'open'
+   * Save a specific preference
+   * @param {string} key - Preference key
+   * @param {any} value - Preference value
    * @returns {Promise<boolean>} Success status
    */
-  async function saveDoubleClickBehavior(behavior) {
+  async function savePreference(key, value) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -59,7 +64,7 @@ export function useUserPreferences() {
       const currentPreferences = existingData?.preferences || {}
       const updatedPreferences = {
         ...currentPreferences,
-        doubleClickBehavior: behavior
+        [key]: value
       }
 
       let result
@@ -80,30 +85,55 @@ export function useUserPreferences() {
       }
 
       if (result.error) {
-        console.error('Error saving double-click behavior:', result.error)
+        console.error(`Error saving ${key}:`, result.error)
         return false
       }
 
       // Update global state - this will trigger reactivity in all components
-      globalDoubleClickBehavior.value = behavior
+      if (key === 'doubleClickBehavior') {
+        globalDoubleClickBehavior.value = value
+      } else if (key === 'domainCollapsing') {
+        globalDomainCollapsing.value = value
+      }
+      
       return true
     } catch (error) {
-      console.error('Error saving double-click behavior:', error)
+      console.error(`Error saving ${key}:`, error)
       return false
     }
   }
 
   /**
-   * Load user's double-click behavior preference
+   * Save user's double-click behavior preference
+   * @param {string} behavior - 'select' or 'open'
+   * @returns {Promise<boolean>} Success status
    */
-  async function loadDoubleClickBehavior() {
+  async function saveDoubleClickBehavior(behavior) {
+    return savePreference('doubleClickBehavior', behavior)
+  }
+
+  /**
+   * Save user's domain collapsing preference
+   * @param {boolean} enabled - true to enable collapsing, false to disable
+   * @returns {Promise<boolean>} Success status
+   */
+  async function saveDomainCollapsing(enabled) {
+    return savePreference('domainCollapsing', enabled)
+  }
+
+  /**
+   * Load all user preferences
+   */
+  async function loadAllPreferences() {
     globalLoading.value = true
     try {
-      const behavior = await getDoubleClickBehavior()
-      globalDoubleClickBehavior.value = behavior
+      const preferences = await getAllPreferences()
+      globalDoubleClickBehavior.value = preferences.doubleClickBehavior
+      globalDomainCollapsing.value = preferences.domainCollapsing
     } catch (error) {
-      console.error('Error loading double-click behavior:', error)
-      globalDoubleClickBehavior.value = 'select' // fallback
+      console.error('Error loading preferences:', error)
+      globalDoubleClickBehavior.value = 'select'
+      globalDomainCollapsing.value = true
     } finally {
       globalLoading.value = false
     }
@@ -112,15 +142,17 @@ export function useUserPreferences() {
   // Initialize only once globally
   if (!isInitialized) {
     onMounted(() => {
-      loadDoubleClickBehavior()
+      loadAllPreferences()
     })
     isInitialized = true
   }
 
   return {
     doubleClickBehavior: globalDoubleClickBehavior,
+    domainCollapsing: globalDomainCollapsing,
     loading: globalLoading,
-    loadDoubleClickBehavior,
-    saveDoubleClickBehavior
+    loadAllPreferences,
+    saveDoubleClickBehavior,
+    saveDomainCollapsing
   }
 }

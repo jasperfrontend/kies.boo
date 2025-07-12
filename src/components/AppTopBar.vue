@@ -138,6 +138,30 @@
 
             <v-divider />
 
+            <!-- Domain Collapsing Section -->
+            <v-card-text class="py-2">
+              <div class="text-caption text-medium-emphasis mb-2">Table behavior</div>
+              <v-switch
+                v-model="domainCollapsing"
+                @update:model-value="changeDomainCollapsing"
+                color="primary"
+                density="compact"
+                hide-details
+              >
+                <template v-slot:label>
+                  <div class="d-flex align-center">
+                    <v-icon icon="mdi-view-collapse" class="mr-2" size="16" />
+                    <span class="text-body-2">Collapse similar domains</span>
+                  </div>
+                </template>
+              </v-switch>
+              <div class="text-caption text-medium-emphasis mt-1">
+                Groups bookmarks from the same domain when there are more than 5
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
             <!-- Double Click Behavior Section -->
             <v-card-text class="py-2">
               <div class="text-caption text-medium-emphasis mb-2">Double-click behavior</div>
@@ -292,7 +316,7 @@ import NotificationComponent from '@/components/NotificationComponent.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
-const { doubleClickBehavior, saveDoubleClickBehavior } = useUserPreferences()
+const { doubleClickBehavior, domainCollapsing, saveDoubleClickBehavior, saveDomainCollapsing } = useUserPreferences()
 const appStore = useAppStore()
 const theme = useTheme()
 
@@ -348,6 +372,14 @@ async function changeDoubleClickBehavior(newBehavior) {
   const success = await saveDoubleClickBehavior(newBehavior)
   if (!success) {
     console.error('Failed to save double-click behavior preference')
+  }
+}
+
+// Domain collapsing management
+async function changeDomainCollapsing(enabled) {
+  const success = await saveDomainCollapsing(enabled)
+  if (!success) {
+    console.error('Failed to save domain collapsing preference')
   }
 }
 
