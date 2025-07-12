@@ -1,6 +1,5 @@
 <template>
   <v-container 
-    v-if="!loading"
     fluid
     class="pa-1"
   >
@@ -26,9 +25,6 @@
       position="bottom-right"
       @close="closeNotification"
     />
-  </v-container>
-  <v-container v-else>
-    Loading...
   </v-container>
 </template>
 
@@ -73,9 +69,4 @@ function onBookmarkDeleted() {
   // Just clear selected items, delete component handles everything else
   appStore.clearSelectedItems()
 }
-
-onMounted(() => {
-  loading.value = false
-})
-
 </script>
