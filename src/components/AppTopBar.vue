@@ -182,16 +182,19 @@
               </v-list-item>
               
               <v-list-item
-                to="/about"
-                @click="profileMenu = false"
+                href="https://help.kies.boo/about/"
+                target="_blank"
+                rel="noopener"
                 prepend-icon="mdi-information-outline"
               >
                 <v-list-item-title>About</v-list-item-title>
               </v-list-item>
               
               <v-list-item
-                to="/help"
-                @click="profileMenu = false"
+                href="https://help.kies.boo"
+                target="_blank"
+                rel="noopener"
+                @click.stop="profileMenu = false"
                 prepend-icon="mdi-help-circle-outline"
               >
                 <v-list-item-title>Help</v-list-item-title>
@@ -215,8 +218,9 @@
             <!-- Footer Links -->
             <v-card-actions class="justify-center pa-2">
               <v-btn
-                to="/privacy"
-                @click="profileMenu = false"
+                href="https://help.kies.boo/privacy/"
+                target="_blank"
+                rel="noopener"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -225,8 +229,9 @@
               </v-btn>
               <span class="text-caption mx-1">·</span>
               <v-btn
-                to="/terms"
-                @click="profileMenu = false"
+                href="https://help.kies.boo/terms/"
+                target="_blank"
+                rel="noopener"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -235,8 +240,9 @@
               </v-btn>
               <span class="text-caption mx-1">·</span>
               <v-btn
-                to="/cookies"
-                @click="profileMenu = false"
+                href="https://help.kies.boo/cookies/"
+                target="_blank"
+                rel="noopener"
                 variant="text"
                 size="x-small"
                 class="text-caption"
@@ -360,6 +366,10 @@ async function logout() {
   } catch (error) {
     console.error('Error logging out:', error)
   }
+}
+
+function openExternalHelp(url) {
+  return window.open(url, '_blank');
 }
 
 // Load user data
