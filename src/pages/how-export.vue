@@ -120,20 +120,21 @@ function closeNotification() {
         Import bookmarks
       </v-btn>
     </div>
+  
+    <!-- Notification for copy feedback -->
+    <v-snackbar
+      v-model="notification.show"
+      :timeout="3000"
+      color="success"
+      location="bottom right"
+      @update:model-value="(value) => !value && closeNotification()"
+    >
+      <div class="d-flex align-center">
+        <v-icon icon="mdi-check-circle" class="me-2" />
+        {{ notification.message }}
+      </div>
+    </v-snackbar>
   </contentpage>
-  <!-- Notification for copy feedback -->
-  <v-snackbar
-    v-model="notification.show"
-    :timeout="3000"
-    color="success"
-    location="bottom right"
-    @update:model-value="(value) => !value && closeNotification()"
-  >
-    <div class="d-flex align-center">
-      <v-icon icon="mdi-check-circle" class="me-2" />
-      {{ notification.message }}
-    </div>
-  </v-snackbar>
 </template>
 
 <style scoped>
