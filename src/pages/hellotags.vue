@@ -1,5 +1,5 @@
 <template>
-  <contentpage>
+  <div>
     <v-card class="pa-6 mb-6 bg-transparent" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon icon="mdi-tag-multiple" class="mr-3" />
@@ -232,18 +232,16 @@
         {{ notification.message }}
       </div>
     </v-snackbar>
-  </contentpage>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import supabase from '@/lib/supabaseClient'
-import contentpage from '@/layouts/contentpage.vue'
 
 const router = useRouter()
 
-// Reactive data
 const tagsData = ref([])
 const searchQuery = ref('')
 const selectedLetter = ref(null)
@@ -599,3 +597,8 @@ onUnmounted(() => {
   }
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: contentpage
+</route>

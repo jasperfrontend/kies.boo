@@ -1,5 +1,5 @@
 <template>
-  <contentpage>
+  <div>
     <v-card class="pa-6 mb-6 bg-transparent" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon icon="mdi-slash-forward-box" class="mr-3" />
@@ -234,7 +234,7 @@
         {{ notification.message }}
       </div>
     </v-snackbar>
-  </contentpage>
+  </div>
 </template>
 
 <script setup>
@@ -242,7 +242,6 @@ import { computed, onMounted, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import supabase from '@/lib/supabaseClient'
-import contentpage from '@/layouts/contentpage.vue'
 
 const appStore = useAppStore()
 const router = useRouter()
@@ -567,3 +566,8 @@ onUnmounted(() => {
   }
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: contentpage
+</route>

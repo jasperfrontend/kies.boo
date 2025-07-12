@@ -86,28 +86,6 @@ ol, ul {
   padding: .5rem 0 1rem 1.2rem;
 }
 
-.copyable-code {
-  cursor: pointer;
-  background-color: rgba(var(--v-theme-primary), 0.1);
-  border: 1px solid rgba(var(--v-theme-primary), 0.3);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9em;
-  transition: all 0.2s ease-in-out;
-  display: inline-flex;
-  align-items: center;
-}
-
-.copyable-code:hover {
-  background-color: rgba(var(--v-theme-primary), 0.2);
-  border-color: rgba(var(--v-theme-primary), 0.5);
-  transform: translateY(-1px);
-}
-
-.copyable-code:active {
-  transform: translateY(0);
-}
 </style>
 
 <route lang="yaml">

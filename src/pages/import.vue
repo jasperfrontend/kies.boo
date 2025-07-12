@@ -1,5 +1,5 @@
 <template>
-  <contentpage>
+  <div>
     <v-card class="pa-6" outlined>
       <v-card-title class="text-h4 mb-4">
         Import Bookmarks
@@ -118,7 +118,7 @@
         </v-card-actions>
       </v-form>
     </v-card>
-  </contentpage>
+  </div>
 </template>
 
 <script setup>
@@ -126,7 +126,6 @@ import { ref } from 'vue'
 import supabase from '@/lib/supabaseClient'
 import { BookmarkParser } from '@/lib/bookmarkParser'
 import { RouterLink } from 'vue-router'
-import contentpage from '@/layouts/contentpage.vue'
 
 const selectedFile = ref(null)
 const uploading = ref(false)
@@ -407,3 +406,8 @@ p {
   margin-bottom: 1rem;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: contentpage
+</route>

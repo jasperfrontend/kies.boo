@@ -1,8 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import supabase from '@/lib/supabaseClient'
-import JasperApiDemo from '@/components/JasperApiDemo.vue'
-import contentpage from '@/layouts/contentpage.vue'
 
 const isAuthenticated = ref(false)
 const user = ref(null)
@@ -298,7 +296,7 @@ function formatDate(dateString) {
 </script>
 
 <template>
-<contentpage>
+<div>
   <v-alert
     v-if="error"
     type="error"
@@ -518,7 +516,7 @@ function formatDate(dateString) {
     </v-row>
   </v-card>
   
-  </contentpage>
+  </div>
 </template>
 
 <style scoped>
@@ -534,3 +532,8 @@ function formatDate(dateString) {
   cursor: pointer;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: contentpage
+</route>
