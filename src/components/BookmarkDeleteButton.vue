@@ -65,7 +65,7 @@ const props = defineProps({
   },
   buttonClass: {
     type: String,
-    default: 'mx-4 position-fixed z-10'
+    default: 'mx-4 position-fixed z-10 mt-2 elevation-10'
   },
   buttonIcon: {
     type: String,

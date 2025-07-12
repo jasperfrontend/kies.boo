@@ -18,6 +18,19 @@
         </v-btn>
         
         <v-btn
+          @click="appStore.openAddBookmarkDialog()"
+          variant="text"
+          class="text-body-1"
+        >
+          Add
+          <v-badge
+            color="grey-darken-3"
+            content="Alt+A"
+            inline
+          />
+        </v-btn>
+
+        <v-btn
           to="/hellotags"
           variant="text"
           class="mr-4 text-body-1"
@@ -34,6 +47,7 @@
         >
           Paths
         </v-btn>
+
       </div>
 
       <!-- Center Search -->
@@ -240,36 +254,53 @@
       @background-changed="onBackgroundChanged"
     />
 
+    <AddBookmarkDialog
+      v-model="appStore.addBookmarkDialog"
+      @bookmark-added="onBookmarkAdded"
+    />
+
+    <NotificationComponent
+      :show="notification.show"
+      :type="notification.type"
+      :message="notification.message"
+      position="bottom-right"
+      @close="closeNotification"
+    />
+
     <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
   </v-app-bar>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
 import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
 import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
 import { useUserPreferences } from '@/composables/useUserPreferences'
+import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
+import NotificationComponent from '@/components/NotificationComponent.vue';
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 
-const drawer = ref(null)
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
 const { doubleClickBehavior, saveDoubleClickBehavior } = useUserPreferences()
-
-const route = useRoute()
+const appStore = useAppStore()
 const theme = useTheme()
 
-// Reactive data
+// Notification state
+const notification = ref({
+  show: false,
+  type: 'success',
+  message: ''
+});
+
 const user = ref(null)
 const profileMenu = ref(false)
 const selectedTheme = ref('system')
-
-// Dialog states (only keeping background dialog)
 const showBackgroundDialog = ref(false)
 
-// Computed properties
 const memberSince = computed(() => {
   if (!user.value?.created_at) return 'Unknown'
   const date = new Date(user.value.created_at)
@@ -353,6 +384,46 @@ function setupSystemThemeListener() {
     }
   })
 }
+
+
+// Watch for dialog state changes from store
+watch(() => appStore.addBookmarkDialog, (newValue) => {
+  if (!newValue) {
+    // Dialog was closed, trigger bookmark refresh
+    appStore.triggerBookmarkRefresh();
+  }
+});
+
+function showNotification(type, message) {
+  notification.value = {
+    show: true,
+    type,
+    message
+  };
+}
+
+function closeNotification() {
+  notification.value.show = false;
+}
+
+
+async function onBookmarkAdded() {
+  try {
+    appStore.closeAddBookmarkDialog();
+
+    // Trigger refresh for recent bookmarks in sidebar
+    appStore.triggerBookmarkRefresh();
+    showNotification('success', 'Bookmark added successfully!');
+  } catch (error) {
+    console.error('Failed to refresh bookmarks:', error);
+    showNotification('error', 'Failed to refresh bookmarks');
+  }
+}
+
+// Setup keyboard shortcuts
+useKeyboardShortcuts({
+  onAddBookmark: () => { appStore.openAddBookmarkDialog() }
+});
 
 onMounted(() => {
   loadUserData()

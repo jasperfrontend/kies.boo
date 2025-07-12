@@ -34,7 +34,6 @@ import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import GlobalDeleteHandler from '@/components/GlobalDeleteHandler.vue';
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
 import { useAppStore } from '@/stores/app';
 
 const appStore = useAppStore()
@@ -44,14 +43,6 @@ const notification = ref({
   show: false,
   type: 'success',
   message: ''
-});
-
-// Watch for dialog state changes from store
-watch(() => appStore.addBookmarkDialog, (newValue) => {
-  if (!newValue) {
-    // Dialog was closed, trigger bookmark refresh
-    appStore.triggerBookmarkRefresh();
-  }
 });
 
 function showNotification(type, message) {
@@ -74,26 +65,9 @@ function onBookmarkUpdated() {
   showNotification('success', 'Bookmark updated successfully!');
 }
 
-async function onBookmarkAdded() {
-  try {
-    appStore.closeAddBookmarkDialog();
 
-    // Trigger refresh for recent bookmarks in sidebar
-    appStore.triggerBookmarkRefresh();
-    showNotification('success', 'Bookmark added successfully!');
-  } catch (error) {
-    console.error('Failed to refresh bookmarks:', error);
-    showNotification('error', 'Failed to refresh bookmarks');
-  }
-}
-
-function onBookmarkDeleted(bookmarkIds) {
+function onBookmarkDeleted() {
   // Just clear selected items, delete component handles everything else
   appStore.clearSelectedItems()
 }
-
-// Setup keyboard shortcuts
-useKeyboardShortcuts({
-  onAddBookmark: () => { appStore.openAddBookmarkDialog() }
-});
 </script>

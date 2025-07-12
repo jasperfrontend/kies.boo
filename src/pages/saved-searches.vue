@@ -4,7 +4,7 @@
       <v-col cols="12" md="10" lg="8">
         <v-card class="pa-6" outlined>
           <v-card-title class="text-h4 mb-4 d-flex align-center">
-            <v-icon icon="mdi-magnify-plus" class="mr-3" />
+            <v-icon icon="mdi-slash-forward-box" class="mr-3" />
             Your saved <code class="ml-2">/paths</code>
             <v-spacer />
             <v-chip 

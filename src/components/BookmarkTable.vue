@@ -84,7 +84,7 @@
       @bookmark-updated="handleBookmarkUpdated"
     />
 
-    <AppTips v-if="searchType === 'all'" />
+    <AppTips />
   </div>
 </template>
 
@@ -211,7 +211,6 @@ onMounted(() => {
   loadBookmarks()
 })
 
-// Setup keyboard shortcuts (only for main bookmark page)
 if (props.searchType === 'all') {
   useKeyboardShortcuts({
     onAddBookmark: () => { appStore.openAddBookmarkDialog() },

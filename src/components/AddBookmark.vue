@@ -82,14 +82,10 @@ import supabase from '@/lib/supabaseClient'
 const clipboardNotice = ref(false)
 const previousUrl = ref('')
 
-const tagData = ref([])
-const bookmarkData = ref(null)
-const junctionData = ref(null)
-
 async function tryReadClipboard() {
   // Check if clipboard API is supported
   if (!navigator.clipboard || !navigator.clipboard.readText) {
-    console.log('Clipboard API not supported')
+    console.log('Clipboard API not supported. To enable the Clipboard API in Firefox, navigate to about:config in the address bar, accept the risk, and then search for and set dom.events.asyncClipboard.clipboardItem and dom.events.asyncClipboard.readText to true.')
     return
   }
 
