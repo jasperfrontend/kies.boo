@@ -1,128 +1,124 @@
 <template>
-  <v-container fluid class="pa-4">
-    <v-row justify="center">
-      <v-col cols="12" md="8" lg="6">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h4 mb-4">
-            Import Bookmarks
-          </v-card-title>
-          
-          <v-card-text class="mb-6">
-            <p>Upload an HTML bookmark file exported from your browser to import your bookmarks.
-            Supported formats include Chrome, Edge, Firefox and Safari bookmark exports.</p>
-          </v-card-text>
+  <contentpage>
+    <v-card class="pa-6" outlined>
+      <v-card-title class="text-h4 mb-4">
+        Import Bookmarks
+      </v-card-title>
+      
+      <v-card-text class="mb-6">
+        <p>Upload an HTML bookmark file exported from your browser to import your bookmarks.
+        Supported formats include Chrome, Edge, Firefox and Safari bookmark exports.</p>
+      </v-card-text>
 
-          <v-form @submit.prevent="handleFileUpload">
-            <v-file-input
-              v-model="selectedFile"
-              label="Select bookmark HTML file"
-              accept=".html"
-              prepend-icon="mdi-file-upload"
-              variant="outlined"
-              :rules="fileRules"
-              :loading="uploading"
-              :disabled="uploading"
-              @change="onFileChange"
-              show-size
-              clearable
-            />
+      <v-form @submit.prevent="handleFileUpload">
+        <v-file-input
+          v-model="selectedFile"
+          label="Select bookmark HTML file"
+          accept=".html"
+          prepend-icon="mdi-file-upload"
+          variant="outlined"
+          :rules="fileRules"
+          :loading="uploading"
+          :disabled="uploading"
+          @change="onFileChange"
+          show-size
+          clearable
+        />
 
-            <v-alert
-              v-if="error"
-              type="error"
-              class="mt-4"
-              closable
-              @click:close="error = ''"
-            >
-              {{ error }}
-            </v-alert>
+        <v-alert
+          v-if="error"
+          type="error"
+          class="mt-4"
+          closable
+          @click:close="error = ''"
+        >
+          {{ error }}
+        </v-alert>
 
-            <v-alert
-              v-if="success"
-              type="success"
-              class="mt-4"
-              closable
-              @click:close="success = ''"
-            >
-              {{ success }}
-            </v-alert>
+        <v-alert
+          v-if="success"
+          type="success"
+          class="mt-4"
+          closable
+          @click:close="success = ''"
+        >
+          {{ success }}
+        </v-alert>
 
-            <div v-if="parsedBookmarks.length > 0" class="mt-6">
-              <v-card variant="outlined">
-                <v-card-title>
-                  Preview: {{ parsedBookmarks.length }} bookmarks found
-                </v-card-title>
-                <v-card-text>
-                  <v-list density="compact" max-height="300" style="overflow-y: auto;">
-                    <v-list-item
-                      v-for="(bookmark, index) in parsedBookmarks.slice(0, 10)"
-                      :key="index"
-                      :title="bookmark.title"
-                      :subtitle="bookmark.url"
+        <div v-if="parsedBookmarks.length > 0" class="mt-6">
+          <v-card variant="outlined">
+            <v-card-title>
+              Preview: {{ parsedBookmarks.length }} bookmarks found
+            </v-card-title>
+            <v-card-text>
+              <v-list density="compact" max-height="300" style="overflow-y: auto;">
+                <v-list-item
+                  v-for="(bookmark, index) in parsedBookmarks.slice(0, 10)"
+                  :key="index"
+                  :title="bookmark.title"
+                  :subtitle="bookmark.url"
+                >
+                  <template v-slot:prepend>
+                    <v-avatar size="24" rounded="0">
+                      <img
+                        :src="bookmark.favicon_url"
+                        alt="favicon"
+                        @error="e => e.target.src = '/favicon.png'"
+                      />
+                    </v-avatar>
+                  </template>
+                  
+                  <template v-slot:append v-if="bookmark.tags.length > 0">
+                    <v-chip
+                      v-for="tag in bookmark.tags.slice(0, 2)"
+                      :key="tag"
+                      size="x-small"
+                      variant="outlined"
+                      class="ml-1"
                     >
-                      <template v-slot:prepend>
-                        <v-avatar size="24" rounded="0">
-                          <img
-                            :src="bookmark.favicon_url"
-                            alt="favicon"
-                            @error="e => e.target.src = '/favicon.png'"
-                          />
-                        </v-avatar>
-                      </template>
-                      
-                      <template v-slot:append v-if="bookmark.tags.length > 0">
-                        <v-chip
-                          v-for="tag in bookmark.tags.slice(0, 2)"
-                          :key="tag"
-                          size="x-small"
-                          variant="outlined"
-                          class="ml-1"
-                        >
-                          {{ tag }}
-                        </v-chip>
-                        <span v-if="bookmark.tags.length > 2" class="text-caption ml-1">
-                          +{{ bookmark.tags.length - 2 }}
-                        </span>
-                      </template>
-                    </v-list-item>
-                    
-                    <v-list-item v-if="parsedBookmarks.length > 10">
-                      <v-list-item-title class="text-center text-caption">
-                        ... and {{ parsedBookmarks.length - 10 }} more
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-card-text>
-              </v-card>
-            </div>
-            <p v-if="!success">Learn how to <RouterLink to="/how-export" class="text-primary-lighten-3">export your bookmarks</RouterLink> from your browser into kies.boo or click the field above to upload your bookmarks.</p>
-            <v-card-actions class="px-0 pt-6">
-              <v-spacer />
-              
-              <v-btn
-                color="primary"
-                type="submit"
-                :loading="uploading"
-                :disabled="!selectedFile || uploading"
-                variant="outlined"
-                prepend-icon="mdi-upload"
-              >
-                {{ parsedBookmarks.length > 0 ? 'Import Bookmarks' : 'Parse File' }}
-              </v-btn>
-              
-              <v-btn
-                to="/"
-                variant="text"
-                :disabled="uploading"
-              >
-                Cancel
-              </v-btn>
-            </v-card-actions>
-          </v-form>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+                      {{ tag }}
+                    </v-chip>
+                    <span v-if="bookmark.tags.length > 2" class="text-caption ml-1">
+                      +{{ bookmark.tags.length - 2 }}
+                    </span>
+                  </template>
+                </v-list-item>
+                
+                <v-list-item v-if="parsedBookmarks.length > 10">
+                  <v-list-item-title class="text-center text-caption">
+                    ... and {{ parsedBookmarks.length - 10 }} more
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+        </div>
+        <p v-if="!success">Learn how to <RouterLink to="/how-export" class="text-primary-lighten-3">export your bookmarks</RouterLink> from your browser into kies.boo or click the field above to upload your bookmarks.</p>
+        <v-card-actions class="px-0 pt-6">
+          <v-spacer />
+          
+          <v-btn
+            color="primary"
+            type="submit"
+            :loading="uploading"
+            :disabled="!selectedFile || uploading"
+            variant="outlined"
+            prepend-icon="mdi-upload"
+          >
+            {{ parsedBookmarks.length > 0 ? 'Import Bookmarks' : 'Parse File' }}
+          </v-btn>
+          
+          <v-btn
+            to="/"
+            variant="text"
+            :disabled="uploading"
+          >
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-form>
+    </v-card>
+  </contentpage>
 </template>
 
 <script setup>
@@ -130,6 +126,7 @@ import { ref } from 'vue'
 import supabase from '@/lib/supabaseClient'
 import { BookmarkParser } from '@/lib/bookmarkParser'
 import { RouterLink } from 'vue-router'
+import contentpage from '@/layouts/contentpage.vue'
 
 const selectedFile = ref(null)
 const uploading = ref(false)

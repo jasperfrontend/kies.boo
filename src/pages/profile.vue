@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import supabase from '@/lib/supabaseClient'
 import JasperApiDemo from '@/components/JasperApiDemo.vue'
+import contentpage from '@/layouts/contentpage.vue'
 
 const isAuthenticated = ref(false)
 const user = ref(null)
@@ -297,234 +298,228 @@ function formatDate(dateString) {
 </script>
 
 <template>
-  <v-container fluid class="pa-4">
-    <!-- Error Alert -->
-    <v-alert
-      v-if="error"
-      type="error"
-      class="mb-4"
-      closable
-      @click:close="error = ''"
-    >
-      {{ error }}
-    </v-alert>
+<contentpage>
+  <v-alert
+    v-if="error"
+    type="error"
+    class="mb-4"
+    closable
+    @click:close="error = ''"
+  >
+    {{ error }}
+  </v-alert>
 
-    <!-- User Profile Section -->
-    <v-row justify="center">
-      <v-col cols="12" md="8" lg="6">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h4 mb-4">
-            Your Profile
-          </v-card-title>
-          
-          <v-card-text class="mb-6">
-            <div v-if="isAuthenticated && user">
-              <v-card class="mx-auto pa-0" elevation="0">
-                <v-card-title class="d-flex align-center">
-                  <v-avatar size="56" class="me-4">
-                    <img :src="user.user_metadata?.avatar_url" alt="User avatar" />
-                  </v-avatar>
-                  <div>
-                    <div class="text-h6">{{ user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email }}</div>
-                    <div class="text-caption">{{ user.email }}</div>
-                    <div class="text-caption text-grey-darken-1">Member since {{ memberSince }}</div>
-                  </div>
-                </v-card-title>
-                <v-card-actions>
-                  <v-btn color="error" @click="logout">Log out</v-btn>
-                </v-card-actions>
-              </v-card>
+  <!-- User Profile Section -->
+  <v-card class="pa-6" outlined>
+    <v-card-title class="text-h4 mb-4">
+      Your Profile
+    </v-card-title>
+    
+    <v-card-text class="mb-6">
+      <div v-if="isAuthenticated && user">
+        <v-card class="mx-auto pa-0" elevation="0">
+          <v-card-title class="d-flex align-center">
+            <v-avatar size="56" class="me-4">
+              <img :src="user.user_metadata?.avatar_url" alt="User avatar" />
+            </v-avatar>
+            <div>
+              <div class="text-h6">{{ user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email }}</div>
+              <div class="text-caption">{{ user.email }}</div>
+              <div class="text-caption text-grey-darken-1">Member since {{ memberSince }}</div>
             </div>
+          </v-card-title>
+          <v-card-actions>
+            <v-btn color="error" @click="logout">Log out</v-btn>
+          </v-card-actions>
+        </v-card>
+      </div>
+    </v-card-text>
+  </v-card>
+
+
+<!-- Statistics Overview -->
+
+  <v-card class="pa-6" outlined>
+    <v-card-title class="text-h5 mb-4 d-flex align-center">
+      <v-icon icon="mdi-chart-box" class="mr-2" />
+      Your Statistics
+    </v-card-title>
+    
+    <!-- Main Stats Cards -->
+    <v-row class="mb-6">
+      <v-col
+        v-for="stat in statsCards"
+        :key="stat.title"
+        cols="12"
+        sm="4"
+      >
+        <v-card
+          :color="stat.color"
+          variant="tonal"
+          class="text-center pa-4"
+        >
+          <v-icon 
+            :icon="stat.icon" 
+            size="32" 
+            class="mb-2"
+          />
+          <div class="text-h4 font-weight-bold">
+            <span v-if="!stat.loading">{{ stat.value.toLocaleString() }}</span>
+            <v-skeleton-loader v-else type="text" width="60" />
+          </div>
+          <div class="text-caption">{{ stat.title }}</div>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Detailed Breakdown -->
+    <v-row>
+      <!-- Bookmark Details -->
+      <v-col cols="12" md="4">
+        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+          <v-card-title class="text-subtitle-1 pb-2">
+            <v-icon icon="mdi-bookmark" class="mr-2" size="20" />
+            Bookmark Activity
+          </v-card-title>
+          <v-card-text class="pa-0">
+            <div v-if="!stats.bookmarks.loading">
+              <div class="d-flex justify-space-between align-center mb-2">
+                <span class="text-caption">This week:</span>
+                <v-chip size="small" color="success" variant="tonal">
+                  {{ stats.bookmarks.thisWeek }}
+                </v-chip>
+              </div>
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-caption">This month:</span>
+                <v-chip size="small" color="info" variant="tonal">
+                  {{ stats.bookmarks.thisMonth }}
+                </v-chip>
+              </div>
+            </div>
+            <v-skeleton-loader v-else type="list-item-two-line" />
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Tag Details -->
+      <v-col cols="12" md="4">
+        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+          <v-card-title class="text-subtitle-1 pb-2">
+            <v-icon icon="mdi-tag" class="mr-2" size="20" />
+            Most Used Tags
+          </v-card-title>
+          <v-card-text class="pa-0">
+            <div v-if="!stats.tags.loading">
+              <div 
+                v-if="stats.tags.mostUsed.length > 0"
+                v-for="(tag, index) in stats.tags.mostUsed"
+                :key="tag.id"
+                class="d-flex justify-space-between align-center pa-2 rounded cursor-pointer hover-bg"
+                @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
+              >
+                <span class="text-caption text-secondary">{{ tag.title }}</span>
+                <v-chip size="x-small" color="secondary" variant="tonal">
+                  {{ tag.usage_count }}
+                </v-chip>
+              </div>
+              <div v-else class="text-caption text-grey-darken-1">
+                No tags created yet
+              </div>
+            </div>
+            <v-skeleton-loader v-else type="list-item-two-line" />
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <!-- Saved Searches Details -->
+      <v-col cols="12" md="4">
+        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+          <v-card-title class="text-subtitle-1 pb-2">
+            <v-icon icon="mdi-magnify-plus" class="mr-2" size="20" />
+            Recent Saved Paths
+          </v-card-title>
+          <v-card-text class="pa-0">
+            <div v-if="!stats.savedSearches.loading">
+              <div 
+                v-if="stats.savedSearches.recent.length > 0"
+                v-for="(search, index) in stats.savedSearches.recent"
+                :key="index"
+                class="mb-2"
+              >
+                <router-link 
+                  :to="search.url" 
+                  class="text-caption text-indigo-lighten-1 text-decoration-none"
+                >
+                  {{ search.url }}
+                </router-link>
+                <div class="text-caption text-grey-darken-2">
+                  {{ formatDate(search.created_at) }}
+                </div>
+              </div>
+              <div v-else class="text-caption text-grey-darken-1">
+                No saved searches yet
+              </div>
+            </div>
+            <v-skeleton-loader v-else type="list-item-two-line" />
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Statistics Overview -->
-    <v-row justify="center" class="mt-4 mb-16">
-      <v-col cols="12" md="8" lg="6">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h5 mb-4 d-flex align-center">
-            <v-icon icon="mdi-chart-box" class="mr-2" />
-            Your Statistics
+    <!-- Quick Actions -->
+    <v-row class="mt-4">
+      <v-col cols="12">
+        <v-card variant="tonal" class="pa-4 bg-black">
+          <v-card-title class="text-subtitle-1 pb-2">
+            <v-icon icon="mdi-lightning-bolt" class="mr-2" size="20" />
+            Quick Actions
           </v-card-title>
-          
-          <!-- Main Stats Cards -->
-          <v-row class="mb-6">
-            <v-col
-              v-for="stat in statsCards"
-              :key="stat.title"
-              cols="12"
-              sm="4"
-            >
-              <v-card
-                :color="stat.color"
+          <v-card-text class="pa-0">
+            <div class="d-flex gap-2 flex-wrap">
+              <v-btn
+                to="/"
+                size="small"
                 variant="tonal"
-                class="text-center pa-4"
+                prepend-icon="mdi-bookmark"
+                class="mr-2"
               >
-                <v-icon 
-                  :icon="stat.icon" 
-                  size="32" 
-                  class="mb-2"
-                />
-                <div class="text-h4 font-weight-bold">
-                  <span v-if="!stat.loading">{{ stat.value.toLocaleString() }}</span>
-                  <v-skeleton-loader v-else type="text" width="60" />
-                </div>
-                <div class="text-caption">{{ stat.title }}</div>
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <!-- Detailed Breakdown -->
-          <v-row>
-            <!-- Bookmark Details -->
-            <v-col cols="12" md="4">
-              <v-card variant="tonal" class="pa-4 h-100 bg-black">
-                <v-card-title class="text-subtitle-1 pb-2">
-                  <v-icon icon="mdi-bookmark" class="mr-2" size="20" />
-                  Bookmark Activity
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <div v-if="!stats.bookmarks.loading">
-                    <div class="d-flex justify-space-between align-center mb-2">
-                      <span class="text-caption">This week:</span>
-                      <v-chip size="small" color="success" variant="tonal">
-                        {{ stats.bookmarks.thisWeek }}
-                      </v-chip>
-                    </div>
-                    <div class="d-flex justify-space-between align-center">
-                      <span class="text-caption">This month:</span>
-                      <v-chip size="small" color="info" variant="tonal">
-                        {{ stats.bookmarks.thisMonth }}
-                      </v-chip>
-                    </div>
-                  </div>
-                  <v-skeleton-loader v-else type="list-item-two-line" />
-                </v-card-text>
-              </v-card>
-            </v-col>
-
-            <!-- Tag Details -->
-            <v-col cols="12" md="4">
-              <v-card variant="tonal" class="pa-4 h-100 bg-black">
-                <v-card-title class="text-subtitle-1 pb-2">
-                  <v-icon icon="mdi-tag" class="mr-2" size="20" />
-                  Most Used Tags
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <div v-if="!stats.tags.loading">
-                    <div 
-                      v-if="stats.tags.mostUsed.length > 0"
-                      v-for="(tag, index) in stats.tags.mostUsed"
-                      :key="tag.id"
-                      class="d-flex justify-space-between align-center pa-2 rounded cursor-pointer hover-bg"
-                      @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
-                    >
-                      <span class="text-caption text-secondary">{{ tag.title }}</span>
-                      <v-chip size="x-small" color="secondary" variant="tonal">
-                        {{ tag.usage_count }}
-                      </v-chip>
-                    </div>
-                    <div v-else class="text-caption text-grey-darken-1">
-                      No tags created yet
-                    </div>
-                  </div>
-                  <v-skeleton-loader v-else type="list-item-two-line" />
-                </v-card-text>
-              </v-card>
-            </v-col>
-
-            <!-- Saved Searches Details -->
-            <v-col cols="12" md="4">
-              <v-card variant="tonal" class="pa-4 h-100 bg-black">
-                <v-card-title class="text-subtitle-1 pb-2">
-                  <v-icon icon="mdi-magnify-plus" class="mr-2" size="20" />
-                  Recent Saved Paths
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <div v-if="!stats.savedSearches.loading">
-                    <div 
-                      v-if="stats.savedSearches.recent.length > 0"
-                      v-for="(search, index) in stats.savedSearches.recent"
-                      :key="index"
-                      class="mb-2"
-                    >
-                      <router-link 
-                        :to="search.url" 
-                        class="text-caption text-indigo-lighten-1 text-decoration-none"
-                      >
-                        {{ search.url }}
-                      </router-link>
-                      <div class="text-caption text-grey-darken-2">
-                        {{ formatDate(search.created_at) }}
-                      </div>
-                    </div>
-                    <div v-else class="text-caption text-grey-darken-1">
-                      No saved searches yet
-                    </div>
-                  </div>
-                  <v-skeleton-loader v-else type="list-item-two-line" />
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <!-- Quick Actions -->
-          <v-row class="mt-4">
-            <v-col cols="12">
-              <v-card variant="tonal" class="pa-4 bg-black">
-                <v-card-title class="text-subtitle-1 pb-2">
-                  <v-icon icon="mdi-lightning-bolt" class="mr-2" size="20" />
-                  Quick Actions
-                </v-card-title>
-                <v-card-text class="pa-0">
-                  <div class="d-flex gap-2 flex-wrap">
-                    <v-btn
-                      to="/"
-                      size="small"
-                      variant="tonal"
-                      prepend-icon="mdi-bookmark"
-                      class="mr-2"
-                    >
-                      View Bookmarks
-                    </v-btn>
-                    <v-btn
-                      to="/hellotags"
-                      size="small"
-                      variant="tonal"
-                      prepend-icon="mdi-tag"
-                      class="mr-2"
-                    >
-                      Manage Tags
-                    </v-btn>
-                    <v-btn
-                      to="/saved-searches"
-                      size="small"
-                      variant="tonal"
-                      prepend-icon="mdi-magnify-plus"
-                      class="mr-2"
-                    >
-                      Saved Paths
-                    </v-btn>
-                    <v-btn
-                      to="/import"
-                      size="small"
-                      variant="tonal"
-                      prepend-icon="mdi-cloud-upload"
-                      class="mr-2"
-                    >
-                      Import More
-                    </v-btn>
-                  </div>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
+                View Bookmarks
+              </v-btn>
+              <v-btn
+                to="/hellotags"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-tag"
+                class="mr-2"
+              >
+                Manage Tags
+              </v-btn>
+              <v-btn
+                to="/saved-searches"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-magnify-plus"
+                class="mr-2"
+              >
+                Saved Paths
+              </v-btn>
+              <v-btn
+                to="/import"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-cloud-upload"
+                class="mr-2"
+              >
+                Import More
+              </v-btn>
+            </div>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </v-card>
+  
+  </contentpage>
 </template>
 
 <style scoped>

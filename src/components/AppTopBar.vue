@@ -16,19 +16,6 @@
         >
           Bookmarks
         </v-btn>
-        
-        <v-btn
-          @click="appStore.openAddBookmarkDialog()"
-          variant="text"
-          class="text-body-1"
-        >
-          Add
-          <v-badge
-            color="grey-darken-3"
-            content="Alt+A"
-            inline
-          />
-        </v-btn>
 
         <v-btn
           to="/hellotags"
@@ -49,14 +36,28 @@
         </v-btn>
 
       </div>
-
+      <v-spacer />
       <!-- Center Search -->
-      <div class="search-container mx-8" style="width: 100%;">
+      <div class="search-container mx-8" style="width: 30%;">
         <SearchBookmarks />
       </div>
-
+      <v-spacer />
       <!-- Right Profile Menu -->
       <div class="d-flex align-center">
+                
+        <v-btn
+          @click="appStore.openAddBookmarkDialog()"
+          variant="text"
+          class="text-body-1"
+        >
+          Add
+          <v-badge
+            color="grey-darken-3"
+            content="Alt+A"
+            inline
+          />
+        </v-btn>
+
         <v-menu
           v-model="profileMenu"
           :close-on-content-click="false"

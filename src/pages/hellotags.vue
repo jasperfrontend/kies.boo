@@ -1,164 +1,157 @@
 <template>
-  <v-container fluid class="pa-4">
-    <v-row justify="center">
-      <v-col cols="12" md="10" lg="8">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h4 mb-4 d-flex align-center">
-            <v-icon icon="mdi-tag-multiple" class="mr-3" />
-            Your saved tags
-            <v-spacer />
-            <v-chip 
-              color="primary" 
-              variant="tonal" 
-              size="small"
-            >
-              {{ filteredTags.length }} tag{{ filteredTags.length === 1 ? '' : 's' }}
-            </v-chip>
-          </v-card-title>
-          
-          <!-- Search and Filter Controls -->
-          <v-card-text class="pb-2">
-            <v-row class="mb-4">
-              <v-col cols="12" md="8">
-                <v-text-field
-                  v-model="searchQuery"
-                  label="Search tags..."
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="comfortable"
-                  clearable
-                  @keydown.enter="focusFirstTag"
-                  ref="searchInput"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="sortOption"
-                  :items="sortOptions"
-                  label="Sort by"
-                  variant="outlined"
-                  density="comfortable"
-                />
-              </v-col>
-            </v-row>
+  <contentpage>
+    <v-card class="pa-6" outlined>
+      <v-card-title class="text-h4 mb-4 d-flex align-center">
+        <v-icon icon="mdi-tag-multiple" class="mr-3" />
+        Your saved tags
+        <v-spacer />
+        <v-chip 
+          color="primary" 
+          variant="tonal" 
+          size="small"
+        >
+          {{ filteredTags.length }} tag{{ filteredTags.length === 1 ? '' : 's' }}
+        </v-chip>
+      </v-card-title>
+      
+      <!-- Search and Filter Controls -->
+      <v-card-text class="pb-2">
+        <v-row class="mb-4">
+          <v-col cols="12" md="8">
+            <v-text-field
+              v-model="searchQuery"
+              label="Search tags..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="comfortable"
+              clearable
+              @keydown.enter="focusFirstTag"
+              ref="searchInput"
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="sortOption"
+              :items="sortOptions"
+              label="Sort by"
+              variant="outlined"
+              density="comfortable"
+            />
+          </v-col>
+        </v-row>
 
-            <!-- Quick Filters -->
-            <div class="d-flex flex-wrap gap-2 mb-4">
-              <v-chip
-                v-for="letter in availableLetters"
-                :key="letter"
-                :variant="selectedLetter === letter ? 'flat' : 'outlined'"
-                :color="selectedLetter === letter ? 'primary' : 'default'"
-                size="small"
-                @click="filterByLetter(letter)"
-                class="cursor-pointer"
-              >
-                {{ letter }}
-              </v-chip>
-              <v-chip
-                :variant="selectedLetter === null ? 'flat' : 'outlined'"
-                :color="selectedLetter === null ? 'primary' : 'default'"
-                size="small"
-                @click="clearLetterFilter"
-                class="cursor-pointer"
-              >
-                All
-              </v-chip>
-            </div>
-          </v-card-text>
+        <!-- Quick Filters -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <v-chip
+            v-for="letter in availableLetters"
+            :key="letter"
+            :variant="selectedLetter === letter ? 'flat' : 'outlined'"
+            :color="selectedLetter === letter ? 'primary' : 'default'"
+            size="small"
+            @click="filterByLetter(letter)"
+            class="cursor-pointer"
+          >
+            {{ letter }}
+          </v-chip>
+          <v-chip
+            :variant="selectedLetter === null ? 'flat' : 'outlined'"
+            :color="selectedLetter === null ? 'primary' : 'default'"
+            size="small"
+            @click="clearLetterFilter"
+            class="cursor-pointer"
+          >
+            All
+          </v-chip>
+        </div>
+      </v-card-text>
 
-          <!-- Tags Display -->
-          <v-card-text>
-            <div v-if="filteredTags.length === 0 && searchQuery" class="text-center text-grey-darken-1 py-8">
-              <v-icon icon="mdi-tag-off-outline" size="48" class="mb-2" />
-              <p class="text-h6">No tags found</p>
-              <p class="text-caption">Try adjusting your search or filters</p>
-            </div>
+      <!-- Tags Display -->
+      <v-card-text>
+        <div v-if="filteredTags.length === 0 && searchQuery" class="text-center text-grey-darken-1 py-8">
+          <v-icon icon="mdi-tag-off-outline" size="48" class="mb-2" />
+          <p class="text-h6">No tags found</p>
+          <p class="text-caption">Try adjusting your search or filters</p>
+        </div>
 
-            <div v-else-if="filteredTags.length === 0" class="text-center text-grey-darken-1 py-8">
-              <v-icon icon="mdi-tag-outline" size="48" class="mb-2" />
-              <p class="text-h6">No tags yet</p>
-              <p class="text-caption">Tags will appear here as you create bookmarks with tags</p>
-            </div>
+        <div v-else-if="filteredTags.length === 0" class="text-center text-grey-darken-1 py-8">
+          <v-icon icon="mdi-tag-outline" size="48" class="mb-2" />
+          <p class="text-h6">No tags yet</p>
+          <p class="text-caption">Tags will appear here as you create bookmarks with tags</p>
+        </div>
 
-            <!-- Tags Grid -->
-            <div v-else class="tags-grid">
-              <v-card
-                v-for="(tag, index) in paginatedTags"
-                :key="tag.id"
-                :ref="el => tagRefs[index] = el"
-                class="tag-card cursor-pointer"
-                variant="outlined"
-                hover
-                @click="handleSearchTag(tag.title)"
-                :tabindex="0"
-                @keydown.enter="handleSearchTag(tag.title)"
-                @keydown.delete="handleDeleteTag(tag)"
-              >
-                <v-card-text class="pa-3">
-                  <div class="d-flex align-center justify-space-between">
-                    <div class="flex-grow-1 mr-2">
-                      <div class="text-subtitle-1 font-weight-medium mb-1">
-                        {{ tag.title }}
-                      </div>
-                      <div class="text-caption text-grey-darken-1">
-                        {{ tag.usage_count || 0 }} bookmark{{ (tag.usage_count || 0) === 1 ? '' : 's' }}
-                      </div>
-                    </div>
-                    <div class="d-flex align-center">
-                      <v-btn
-                        @click.stop="handleDeleteTag(tag)"
-                        icon="mdi-delete"
-                        variant="text"
-                        size="small"
-                        color="error"
-                        :title="`Delete tag: ${tag.title}`"
-                      />
-                    </div>
+        <!-- Tags Grid -->
+        <div v-else class="tags-grid">
+          <v-card
+            v-for="(tag, index) in paginatedTags"
+            :key="tag.id"
+            :ref="el => tagRefs[index] = el"
+            class="tag-card cursor-pointer"
+            variant="outlined"
+            hover
+            @click="handleSearchTag(tag.title)"
+            :tabindex="0"
+            @keydown.enter="handleSearchTag(tag.title)"
+            @keydown.delete="handleDeleteTag(tag)"
+          >
+            <v-card-text class="pa-3">
+              <div class="d-flex align-center justify-space-between">
+                <div class="flex-grow-1 mr-2">
+                  <div class="text-subtitle-1 font-weight-medium mb-1">
+                    {{ tag.title }}
                   </div>
-                </v-card-text>
-              </v-card>
-            </div>
+                  <div class="text-caption text-grey-darken-1">
+                    {{ tag.usage_count || 0 }} bookmark{{ (tag.usage_count || 0) === 1 ? '' : 's' }}
+                  </div>
+                </div>
+                <div class="d-flex align-center">
+                  <v-btn
+                    @click.stop="handleDeleteTag(tag)"
+                    icon="mdi-delete"
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :title="`Delete tag: ${tag.title}`"
+                  />
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
 
-            <!-- Pagination -->
-            <div v-if="totalPages > 1" class="d-flex justify-center mt-6">
-              <v-pagination
-                v-model="currentPage"
-                :length="totalPages"
-                :total-visible="7"
-                color="primary"
-              />
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="d-flex justify-center mt-6">
+          <v-pagination
+            v-model="currentPage"
+            :length="totalPages"
+            :total-visible="7"
+            color="primary"
+          />
+        </div>
+      </v-card-text>
+    </v-card>
+
     
     <!-- Clean Unused Tags Section -->
-    <v-row justify="center" class="mt-4 mb-16">
-      <v-col cols="12" md="10" lg="8">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h5 mb-4 d-flex align-center">
-            <v-icon icon="mdi-broom" class="mr-3" />
-            Maintenance
-          </v-card-title>
-          <v-card-text>
-            <p class="mb-4">
-              Due to their shared nature, tags do not get removed when you delete a bookmark. 
-              You can clean up unused tags that are no longer associated with any bookmarks.
-            </p>
-            <v-btn 
-              @click="cleanupDialog = true" 
-              color="warning"
-              variant="outlined"
-              prepend-icon="mdi-delete-sweep"
-            >
-              Clean unused tags
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <v-card class="pa-6" outlined>
+      <v-card-title class="text-h5 mb-4 d-flex align-center">
+        <v-icon icon="mdi-broom" class="mr-3" />
+        Maintenance
+      </v-card-title>
+      <v-card-text>
+        <p class="mb-4">
+          Due to their shared nature, tags do not get removed when you delete a bookmark. 
+          You can clean up unused tags that are no longer associated with any bookmarks.
+        </p>
+        <v-btn 
+          @click="cleanupDialog = true" 
+          color="warning"
+          variant="outlined"
+          prepend-icon="mdi-delete-sweep"
+        >
+          Clean unused tags
+        </v-btn>
+      </v-card-text>
+    </v-card>
 
     <!-- Confirmation Dialogs -->
     <v-dialog v-model="cleanupDialog" max-width="400" persistent>
@@ -239,13 +232,14 @@
         {{ notification.message }}
       </div>
     </v-snackbar>
-  </v-container>
+  </contentpage>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import supabase from '@/lib/supabaseClient'
+import contentpage from '@/layouts/contentpage.vue'
 
 const router = useRouter()
 

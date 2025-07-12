@@ -1,197 +1,189 @@
 <template>
-  <v-container fluid class="pa-4">
-    <v-row justify="center">
-      <v-col cols="12" md="10" lg="8">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h4 mb-4 d-flex align-center">
-            <v-icon icon="mdi-slash-forward-box" class="mr-3" />
-            Your saved <code class="ml-2">/paths</code>
-            <v-spacer />
-            <v-chip 
-              color="primary" 
-              variant="tonal" 
-              size="small"
-            >
-              {{ filteredSearches.length }} path{{ filteredSearches.length === 1 ? '' : 's' }}
-            </v-chip>
-          </v-card-title>
-          
-          <!-- Search and Filter Controls -->
-          <v-card-text class="pb-2">
-            <v-row class="mb-4">
-              <v-col cols="12" md="8">
-                <v-text-field
-                  v-model="searchQuery"
-                  label="Search saved paths..."
-                  prepend-inner-icon="mdi-magnify"
-                  variant="outlined"
-                  density="comfortable"
-                  clearable
-                  @keydown.enter="focusFirstPath"
-                  ref="searchInput"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="sortOption"
-                  :items="sortOptions"
-                  label="Sort by"
-                  variant="outlined"
-                  density="comfortable"
-                />
-              </v-col>
-            </v-row>
+  <contentpage>
+    <v-card class="pa-6" outlined>
+      <v-card-title class="text-h4 mb-4 d-flex align-center">
+        <v-icon icon="mdi-slash-forward-box" class="mr-3" />
+        Your saved <code class="ml-2">/paths</code>
+        <v-spacer />
+        <v-chip 
+          color="primary" 
+          variant="tonal" 
+          size="small"
+        >
+          {{ filteredSearches.length }} path{{ filteredSearches.length === 1 ? '' : 's' }}
+        </v-chip>
+      </v-card-title>
+      
+      <!-- Search and Filter Controls -->
+      <v-card-text class="pb-2">
+        <v-row class="mb-4">
+          <v-col cols="12" md="8">
+            <v-text-field
+              v-model="searchQuery"
+              label="Search saved paths..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="comfortable"
+              clearable
+              @keydown.enter="focusFirstPath"
+              ref="searchInput"
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="sortOption"
+              :items="sortOptions"
+              label="Sort by"
+              variant="outlined"
+              density="comfortable"
+            />
+          </v-col>
+        </v-row>
 
-            <!-- Quick Filters -->
-            <div class="d-flex flex-wrap gap-2 mb-4">
-              <v-chip
-                :variant="pathTypeFilter === 'tag' ? 'flat' : 'outlined'"
-                :color="pathTypeFilter === 'tag' ? 'primary' : 'default'"
-                size="small"
-                @click="filterByType('tag')"
-                class="cursor-pointer"
-                prepend-icon="mdi-tag"
-              >
-                Tags
-              </v-chip>
-              <v-chip
-                :variant="pathTypeFilter === 'search' ? 'flat' : 'outlined'"
-                :color="pathTypeFilter === 'search' ? 'primary' : 'default'"
-                size="small"
-                @click="filterByType('search')"
-                class="cursor-pointer"
-                prepend-icon="mdi-text-search"
-              >
-                Searches
-              </v-chip>
-              <v-chip
-                :variant="pathTypeFilter === null ? 'flat' : 'outlined'"
-                :color="pathTypeFilter === null ? 'primary' : 'default'"
-                size="small"
-                @click="clearTypeFilter"
-                class="cursor-pointer"
-              >
-                All
-              </v-chip>
-            </div>
-          </v-card-text>
+        <!-- Quick Filters -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <v-chip
+            :variant="pathTypeFilter === 'tag' ? 'flat' : 'outlined'"
+            :color="pathTypeFilter === 'tag' ? 'primary' : 'default'"
+            size="small"
+            @click="filterByType('tag')"
+            class="cursor-pointer"
+            prepend-icon="mdi-tag"
+          >
+            Tags
+          </v-chip>
+          <v-chip
+            :variant="pathTypeFilter === 'search' ? 'flat' : 'outlined'"
+            :color="pathTypeFilter === 'search' ? 'primary' : 'default'"
+            size="small"
+            @click="filterByType('search')"
+            class="cursor-pointer"
+            prepend-icon="mdi-text-search"
+          >
+            Searches
+          </v-chip>
+          <v-chip
+            :variant="pathTypeFilter === null ? 'flat' : 'outlined'"
+            :color="pathTypeFilter === null ? 'primary' : 'default'"
+            size="small"
+            @click="clearTypeFilter"
+            class="cursor-pointer"
+          >
+            All
+          </v-chip>
+        </div>
+      </v-card-text>
 
-          <!-- Paths Display -->
-          <v-card-text>
-            <div v-if="filteredSearches.length === 0 && searchQuery" class="text-center text-grey-darken-1 py-8">
-              <v-icon icon="mdi-magnify-off" size="48" class="mb-2" />
-              <p class="text-h6">No paths found</p>
-              <p class="text-caption">Try adjusting your search or filters</p>
-            </div>
+      <!-- Paths Display -->
+      <v-card-text>
+        <div v-if="filteredSearches.length === 0 && searchQuery" class="text-center text-grey-darken-1 py-8">
+          <v-icon icon="mdi-magnify-off" size="48" class="mb-2" />
+          <p class="text-h6">No paths found</p>
+          <p class="text-caption">Try adjusting your search or filters</p>
+        </div>
 
-            <div v-else-if="filteredSearches.length === 0" class="text-center text-grey-darken-1 py-8">
-              <v-icon icon="mdi-magnify-plus-outline" size="48" class="mb-2" />
-              <p class="text-h6">No saved paths yet</p>
-              <p class="text-caption">Save paths from tag or search result pages to access them quickly later</p>
-            </div>
+        <div v-else-if="filteredSearches.length === 0" class="text-center text-grey-darken-1 py-8">
+          <v-icon icon="mdi-magnify-plus-outline" size="48" class="mb-2" />
+          <p class="text-h6">No saved paths yet</p>
+          <p class="text-caption">Save paths from tag or search result pages to access them quickly later</p>
+        </div>
 
-            <!-- Paths Grid -->
-            <div v-else class="paths-grid">
-              <v-card
-                v-for="(search, index) in paginatedSearches"
-                :key="search.id || index"
-                :ref="el => pathRefs[index] = el"
-                class="path-card cursor-pointer"
-                variant="outlined"
-                hover
-                @click="navigateToPath(search.url)"
-                :tabindex="0"
-                @keydown.enter="navigateToPath(search.url)"
-                @keydown.delete="handleDeletePath(search)"
-              >
-                <v-card-text class="pa-3">
-                  <div class="d-flex align-center justify-space-between">
-                    <div class="flex-grow-1 mr-2">
-                      <div class="d-flex align-center mb-2">
-                        <v-icon 
-                          :icon="getPathIcon(search.url)" 
-                          size="16" 
-                          class="mr-2"
-                          :color="getPathColor(search.url)"
-                        />
-                        <v-chip
-                          :color="getPathColor(search.url)"
-                          size="x-small"
-                          variant="tonal"
-                        >
-                          {{ getPathType(search.url) }}
-                        </v-chip>
-                      </div>
-                      <div class="text-subtitle-1 font-weight-medium mb-1">
-                        {{ formatPathDisplay(search.url) }}
-                      </div>
-                      <div class="text-caption text-grey-darken-1">
-                        {{ formatPathDescription(search.url) }}
-                      </div>
-                      <div class="text-caption text-grey-darken-2 mt-1">
-                        Saved {{ formatDate(search.created_at) }}
-                      </div>
-                    </div>
-                    <div class="d-flex align-center">
-                      <v-btn
-                        @click.stop="handleDeletePath(search)"
-                        icon="mdi-delete"
-                        variant="text"
-                        size="small"
-                        color="error"
-                        :title="`Delete path: ${search.url}`"
-                      />
-                    </div>
+        <!-- Paths Grid -->
+        <div v-else class="paths-grid">
+          <v-card
+            v-for="(search, index) in paginatedSearches"
+            :key="search.id || index"
+            :ref="el => pathRefs[index] = el"
+            class="path-card cursor-pointer"
+            variant="outlined"
+            hover
+            @click="navigateToPath(search.url)"
+            :tabindex="0"
+            @keydown.enter="navigateToPath(search.url)"
+            @keydown.delete="handleDeletePath(search)"
+          >
+            <v-card-text class="pa-3">
+              <div class="d-flex align-center justify-space-between">
+                <div class="flex-grow-1 mr-2">
+                  <div class="d-flex align-center mb-2">
+                    <v-icon 
+                      :icon="getPathIcon(search.url)" 
+                      size="16" 
+                      class="mr-2"
+                      :color="getPathColor(search.url)"
+                    />
+                    <v-chip
+                      :color="getPathColor(search.url)"
+                      size="x-small"
+                      variant="tonal"
+                    >
+                      {{ getPathType(search.url) }}
+                    </v-chip>
                   </div>
-                </v-card-text>
-              </v-card>
-            </div>
+                  <div class="text-subtitle-1 font-weight-medium mb-1">
+                    {{ formatPathDisplay(search.url) }}
+                  </div>
+                  <div class="text-caption text-grey-darken-1">
+                    {{ formatPathDescription(search.url) }}
+                  </div>
+                  <div class="text-caption text-grey-darken-2 mt-1">
+                    Saved {{ formatDate(search.created_at) }}
+                  </div>
+                </div>
+                <div class="d-flex align-center">
+                  <v-btn
+                    @click.stop="handleDeletePath(search)"
+                    icon="mdi-delete"
+                    variant="text"
+                    size="small"
+                    color="error"
+                    :title="`Delete path: ${search.url}`"
+                  />
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
 
-            <!-- Pagination -->
-            <div v-if="totalPages > 1" class="d-flex justify-center mt-6">
-              <v-pagination
-                v-model="currentPage"
-                :length="totalPages"
-                :total-visible="7"
-                color="primary"
-              />
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="d-flex justify-center mt-6">
+          <v-pagination
+            v-model="currentPage"
+            :length="totalPages"
+            :total-visible="7"
+            color="primary"
+          />
+        </div>
+      </v-card-text>
+    </v-card>
 
     <!-- Information Section -->
-    <v-row justify="center" class="mt-4 mb-16">
-      <v-col cols="12" md="10" lg="8">
-        <v-card class="pa-6" outlined>
-          <v-card-title class="text-h5 mb-4 d-flex align-center">
-            <v-icon icon="mdi-information-outline" class="mr-3" />
-            What are Saved Paths?
-          </v-card-title>
-          <v-card-text>
-            <p class="mb-4">Saved Paths are like shortcut portals to specific sets of bookmarks.</p>
-            <p class="mb-2">They help you quickly jump back to:</p>
-            <ul class="ml-4 mt-2 mb-4">
-              <li>Search results you found useful (based on keywords in title/URL).</li>
-              <li>Tags you've used to group bookmarks.</li>
-            </ul>
-            
-            <p class="mb-4">In short: instead of hunting again, you just click a saved Path and boom—you're back in the zone.</p>
+    <v-card class="pa-6" outlined>
+      <v-card-title class="text-h5 mb-4 d-flex align-center">
+        <v-icon icon="mdi-information-outline" class="mr-3" />
+        What are Saved Paths?
+      </v-card-title>
+      <v-card-text>
+        <p class="mb-4">Saved Paths are like shortcut portals to specific sets of bookmarks.</p>
+        <p class="mb-2">They help you quickly jump back to:</p>
+        <ul class="ml-4 mt-2 mb-4">
+          <li>Search results you found useful (based on keywords in title/URL).</li>
+          <li>Tags you've used to group bookmarks.</li>
+        </ul>
+        
+        <p class="mb-4">In short: instead of hunting again, you just click a saved Path and boom—you're back in the zone.</p>
 
-            <h3 class="text-h6 mt-6 mb-2">Tags vs Search (what's the difference?)</h3>
-            <p class="mb-2">Tags are labels you manually assign to bookmarks. Think: #reading, #design, #later.</p>
-            <p class="mb-2">Search looks at the bookmark's title and URL.</p>
-            <p class="mb-4">So while they often overlap, tags are your own organizing system, and search is more like a smart filter.</p>
-            
-            <h3 class="text-h6 mt-6 mb-2">Why use Paths?</h3>
-            <p class="mb-2">Because remembering stuff is overrated.</p>
-            <p class="mb-2">If you saved a great search or a useful tag group, just save the Path. Next time, no typing—just click and go.</p>
-            <p class="mt-4 font-italic">You kinda just have to experience it to admire its greatness. I guess.</p>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+        <h3 class="text-h6 mt-6 mb-2">Tags vs Search (what's the difference?)</h3>
+        <p class="mb-2">Tags are labels you manually assign to bookmarks. Think: #reading, #design, #later.</p>
+        <p class="mb-2">Search looks at the bookmark's title and URL.</p>
+        <p class="mb-4">So while they often overlap, tags are your own organizing system, and search is more like a smart filter.</p>
+        
+        <h3 class="text-h6 mt-6 mb-2">Why use Paths?</h3>
+        <p class="mb-2">Because remembering stuff is overrated.</p>
+        <p class="mb-2">If you saved a great search or a useful tag group, just save the Path. Next time, no typing—just click and go.</p>
+        <p class="mt-4 font-italic">You kinda just have to experience it to admire its greatness. I guess.</p>
+      </v-card-text>
+    </v-card>
 
     <!-- Confirmation Dialog -->
     <v-dialog v-model="confirmDialog.show" max-width="400" persistent>
@@ -242,7 +234,7 @@
         {{ notification.message }}
       </div>
     </v-snackbar>
-  </v-container>
+  </contentpage>
 </template>
 
 <script setup>
@@ -250,6 +242,7 @@ import { computed, onMounted, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import supabase from '@/lib/supabaseClient'
+import contentpage from '@/layouts/contentpage.vue'
 
 const appStore = useAppStore()
 const router = useRouter()
