@@ -1,6 +1,6 @@
 <template>
   <contentpage>
-    <v-card class="pa-6 mb-6" flat>
+    <v-card class="pa-6 mb-6 bg-transparent" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon icon="mdi-tag-multiple" class="mr-3" />
         Your saved tags

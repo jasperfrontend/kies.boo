@@ -310,7 +310,7 @@ function formatDate(dateString) {
   </v-alert>
 
   <!-- User Profile Section -->
-  <v-card class="pa-6 mb-6" flat>
+  <v-card class="pa-6 mb-6 bg-transparent" flat>
     <v-card-title class="text-h4 mb-4">
       Your Profile
     </v-card-title>
@@ -338,7 +338,7 @@ function formatDate(dateString) {
 
 
   <!-- Statistics Overview -->
-  <v-card class="pa-6" flat>
+  <v-card class="pa-6 bg-transparent" flat>
     <v-card-title class="text-h5 mb-4 d-flex align-center">
       <v-icon icon="mdi-chart-box" class="mr-2" />
       Your Statistics
