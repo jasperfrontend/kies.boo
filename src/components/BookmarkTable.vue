@@ -207,9 +207,9 @@ function handleDeleteCompleted(deletedIds) {
   emit('delete-selected', deletedIds)
 }
 
-onMounted(() => {
-  loadBookmarks()
-})
+// onMounted(() => {
+//   loadBookmarks()
+// })
 
 if (props.searchType === 'all') {
   useKeyboardShortcuts({

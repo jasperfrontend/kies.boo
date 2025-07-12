@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
