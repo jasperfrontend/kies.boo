@@ -11,6 +11,9 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     sortBy: [{ key: 'created_at', order: 'desc' }]
   })
 
+  // Track expanded domains (no more collapsing for these)
+  const expandedDomains = ref(new Set())
+
   // Helper function to get the actual values (handles both refs and primitive values)
   const getSearchType = () => {
     return typeof searchType === 'object' && searchType.value !== undefined ? searchType.value : searchType
@@ -32,6 +35,7 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
       ...serverOptions.value,
       page: 1
     }
+    expandedDomains.value.clear()
     loadBookmarks()
   }, { immediate: false })
 
@@ -41,16 +45,20 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
       ...serverOptions.value,
       page: 1
     }
+    expandedDomains.value.clear()
   }
 
   // Server-side data loading
-  async function loadBookmarks() {
+  async function loadBookmarks(additionalItems = 0) {
     loading.value = true
     
     try {
       const { page, itemsPerPage, sortBy } = serverOptions.value
       const currentSearchType = getSearchType()
       const currentSearchTerm = getSearchTerm()
+      
+      // Calculate how many items to fetch
+      let fetchCount = itemsPerPage === -1 ? 1000 : itemsPerPage + additionalItems
       
       // Build the query
       let query = supabase
@@ -99,8 +107,7 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
             // No bookmarks found with this tag
             bookmarks.value = []
             totalItems.value = 0
-            loading.value = false
-            return
+            return Promise.resolve()
           }
 
           // Filter the main query to only include these bookmark IDs
@@ -117,10 +124,10 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
         query = query.order('created_at', { ascending: false })
       }
       
-      // Apply pagination (handle "show all" case)
-      if (itemsPerPage !== -1) {
+      // Apply pagination
+      if (fetchCount !== 1000) {
         const from = (page - 1) * itemsPerPage
-        const to = from + itemsPerPage - 1
+        const to = from + fetchCount - 1
         query = query.range(from, to)
       }
       
@@ -137,10 +144,13 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
       }))
       totalItems.value = count || 0
       
+      return Promise.resolve()
+      
     } catch (error) {
       console.error('Failed to load bookmarks:', error)
       bookmarks.value = []
       totalItems.value = 0
+      return Promise.reject(error)
     } finally {
       loading.value = false
     }
@@ -152,6 +162,11 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     loadBookmarks()
   }
 
+  // Function to mark a domain as expanded (no more collapsing)
+  function expandDomain(domain) {
+    expandedDomains.value.add(domain)
+  }
+
   return {
     loading,
     bookmarks,
@@ -159,6 +174,8 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     serverOptions,
     loadBookmarks,
     updateServerOptions,
-    resetPagination
+    resetPagination,
+    expandDomain,
+    expandedDomains: readonly(expandedDomains)
   }
 }
