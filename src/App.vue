@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import Login from './components/Login.vue'
 import supabase from './lib/supabaseClient'
 
