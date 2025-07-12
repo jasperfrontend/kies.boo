@@ -71,7 +71,7 @@
             class="ma-2 pa-3 collapsed-domain-card"
             color="surface-variant"
           >
-            <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center justify-space-between trigger-collapsed-bookmarks" @click="handleExpandDomain(domain.name)">
               <div class="d-flex align-center">
                 <v-icon icon="mdi-domain" class="mr-2" color="primary" />
                 <div>
@@ -505,6 +505,10 @@ function handleDeleteCompleted(deletedIds) {
   box-shadow: 
     0 4px 12px rgba(var(--v-theme-primary), 0.2),
     0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.trigger-collapsed-bookmarks {
+  cursor: pointer;
 }
 
 .collapsed-domain-card:hover::before {
