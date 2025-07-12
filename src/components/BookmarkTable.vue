@@ -11,7 +11,7 @@
     <v-data-table-server
       :key="tableKey"
       :headers="BOOKMARK_TABLE_HEADERS"
-      :items="bookmarks"
+      :items="displayBookmarks"
       :items-length="totalItems"
       :loading="loading"
       :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
@@ -49,7 +49,15 @@
 
       <!-- Custom row rendering -->
       <template #item="{ item, index }">
+        <tr v-if="item.type === 'collapse'">
+          <td :colspan="BOOKMARK_TABLE_HEADERS.length">
+            <v-btn variant="text" size="small" @click="expandDomain(item.domain)">
+              --- there are {{ item.count }} more {{ item.domain }} results. Click here to load them all ---
+            </v-btn>
+          </td>
+        </tr>
         <BookmarkTableRow
+          v-else
           :item="item"
           :index="index"
           :is-selected="selectedItems.includes(item.id)"
@@ -167,6 +175,61 @@ const dialogsOpen = computed(() => ({
   edit: editDialog.value,
   addBookmark: props.dialogOpen
 }))
+
+// Collapsed domain handling
+const collapsedDomains = ref({})
+const displayBookmarks = ref([])
+
+function extractDomain (url) {
+  try {
+    return new URL(url).hostname
+  } catch (e) {
+    return url
+  }
+}
+
+function computeDisplayBookmarks () {
+  const counts = {}
+  bookmarks.value.forEach(b => {
+    const d = extractDomain(b.url)
+    counts[d] = (counts[d] || 0) + 1
+  })
+
+  const indexMap = {}
+  const inserted = {}
+  const result = []
+
+  bookmarks.value.forEach(b => {
+    const d = extractDomain(b.url)
+    indexMap[d] = (indexMap[d] || 0) + 1
+    const idx = indexMap[d]
+    const collapsed = collapsedDomains.value[d] !== false
+
+    if (counts[d] > 5 && collapsed && idx === 6) {
+      result.push({ type: 'collapse', domain: d, count: counts[d] - 5 })
+      inserted[d] = true
+      return
+    }
+
+    if (counts[d] > 5 && collapsed && inserted[d]) {
+      return
+    }
+
+    result.push(b)
+  })
+
+  displayBookmarks.value = result
+}
+
+watch(bookmarks, () => {
+  collapsedDomains.value = {}
+  computeDisplayBookmarks()
+}, { immediate: true })
+
+function expandDomain (domain) {
+  collapsedDomains.value[domain] = false
+  computeDisplayBookmarks()
+}
 
 // Keyboard navigation
 const { focusedRowIndex } = useBookmarkTableKeyboard(
