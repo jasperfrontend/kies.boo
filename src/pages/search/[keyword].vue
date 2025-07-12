@@ -2,12 +2,11 @@
   <v-container fluid class="pa-1">
     <v-row>
       <v-col cols="12">
-        <v-card class="mb-4" color="primary">
+        <v-card class="mb-4" color="primary" variant="plain">
           <v-card-text class="d-flex align-center">
             <v-icon class="mr-2">mdi-magnify</v-icon>
             <div>
               <div class="text-h6">Search Results for: "{{ searchKeyword }}"</div>
-              <div class="text-caption">Searching in bookmark titles and URLs</div>
               <v-btn
                 variant="tonal"
                 size="small"

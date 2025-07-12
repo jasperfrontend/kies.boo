@@ -16,8 +16,8 @@ export function useSavedSearches() {
 
   const buttonText = computed(() => {
     return isCurrentPathSaved.value 
-      ? `${currentPath.value} saved` 
-      : 'Save path'
+      ? `Path: ${currentPath.value} saved` 
+      : `Save path: ${currentPath.value}`
   })
 
   const buttonDisabled = computed(() => {

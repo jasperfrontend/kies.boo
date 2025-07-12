@@ -1,6 +1,6 @@
 <template>
   <contentpage>
-    <v-card class="pa-6" outlined>
+    <v-card class="pa-6 mb-6" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon icon="mdi-slash-forward-box" class="mr-3" />
         Your saved <code class="ml-2">/paths</code>
@@ -158,7 +158,7 @@
     </v-card>
 
     <!-- Information Section -->
-    <v-card class="pa-6" outlined>
+    <v-card class="pa-6 mb-6" flat>
       <v-card-title class="text-h5 mb-4 d-flex align-center">
         <v-icon icon="mdi-information-outline" class="mr-3" />
         What are Saved Paths?

@@ -310,7 +310,7 @@ function formatDate(dateString) {
   </v-alert>
 
   <!-- User Profile Section -->
-  <v-card class="pa-6" outlined>
+  <v-card class="pa-6 mb-6" flat>
     <v-card-title class="text-h4 mb-4">
       Your Profile
     </v-card-title>
@@ -337,9 +337,8 @@ function formatDate(dateString) {
   </v-card>
 
 
-<!-- Statistics Overview -->
-
-  <v-card class="pa-6" outlined>
+  <!-- Statistics Overview -->
+  <v-card class="pa-6" flat>
     <v-card-title class="text-h5 mb-4 d-flex align-center">
       <v-icon icon="mdi-chart-box" class="mr-2" />
       Your Statistics
@@ -355,7 +354,7 @@ function formatDate(dateString) {
       >
         <v-card
           :color="stat.color"
-          variant="tonal"
+          variant="flat"
           class="text-center pa-4"
         >
           <v-icon 
@@ -376,7 +375,7 @@ function formatDate(dateString) {
     <v-row>
       <!-- Bookmark Details -->
       <v-col cols="12" md="4">
-        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+        <v-card variant="flat" class="pa-4 h-100 bg-surface">
           <v-card-title class="text-subtitle-1 pb-2">
             <v-icon icon="mdi-bookmark" class="mr-2" size="20" />
             Bookmark Activity
@@ -385,13 +384,13 @@ function formatDate(dateString) {
             <div v-if="!stats.bookmarks.loading">
               <div class="d-flex justify-space-between align-center mb-2">
                 <span class="text-caption">This week:</span>
-                <v-chip size="small" color="success" variant="tonal">
+                <v-chip size="small" color="success" variant="flat">
                   {{ stats.bookmarks.thisWeek }}
                 </v-chip>
               </div>
               <div class="d-flex justify-space-between align-center">
                 <span class="text-caption">This month:</span>
-                <v-chip size="small" color="info" variant="tonal">
+                <v-chip size="small" color="info" variant="flat">
                   {{ stats.bookmarks.thisMonth }}
                 </v-chip>
               </div>
@@ -403,7 +402,7 @@ function formatDate(dateString) {
 
       <!-- Tag Details -->
       <v-col cols="12" md="4">
-        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+        <v-card variant="flat" class="pa-4 h-100 bg-surface">
           <v-card-title class="text-subtitle-1 pb-2">
             <v-icon icon="mdi-tag" class="mr-2" size="20" />
             Most Used Tags
@@ -418,7 +417,7 @@ function formatDate(dateString) {
                 @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
               >
                 <span class="text-caption text-secondary">{{ tag.title }}</span>
-                <v-chip size="x-small" color="secondary" variant="tonal">
+                <v-chip size="x-small" color="secondary" variant="flat">
                   {{ tag.usage_count }}
                 </v-chip>
               </div>
@@ -433,7 +432,7 @@ function formatDate(dateString) {
 
       <!-- Saved Searches Details -->
       <v-col cols="12" md="4">
-        <v-card variant="tonal" class="pa-4 h-100 bg-black">
+        <v-card variant="flat" class="pa-4 h-100 bg-surface">
           <v-card-title class="text-subtitle-1 pb-2">
             <v-icon icon="mdi-magnify-plus" class="mr-2" size="20" />
             Recent Saved Paths
@@ -469,7 +468,7 @@ function formatDate(dateString) {
     <!-- Quick Actions -->
     <v-row class="mt-4">
       <v-col cols="12">
-        <v-card variant="tonal" class="pa-4 bg-black">
+        <v-card variant="outlined" class="pa-4">
           <v-card-title class="text-subtitle-1 pb-2">
             <v-icon icon="mdi-lightning-bolt" class="mr-2" size="20" />
             Quick Actions
@@ -479,7 +478,7 @@ function formatDate(dateString) {
               <v-btn
                 to="/"
                 size="small"
-                variant="tonal"
+                variant="outlined"
                 prepend-icon="mdi-bookmark"
                 class="mr-2"
               >
@@ -488,7 +487,7 @@ function formatDate(dateString) {
               <v-btn
                 to="/hellotags"
                 size="small"
-                variant="tonal"
+                variant="outlined"
                 prepend-icon="mdi-tag"
                 class="mr-2"
               >
@@ -497,7 +496,7 @@ function formatDate(dateString) {
               <v-btn
                 to="/saved-searches"
                 size="small"
-                variant="tonal"
+                variant="outlined"
                 prepend-icon="mdi-magnify-plus"
                 class="mr-2"
               >
@@ -506,7 +505,7 @@ function formatDate(dateString) {
               <v-btn
                 to="/import"
                 size="small"
-                variant="tonal"
+                variant="outlined"
                 prepend-icon="mdi-cloud-upload"
                 class="mr-2"
               >

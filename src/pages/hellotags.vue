@@ -1,6 +1,6 @@
 <template>
   <contentpage>
-    <v-card class="pa-6" outlined>
+    <v-card class="pa-6 mb-6" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon icon="mdi-tag-multiple" class="mr-3" />
         Your saved tags
@@ -132,7 +132,7 @@
 
     
     <!-- Clean Unused Tags Section -->
-    <v-card class="pa-6" outlined>
+    <v-card class="pa-6 mb-6" flat>
       <v-card-title class="text-h5 mb-4 d-flex align-center">
         <v-icon icon="mdi-broom" class="mr-3" />
         Maintenance
@@ -145,7 +145,7 @@
         <v-btn 
           @click="cleanupDialog = true" 
           color="warning"
-          variant="outlined"
+          variant="flat"
           prepend-icon="mdi-delete-sweep"
         >
           Clean unused tags
