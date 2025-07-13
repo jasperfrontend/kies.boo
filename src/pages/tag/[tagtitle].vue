@@ -2,7 +2,7 @@
   <v-container fluid class="pa-1">
     <v-row>
       <v-col cols="12">
-        <v-card class="mb-4" color="secondary" variant="tonal">
+        <v-card class="mb-4" color="secondary" variant="flat">
           <v-card-text class="d-flex align-center">
             <v-icon class="mr-2">mdi-tag</v-icon>
             <div>

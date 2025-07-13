@@ -18,7 +18,7 @@
       items-per-page="15"
       v-model:options="serverOptions"
       @update:options="updateServerOptions"
-      class="elevation-1 bg-surface-darken"
+      class="elevation-1 bg-surface-darken position-relative"
       :style="{
         backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
       }"
@@ -26,15 +26,6 @@
       show-current-page
       :mobile-breakpoint="600"
     >
-      <template v-slot:top="{ pagination, options, updateServerOptions }">
-        <v-data-table-footer
-          :pagination="pagination" 
-          :options="options"
-          :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
-          @update:options="updateServerOptions"
-          show-current-page
-        />
-      </template>
 
       <!-- Select all checkbox in header -->
       <template #header.select="">
@@ -63,41 +54,46 @@
       </template>
 
       <!-- Custom bottom slot for collapse indicators -->
-      <template #bottom>
+      <template #top>
         <!-- Collapse indicators -->
-        <div v-for="domain in collapsedDomainsWithCounts" :key="domain.name" class="collapse-indicator">
-          <v-card
-            variant="outlined"
-            class="ma-2 pa-3 collapsed-domain-card"
-            color="surface-variant"
+        <div class="d-flex">
+          <div 
+            v-for="domain in collapsedDomainsWithCounts" 
+            :key="domain.name" 
+            class="collapse-indicator"
+            :title="`Expand ${domain.count} collapsed links from ${domain.name}`"
           >
-            <div class="d-flex align-center justify-space-between cursor-pointer"
-              @click="handleExpandDomain(domain.name)"
+            <v-card
+              variant="outlined"
+              class="ma-2 pa-1 collapsed-domain-card"
+              color="surface-variant"
             >
-              <div class="d-flex align-center">
-                <v-icon icon="mdi-domain" class="mr-2" color="primary" />
-                <div>
-                  <div class="text-subtitle-2 font-weight-medium collapsed-domain-text">
-                    {{ domain.count }} more results from {{ domain.name }}
-                  </div>
-                  <div class="text-caption text-medium-emphasis">
-                    Click to show all {{ domain.name }} bookmarks
-                  </div>
-                </div>
-              </div>
-              <v-btn
+              <div class="d-flex align-center justify-space-between cursor-pointer"
                 @click="handleExpandDomain(domain.name)"
                 :loading="expandingDomain === domain.name"
-                variant="tonal"
-                color="primary"
-                size="small"
-                prepend-icon="mdi-chevron-down"
-                class="collapsed-domain-btn"
               >
-                Show All
-              </v-btn>
-            </div>
-          </v-card>
+                <div class="d-flex align-center">
+                  <v-icon icon="mdi-arrow-expand-vertical" class="mr-2" color="primary" />
+                  <div>
+                    <div class="text-subtitle-2 font-weight-medium collapsed-domain-text">
+                      {{ domain.count }} &times; {{ domain.name }}
+                    </div>
+
+                  </div>
+                </div>
+                <!-- <v-btn
+                  @click="handleExpandDomain(domain.name)"
+                  :loading="expandingDomain === domain.name"
+                  variant="tonal"
+                  color="primary"
+                  size="small"
+                  class="collapsed-domain-btn ml-4 px-0"
+                >
+                  <v-icon icon="mdi-chevron-down"></v-icon>
+                </v-btn> -->
+              </div>
+            </v-card>
+          </div>
         </div>
 
         <!-- Regular pagination footer -->
@@ -472,41 +468,16 @@ function handleDeleteCompleted(deletedIds) {
 
 .collapsed-domain-card {
   border: 2px solid rgba(var(--v-theme-primary), 0.3) !important;
-  background: linear-gradient(
-    135deg, 
-    rgba(var(--v-theme-primary), 0.08) 0%, 
-    rgba(var(--v-theme-secondary), 0.05) 50%,
-    rgba(var(--v-theme-primary), 0.03) 100%
-  );
+  background: rgb(var(--v-theme-surface));
   transition: all 0.3s ease-in-out;
-  position: relative;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-}
-
-.collapsed-domain-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg, 
-    transparent, 
-    rgba(var(--v-theme-primary), 0.1), 
-    transparent
-  );
-  transition: left 0.5s ease-in-out;
 }
 
 .collapsed-domain-card:hover {
   border-color: rgba(var(--v-theme-primary), 0.6);
-  background: linear-gradient(
-    135deg, 
-    rgba(var(--v-theme-primary), 0.12) 0%, 
-    rgba(var(--v-theme-secondary), 0.08) 50%,
-    rgba(var(--v-theme-primary), 0.06) 100%
-  );
+  background: rgba(var(--v-theme-surface), 0.7);
   transform: translateY(-2px);
   box-shadow: 
     0 4px 12px rgba(var(--v-theme-primary), 0.2),
@@ -525,10 +496,10 @@ function handleDeleteCompleted(deletedIds) {
 .collapsed-domain-btn {
   box-shadow: 0 2px 4px rgba(var(--v-theme-primary), 0.2);
   transition: all 0.2s ease-in-out;
+  top: -2px;
 }
 
 .collapsed-domain-btn:hover {
-  transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.3);
 }
 
@@ -538,7 +509,7 @@ function handleDeleteCompleted(deletedIds) {
     border-color: rgba(var(--v-theme-primary), 0.3);
   }
   50% {
-    border-color: rgba(var(--v-theme-primary), 0.5);
+    border-color: rgba(var(--v-theme-secondary), 0.5);
   }
 }
 
