@@ -5,7 +5,7 @@
     max-width="500"
     persistent
   >
-    <v-form @submit.prevent="handleSave">
+    <v-form @submit.prevent="handleSave" ref="formRef">
       <v-card title="Edit Bookmark">
         <v-card-text>
           <v-text-field
@@ -43,7 +43,14 @@
             text="Save Changes"
             color="primary"
             type="submit"
-          />
+          >
+            Save Changes
+            <v-badge
+              color="grey-darken-3"
+              content="Ctrl+S"
+              inline
+            />
+          </v-btn>
           <v-btn
             text="Cancel"
             @click="handleCancel"
@@ -56,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import supabase from '@/lib/supabaseClient'
 
 const props = defineProps({
@@ -75,6 +82,16 @@ const form = ref({
 
 const loading = ref(false)
 const error = ref('')
+const formRef = ref(null)
+
+// Handle save action hotkey event
+function handleSaveAction(event) {
+  // Only trigger if this dialog is open and form is not loading
+  if (props.modelValue && formRef.value && !loading.value) {
+    event.preventDefault()
+    handleSave()
+  }
+}
 
 // Watch for bookmark changes to populate form
 watch(() => props.bookmark, (newBookmark) => {
@@ -246,4 +263,13 @@ function handleCancel() {
   emit('update:modelValue', false)
   error.value = ''
 }
+
+onMounted(() => {
+  // Listen for save action hotkey event
+  document.addEventListener('save-current-action', handleSaveAction)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('save-current-action', handleSaveAction)
+})
 </script>

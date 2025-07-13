@@ -13,21 +13,18 @@ function handleSearch() {
   }
 }
 
-// Keyboard shortcut
-const handleKeydown = (event) => {
-  // Alt+k to focus search bar
-  if (event.altKey && event.key === 'k') {
-    event.preventDefault()
-    searchInputRef.value?.focus()
-  }
+// Handle focus search hotkey event
+function handleFocusSearch() {
+  searchInputRef.value?.focus()
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
+  // Listen for focus search hotkey event
+  document.addEventListener('focus-search', handleFocusSearch)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('focus-search', handleFocusSearch)
 })
 </script>
 
@@ -35,7 +32,7 @@ onUnmounted(() => {
   <v-text-field
     ref="searchInputRef"
     v-model="searchQuery"
-    label="Search bookmarks (Alt+k to focus here, Enter to search)"
+    label="Search bookmarks (Alt+K to focus here, Enter to search)"
     prepend-inner-icon="mdi-magnify"
     variant="outlined"
     density="compact"

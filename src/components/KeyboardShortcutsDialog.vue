@@ -19,14 +19,8 @@ const updateDialog = (value) => {
   emit('update:modelValue', value);
 };
 
-// Handle keyboard shortcut to open dialog
+// Handle keyboard shortcut to close dialog
 const handleKeydown = (event) => {
-  // Ctrl + / to open shortcuts dialog
-  if (event.ctrlKey && event.key === '/') {
-    event.preventDefault();
-    updateDialog(true);
-  }
-  
   // Esc to close dialog when it's open
   if (event.key === 'Escape' && showDialog.value) {
     event.preventDefault();
@@ -86,7 +80,7 @@ const formatKeyCombo = (key) => {
               class="px-0"
             >
               <template v-slot:prepend>
-                <div class="d-flex align-center mr-4" style="min-width: 120px;">
+                <div class="d-flex align-center mr-4" style="min-width: 140px;">
                   <v-chip
                     v-for="(key, keyIndex) in formatKeyCombo(shortcut.key)"
                     :key="keyIndex"
@@ -115,6 +109,12 @@ const formatKeyCombo = (key) => {
           <v-chip size="x-small" variant="outlined">/</v-chip> 
           to open this dialog anytime
         </div>
+
+        <v-alert type="info" variant="tonal" class="mt-4">
+          <v-icon icon="mdi-information" class="mr-2" />
+          <strong>New in this version:</strong> We've upgraded to Vuetify's native hotkey system! 
+          Keyboard shortcuts are now more reliable and support standard combinations like Ctrl+S and Ctrl+A.
+        </v-alert>
       </v-card-text>
       
       <v-divider />

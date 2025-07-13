@@ -1,31 +1,62 @@
+// src/lib/keyboardShortcuts.js
 export const keyboardShortcuts = [
   {
-    category: 'Bookmarks',
+    category: 'Global Actions',
     shortcuts: [
       {
-        key: 'Alt + A',
+        key: 'Ctrl + I',
         description: 'Add new bookmark',
         action: 'addBookmark'
       },
       {
-        key: 'Alt + I',
+        key: 'Ctrl + A',
+        description: 'Select all bookmarks in table',
+        action: 'selectAll'
+      },
+      {
+        key: 'Del',
         description: 'Delete selected bookmarks',
         action: 'deleteSelected'
       },
       {
-        key: 'Alt + U',
-        description: 'Undo last delete action',
-        action: 'undoDelete'
+        key: 'Ctrl + S',
+        description: 'Save current form/action',
+        action: 'saveAction'
       },
       {
-        key: 'Alt + O',
-        description: 'Refresh bookmarks table',
-        action: 'refreshBookmarks'
+        key: 'Alt + K',
+        description: 'Focus search bar',
+        action: 'focusSearch'
       }
     ]
   },
   {
     category: 'Navigation',
+    shortcuts: [
+      {
+        key: 'G + B',
+        description: 'Go to Bookmarks page',
+        action: 'goToBookmarks'
+      },
+      {
+        key: 'G + T',
+        description: 'Go to Tags page',
+        action: 'goToTags'
+      },
+      {
+        key: 'G + P',
+        description: 'Go to Saved Paths page',
+        action: 'goToPaths'
+      },
+      {
+        key: 'G + U',
+        description: 'Go to Profile page',
+        action: 'openProfile'
+      }
+    ]
+  },
+  {
+    category: 'Table Navigation',
     shortcuts: [
       {
         key: 'Tab',
@@ -49,13 +80,13 @@ export const keyboardShortcuts = [
       },
       {
         key: '←',
-        description: 'Remove highlight from table row (after using tab or ↑ / ↓)',
-        action: 'arrowNavigation'
+        description: 'Remove highlight from table row',
+        action: 'clearFocus'
       }
     ]
   },
   {
-    category: 'General',
+    category: 'Help',
     shortcuts: [
       {
         key: 'Ctrl + /',
@@ -66,11 +97,6 @@ export const keyboardShortcuts = [
         key: 'Esc',
         description: 'Close dialogs and modals',
         action: 'closeDialog'
-      },
-      {
-        key: 'Enter',
-        description: 'Submit forms',
-        action: 'submitForm'
       }
     ]
   }

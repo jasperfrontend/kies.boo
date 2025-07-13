@@ -53,7 +53,7 @@
           Add
           <v-badge
             color="grey-darken-3"
-            content="Alt+A"
+            content="Ctrl+I"
             inline
           />
         </v-btn>
@@ -68,6 +68,7 @@
           <template v-slot:activator="{ props }">
             <v-btn
               v-bind="props"
+              ref="profileMenuButton"
               icon
               variant="text"
               class="ml-2"
@@ -81,6 +82,7 @@
             </v-btn>
           </template>
 
+          <!-- Profile menu content - keeping existing structure -->
           <v-card>
             <!-- User Info Section -->
             <v-card-text class="pb-0">
@@ -328,26 +330,20 @@
       position="bottom-right"
       @close="closeNotification"
     />
-
-    <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
   </v-app-bar>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
 import SearchBookmarks from '@/components/SearchBookmarks.vue'
 import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
-import { useGlobalKeyboardShortcuts } from '@/composables/useGlobalKeyboardShortcuts'
 import { useUserPreferences } from '@/composables/useUserPreferences'
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
-import KeyboardShortcutsDialog from '@/components/KeyboardShortcutsDialog.vue'
 
-const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
 const { 
   doubleClickBehavior, 
   domainCollapsing, 
@@ -376,6 +372,7 @@ const notification = ref({
 
 const user = ref(null)
 const profileMenu = ref(false)
+const profileMenuButton = ref(null)
 const selectedTheme = ref('system')
 const showBackgroundDialog = ref(false)
 
@@ -389,10 +386,20 @@ const memberSince = computed(() => {
   })
 })
 
+// Handle hotkey event for opening profile menu
+function handleOpenProfileMenu() {
+  // Instead of directly setting profileMenu.value = true,
+  // simulate a click on the profile button so Vuetify knows the position
+  if (profileMenuButton.value?.$el) {
+    profileMenuButton.value.$el.click()
+  } else {
+    // Fallback if ref isn't available
+    profileMenu.value = true
+  }
+}
+
 // Background change handler
 function onBackgroundChanged(backgroundData) {
-  // Background is already applied by the dialog component
-  // We could emit an event here if other components need to know
   console.log('Background changed:', backgroundData)
 }
 
@@ -401,7 +408,6 @@ function changeTheme(newTheme) {
   selectedTheme.value = newTheme
   
   if (newTheme === 'system') {
-    // Use system preference
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     theme.global.name.value = isDark ? 'supabaseDarkTheme' : 'light'
   } else if (newTheme === 'dark') {
@@ -410,11 +416,10 @@ function changeTheme(newTheme) {
     theme.global.name.value = 'light'
   }
   
-  // Save preference to localStorage
   localStorage.setItem('theme-preference', newTheme)
 }
 
-// Double-click behavior management
+// User preferences
 async function changeDoubleClickBehavior(newBehavior) {
   const success = await saveDoubleClickBehavior(newBehavior)
   if (!success) {
@@ -422,7 +427,6 @@ async function changeDoubleClickBehavior(newBehavior) {
   }
 }
 
-// Domain collapsing management
 async function changeDomainCollapsing(enabled) {
   const success = await saveDomainCollapsing(enabled)
   if (!success) {
@@ -430,7 +434,6 @@ async function changeDomainCollapsing(enabled) {
   }
 }
 
-// Items per page management
 async function changeItemsPerPage(newItemsPerPage) {
   const success = await saveItemsPerPage(newItemsPerPage)
   if (success) {
@@ -458,10 +461,6 @@ async function logout() {
   }
 }
 
-function openExternalHelp(url) {
-  return window.open(url, '_blank');
-}
-
 // Load user data
 async function loadUserData() {
   try {
@@ -486,11 +485,9 @@ function setupSystemThemeListener() {
   })
 }
 
-
 // Watch for dialog state changes from store
 watch(() => appStore.addBookmarkDialog, (newValue) => {
   if (!newValue) {
-    // Dialog was closed, trigger bookmark refresh
     appStore.triggerBookmarkRefresh();
   }
 });
@@ -507,12 +504,9 @@ function closeNotification() {
   notification.value.show = false;
 }
 
-
 async function onBookmarkAdded() {
   try {
     appStore.closeAddBookmarkDialog();
-
-    // Trigger refresh for recent bookmarks in sidebar
     appStore.triggerBookmarkRefresh();
     showNotification('success', 'Bookmark added successfully!');
   } catch (error) {
@@ -521,15 +515,17 @@ async function onBookmarkAdded() {
   }
 }
 
-// Setup keyboard shortcuts
-useKeyboardShortcuts({
-  onAddBookmark: () => { appStore.openAddBookmarkDialog() }
-});
-
 onMounted(() => {
   loadUserData()
   initializeTheme()
   setupSystemThemeListener()
+  
+  // Listen for profile menu hotkey event
+  document.addEventListener('open-profile-menu', handleOpenProfileMenu)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('open-profile-menu', handleOpenProfileMenu)
 })
 </script>
 

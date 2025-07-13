@@ -2,7 +2,7 @@
   <v-card class="pa-6" max-width="500" outlined>
     <v-card-title>Add Bookmark</v-card-title>
 
-    <v-form @submit.prevent="onSubmit">
+    <v-form @submit.prevent="onSubmit" ref="formRef">
 
       <v-alert
         v-if="clipboardNotice"
@@ -34,14 +34,11 @@
         autofocus
       />
 
-
       <v-text-field
         v-model="form.title"
         label="Title"
         prepend-icon="mdi-bookmark"
-        
       ></v-text-field>
-
 
       <v-text-field
         v-model="form.tags"
@@ -67,7 +64,7 @@
         Add Bookmark 
         <v-badge
           color="grey-darken-3"
-          content="Enter"
+          content="Ctrl+S"
           inline
         ></v-badge>
       </v-btn>
@@ -76,41 +73,45 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import supabase from '@/lib/supabaseClient'
 
 const clipboardNotice = ref(false)
 const previousUrl = ref('')
+const formRef = ref(null)
+
+// Handle save action hotkey event
+function handleSaveAction(event) {
+  // Only trigger if this form is visible/active
+  if (formRef.value && !loading.value) {
+    event.preventDefault()
+    onSubmit()
+  }
+}
 
 async function tryReadClipboard() {
-  // Check if clipboard API is supported
   if (!navigator.clipboard || !navigator.clipboard.readText) {
     console.log('Clipboard API not supported. To enable the Clipboard API in Firefox, navigate to about:config in the address bar, accept the risk, and then search for and set dom.events.asyncClipboard.clipboardItem and dom.events.asyncClipboard.readText to true.')
     return
   }
 
   try {
-    // Read text from clipboard
     const clipboardText = await navigator.clipboard.readText()
     
     if (clipboardText && isValidUrl(normalizeUrl(clipboardText))) {
-      // Only paste if the URL field is empty or if it's different from current value
       if (!form.value.url || form.value.url !== normalizeUrl(clipboardText)) {
         previousUrl.value = form.value.url
         form.value.url = normalizeUrl(clipboardText)
         clipboardNotice.value = true
         
-        // Auto-harvest metadata when URL is pasted from clipboard
         await harvestMetadata(normalizeUrl(clipboardText))
         
-        // Auto-hide the notice after 5 seconds
         setTimeout(() => {
           clipboardNotice.value = false
         }, 5000)
       }
     }
   } catch (err) {
-    // Handle permission denied or other errors silently
     console.log('Could not read clipboard:', err.message)
   }
 }
@@ -118,10 +119,9 @@ async function tryReadClipboard() {
 function undoClipboardPaste() {
   form.value.url = previousUrl.value
   clipboardNotice.value = false
-  harvestedData.value = null // Clear harvested data when undoing
+  harvestedData.value = null
 }
 
-// Handle URL field blur to harvest metadata
 async function handleUrlBlur() {
   const url = form.value.url.trim()
   if (url && isValidUrl(normalizeUrl(url))) {
@@ -142,6 +142,13 @@ onMounted(async () => {
     isAuthenticated.value = !!session
     user.value = session?.user || null
   })
+
+  // Listen for save action hotkey event
+  document.addEventListener('save-current-action', handleSaveAction)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('save-current-action', handleSaveAction)
 })
 
 // Form
@@ -172,19 +179,16 @@ async function harvestMetadata(url) {
     const data = await response.json()
     harvestedData.value = data
     
-    // Auto-fill title if it's empty and we got a title
     if (!form.value.title && data.title) {
       form.value.title = data.title
     }
     
-    // Auto-fill tags from keywords if tags are empty
     if (!form.value.tags && data.meta?.keywords) {
-      // Split keywords by comma and clean them up
       const keywords = data.meta.keywords
         .split(',')
         .map(keyword => keyword.trim())
         .filter(keyword => keyword.length > 0)
-        .slice(0, 5) // Limit to first 5 keywords to avoid overwhelming
+        .slice(0, 5)
       
       if (keywords.length > 0) {
         form.value.tags = keywords.join(', ')
@@ -193,21 +197,19 @@ async function harvestMetadata(url) {
     
   } catch (err) {
     console.error('Failed to harvest metadata:', err)
-    // Don't show error to user as this is optional functionality
   } finally {
     harvestLoading.value = false
   }
 }
 
-// Helper to get the best favicon URL
 function getBestFavicon() {
   if (!harvestedData.value) {
-    // Fallback to Google favicon service
     return `https://www.google.com/s2/favicons?domain=${normalizeUrl(form.value.url)}&sz=128`
   }
   
   return harvestedData.value.favicon || `https://www.google.com/s2/favicons?domain=${normalizeUrl(form.value.url)}&sz=128`
 }
+
 function normalizeUrl(url) {
   if (!url) return url
   url = url.trim()
@@ -269,7 +271,6 @@ async function onSubmit() {
     let tagIds = []
     
     if (tagsArray.length > 0) {
-      // First, check which tags already exist
       const { data: existingTags, error: fetchError } = await supabase
         .from('tags')
         .select('id, title')
@@ -280,14 +281,11 @@ async function onSubmit() {
         throw fetchError
       }
 
-      // Get the titles of existing tags
       const existingTagTitles = existingTags.map(tag => tag.title)
       tagIds = existingTags.map(tag => tag.id)
 
-      // Find tags that don't exist yet
       const newTagTitles = tagsArray.filter(tag => !existingTagTitles.includes(tag))
 
-      // Insert only the new tags
       if (newTagTitles.length > 0) {
         const newTagInserts = newTagTitles.map(tag => ({ title: tag }))
         
@@ -301,7 +299,6 @@ async function onSubmit() {
           throw insertError
         }
 
-        // Add the new tag IDs to our list
         tagIds = [...tagIds, ...insertedTags.map(tag => tag.id)]
       }
     }

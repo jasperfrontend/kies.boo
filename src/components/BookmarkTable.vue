@@ -81,16 +81,6 @@
 
                   </div>
                 </div>
-                <!-- <v-btn
-                  @click="handleExpandDomain(domain.name)"
-                  :loading="expandingDomain === domain.name"
-                  variant="tonal"
-                  color="primary"
-                  size="small"
-                  class="collapsed-domain-btn ml-4 px-0"
-                >
-                  <v-icon icon="mdi-chevron-down"></v-icon>
-                </v-btn> -->
               </div>
             </v-card>
           </div>
@@ -145,10 +135,9 @@
 </template>
 
 <script setup>
-import { ref, computed, toRef, watch, nextTick } from 'vue'
+import { ref, computed, toRef, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
 import { useBookmarkData } from '@/composables/useBookmarkData'
 import { useTableSelection } from '@/composables/useTableSelection'
 import { useUserPreferences } from '@/composables/useUserPreferences'
@@ -241,6 +230,9 @@ const dialogsOpen = computed(() => ({
   edit: editDialog.value,
   addBookmark: props.dialogOpen
 }))
+
+// Keyboard navigation state
+const focusedRowIndex = ref(-1)
 
 // Collapsed domain handling
 const collapsedDomains = ref({})
@@ -434,13 +426,79 @@ watch(domainCollapsing, async (newValue, oldValue) => {
   }
 }, { immediate: false })
 
-// Keyboard navigation
-const { focusedRowIndex } = useBookmarkTableKeyboard(
-  displayBookmarks, // Use displayBookmarks instead of bookmarks for proper navigation
-  toRef(props, 'selectedItems'),
-  toggleItemSelection,
-  dialogsOpen
-)
+// Keyboard navigation functions
+function handleTableNavigateNext() {
+  const bookmarkCount = displayBookmarks.value.length
+  if (!hasOpenDialogs() && bookmarkCount > 0) {
+    focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
+      ? focusedRowIndex.value + 1 
+      : 0
+  }
+}
+
+function handleTableNavigatePrev() {
+  const bookmarkCount = displayBookmarks.value.length
+  if (!hasOpenDialogs() && bookmarkCount > 0) {
+    focusedRowIndex.value = focusedRowIndex.value > 0 
+      ? focusedRowIndex.value - 1 
+      : bookmarkCount - 1
+  }
+}
+
+function handleTableToggleSelection() {
+  if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
+    const item = displayBookmarks.value[focusedRowIndex.value]
+    if (item) {
+      toggleItemSelection(item.id)
+    }
+  }
+}
+
+function handleTableArrowDown() {
+  const bookmarkCount = displayBookmarks.value.length
+  if (!hasOpenDialogs() && bookmarkCount > 0) {
+    focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
+      ? focusedRowIndex.value + 1 
+      : 0
+  }
+}
+
+function handleTableArrowUp() {
+  const bookmarkCount = displayBookmarks.value.length
+  if (!hasOpenDialogs() && bookmarkCount > 0) {
+    focusedRowIndex.value = focusedRowIndex.value > 0 
+      ? focusedRowIndex.value - 1 
+      : bookmarkCount - 1
+  }
+}
+
+function handleTableClearFocus() {
+  if (!hasOpenDialogs()) {
+    focusedRowIndex.value = -1
+  }
+}
+
+function handleSelectAllBookmarks() {
+  // Only trigger if we're on a bookmark table page
+  const isBookmarkPage = ['/', '/search', '/tag'].some(path => 
+    router.currentRoute.value.path.startsWith(path)
+  )
+  
+  if (isBookmarkPage) {
+    toggleSelectAll()
+  }
+}
+
+function handleDeleteSelectedBookmarks() {
+  // Only trigger if we have selected items
+  if (props.selectedItems.length > 0) {
+    document.dispatchEvent(new CustomEvent('delete-selected-bookmarks-internal'))
+  }
+}
+
+function hasOpenDialogs() {
+  return Object.values(dialogsOpen.value).some(isOpen => isOpen)
+}
 
 // Event handlers
 function handleSearchTag(tag) {
@@ -470,6 +528,29 @@ function handleDeleteCompleted(deletedIds) {
   // Emit for backwards compatibility
   emit('delete-selected', deletedIds)
 }
+
+onMounted(() => {
+  // Listen for hotkey events
+  document.addEventListener('table-navigate-next', handleTableNavigateNext)
+  document.addEventListener('table-navigate-prev', handleTableNavigatePrev)
+  document.addEventListener('table-toggle-selection', handleTableToggleSelection)
+  document.addEventListener('table-arrow-down', handleTableArrowDown)
+  document.addEventListener('table-arrow-up', handleTableArrowUp)
+  document.addEventListener('table-clear-focus', handleTableClearFocus)
+  document.addEventListener('select-all-bookmarks', handleSelectAllBookmarks)
+  document.addEventListener('delete-selected-bookmarks', handleDeleteSelectedBookmarks)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('table-navigate-next', handleTableNavigateNext)
+  document.removeEventListener('table-navigate-prev', handleTableNavigatePrev)
+  document.removeEventListener('table-toggle-selection', handleTableToggleSelection)
+  document.removeEventListener('table-arrow-down', handleTableArrowDown)
+  document.removeEventListener('table-arrow-up', handleTableArrowUp)
+  document.removeEventListener('table-clear-focus', handleTableClearFocus)
+  document.removeEventListener('select-all-bookmarks', handleSelectAllBookmarks)
+  document.removeEventListener('delete-selected-bookmarks', handleDeleteSelectedBookmarks)
+})
 </script>
 
 <style scoped>
