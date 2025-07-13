@@ -236,7 +236,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import supabase from '@/lib/supabaseClient'
 
@@ -245,7 +245,7 @@ const router = useRouter()
 const tagsData = ref([])
 const searchQuery = ref('')
 const selectedLetter = ref(null)
-const sortOption = ref('alphabetical')
+const sortOption = ref('usage-desc') // Changed default from 'alphabetical' to 'usage-desc'
 const currentPage = ref(1)
 const itemsPerPage = 24
 const deleting = ref(false)
@@ -255,9 +255,9 @@ const tagRefs = ref([])
 
 // Sort options
 const sortOptions = [
+  { title: 'Most Used', value: 'usage-desc' }, // Moved to top as it's now default
   { title: 'Alphabetical (A-Z)', value: 'alphabetical' },
   { title: 'Alphabetical (Z-A)', value: 'alphabetical-desc' },
-  { title: 'Most Used', value: 'usage-desc' },
   { title: 'Least Used', value: 'usage-asc' },
   { title: 'Recently Created', value: 'created-desc' },
   { title: 'Oldest First', value: 'created-asc' }
