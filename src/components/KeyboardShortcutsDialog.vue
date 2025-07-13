@@ -37,11 +37,6 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
 });
 
-// Watch for external prop changes
-const handleModelValueChange = (newValue) => {
-  showDialog.value = newValue;
-};
-
 // Helper function to format key combinations
 const formatKeyCombo = (key) => {
   return key.split(' + ').map(k => k.trim());

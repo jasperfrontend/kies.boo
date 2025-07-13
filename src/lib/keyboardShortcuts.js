@@ -5,7 +5,7 @@ export const keyboardShortcuts = [
     shortcuts: [
       {
         key: 'Ctrl + I',
-        description: 'Add new bookmark',
+        description: 'Insert new bookmark',
         action: 'addBookmark'
       },
       {
@@ -14,7 +14,7 @@ export const keyboardShortcuts = [
         action: 'selectAll'
       },
       {
-        key: 'Del',
+        key: 'Ctrl + Del',
         description: 'Delete selected bookmarks',
         action: 'deleteSelected'
       },

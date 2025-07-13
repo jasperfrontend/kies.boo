@@ -70,11 +70,11 @@ export function useAppHotkeys(router, appStore) {
       inputs: false
     })
 
-    // Delete - Delete selected items
-    useHotkey('delete', () => {
+    // Ctrl+Delete - Delete selected items
+    useHotkey('ctrl+delete', () => {
       document.dispatchEvent(new CustomEvent('delete-selected-bookmarks'))
     }, { 
-      inputs: false
+      inputs: true
     })
 
     // Ctrl+S - Save current action
