@@ -71,7 +71,9 @@
             class="ma-2 pa-3 collapsed-domain-card"
             color="surface-variant"
           >
-            <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center justify-space-between cursor-pointer"
+              @click="handleExpandDomain(domain.name)"
+            >
               <div class="d-flex align-center">
                 <v-icon icon="mdi-domain" class="mr-2" color="primary" />
                 <div>
