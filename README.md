@@ -13,9 +13,7 @@ Unlike bloated services like Raindrop or clunky browser bookmark bars, kies.boo 
 
 - Speed of thought interaction  
 - Keyboard-first navigation and commands  
-- Neurodivergent-friendly design  
-- Supabase-powered backend  
-- Built with Vue 3, Vuetify, Vite, and Pinia
+- Customizable, user-friendly design 
 
 ---
 
@@ -35,13 +33,7 @@ It's a productivity playground for the terminal-minded, ADHD-coded, shortcut-sli
 
 ## Keyboard Shortcuts (so far)
 
-| Shortcut        | Action                                |
-|----------------|----------------------------------------|
-| Tab + Space    | Multi-select bookmarks (row by row)    |
-| Alt + i        | Open delete confirmation dialog        |
-| Enter          | Confirm deletion (focus auto set)      |
-| Alt + u        | Undo deletion (while snackbar is open) |
-| Ctrl/Cmd + Z   | Global undo (recent actions)           |
+Update July: Since @Vuetify has support for keyboard shortcuts now, I'm redoing these to use native shortcuts like ctrl/cmd+s etc.
 
 More to come: command palette, pinned items, "jump to tag", bulk edit, fuzzy search.
 
@@ -49,11 +41,10 @@ More to come: command palette, pinned items, "jump to tag", bulk edit, fuzzy sea
 
 ## Features (Work in Progress)
 
-- Bookmark tagging and filtering  
-- Favicon auto-fetching  
-- Last visited timestamps  
-- Undo stack with temporal rollback  
-- Local and remote sync (eventually)
+- ~~Bookmark tagging and filtering~~ DONE
+- ~~Favicon auto-fetching~~ DONE
+- Last visited timestamps - Redoing this
+- ~~Undo stack with temporal rollback~~ DONE
 
 ---
 
@@ -63,13 +54,6 @@ More to come: command palette, pinned items, "jump to tag", bulk edit, fuzzy sea
 - Vuetify 3 — Clean, accessible UI framework  
 - Pinia — Lightweight state management  
 - Supabase — Auth, storage, real-time data
-
----
-
-## Setup
-
-```bash
-git clone https://github.com/yourname/kies.boo.git
-cd kies.boo
-npm install
-npm run dev
+- A sprinkle of ✨Claude✨ here and there 🧂
+- Okay 90% of this app is vibed. Okay 95%. Okay 99%.
+- Hell even the RLS policies of my supabase tables are written by the Supabase AI

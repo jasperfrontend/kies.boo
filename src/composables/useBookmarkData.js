@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue'
 import supabase from '@/lib/supabaseClient'
 
-export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
+export function useBookmarkData(appStore, searchType = 'all', searchTerm = '', userItemsPerPage = ref(15)) {
   const loading = ref(false)
   const bookmarks = ref([])
   const totalItems = ref(0)
@@ -23,6 +23,10 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     return typeof searchTerm === 'object' && searchTerm.value !== undefined ? searchTerm.value : searchTerm
   }
 
+  const getUserItemsPerPage = () => {
+    return typeof userItemsPerPage === 'object' && userItemsPerPage.value !== undefined ? userItemsPerPage.value : userItemsPerPage
+  }
+
   // Watch for bookmark refresh trigger
   watch(() => appStore.bookmarkRefreshTrigger, () => {
     loadBookmarks()
@@ -38,6 +42,18 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '') {
     expandedDomains.value.clear()
     loadBookmarks()
   }, { immediate: false })
+
+  // Watch for user's items per page preference changes
+  watch(() => getUserItemsPerPage(), (newItemsPerPage) => {
+    // Update server options with new items per page
+    serverOptions.value = {
+      ...serverOptions.value,
+      itemsPerPage: newItemsPerPage,
+      page: 1 // Reset to first page when changing items per page
+    }
+    expandedDomains.value.clear()
+    loadBookmarks()
+  }, { immediate: true })
 
   // Function to reset pagination (can be called externally)
   function resetPagination() {

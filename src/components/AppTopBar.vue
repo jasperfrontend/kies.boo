@@ -138,6 +138,28 @@
 
             <v-divider />
 
+            <!-- Items Per Page Section -->
+            <v-card-text class="py-2">
+              <div class="text-caption text-medium-emphasis mb-2">Items per page</div>
+              <v-select
+                v-model="itemsPerPage"
+                @update:model-value="changeItemsPerPage"
+                :items="itemsPerPageOptions"
+                variant="outlined"
+                density="compact"
+                hide-details
+              >
+                <template v-slot:prepend-inner>
+                  <v-icon icon="mdi-table-row" size="16" />
+                </template>
+              </v-select>
+              <div class="text-caption text-medium-emphasis mt-2">
+                Number of items to show per page in tables
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
             <!-- Domain Collapsing Section -->
             <v-card-text class="py-2">
               <div class="text-caption text-medium-emphasis mb-2">Table behavior</div>
@@ -312,7 +334,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useTheme } from 'vuetify'
 import supabase from '@/lib/supabaseClient'
@@ -323,11 +345,27 @@ import { useUserPreferences } from '@/composables/useUserPreferences'
 import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts';
+import KeyboardShortcutsDialog from '@/components/KeyboardShortcutsDialog.vue'
 
 const { showShortcutsDialog } = useGlobalKeyboardShortcuts()
-const { doubleClickBehavior, domainCollapsing, saveDoubleClickBehavior, saveDomainCollapsing } = useUserPreferences()
+const { 
+  doubleClickBehavior, 
+  domainCollapsing, 
+  itemsPerPage,
+  saveDoubleClickBehavior, 
+  saveDomainCollapsing,
+  saveItemsPerPage
+} = useUserPreferences()
 const appStore = useAppStore()
 const theme = useTheme()
+
+// Items per page options (excluding -1 for performance reasons)
+const itemsPerPageOptions = [
+  { title: '15 items', value: 15 },
+  { title: '30 items', value: 30 },
+  { title: '45 items', value: 45 },
+  { title: '60 items', value: 60 }
+]
 
 // Notification state
 const notification = ref({
@@ -389,6 +427,17 @@ async function changeDomainCollapsing(enabled) {
   const success = await saveDomainCollapsing(enabled)
   if (!success) {
     console.error('Failed to save domain collapsing preference')
+  }
+}
+
+// Items per page management
+async function changeItemsPerPage(newItemsPerPage) {
+  const success = await saveItemsPerPage(newItemsPerPage)
+  if (success) {
+    showNotification('success', `Items per page updated to ${newItemsPerPage}`)
+  } else {
+    console.error('Failed to save items per page preference')
+    showNotification('error', 'Failed to save items per page preference')
   }
 }
 

@@ -241,20 +241,30 @@
 import { computed, onMounted, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 import supabase from '@/lib/supabaseClient'
 
 const appStore = useAppStore()
 const router = useRouter()
+
+// Get user preferences for items per page
+const { itemsPerPage: userItemsPerPage } = useUserPreferences()
 
 // Reactive data
 const searchQuery = ref('')
 const pathTypeFilter = ref(null)
 const sortOption = ref('recent')
 const currentPage = ref(1)
-const itemsPerPage = 20
 const deleting = ref(false)
 const searchInput = ref(null)
 const pathRefs = ref([])
+
+// Use user's preferred items per page, but ensure it's not -1 (all items)
+const itemsPerPage = computed(() => {
+  const userPreference = userItemsPerPage.value
+  // Don't allow -1 (show all) for performance reasons
+  return userPreference === -1 ? 30 : userPreference
+})
 
 // Sort options
 const sortOptions = [
@@ -333,13 +343,13 @@ const filteredSearches = computed(() => {
 })
 
 const paginatedSearches = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
   return filteredSearches.value.slice(start, end)
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredSearches.value.length / itemsPerPage)
+  return Math.ceil(filteredSearches.value.length / itemsPerPage.value)
 })
 
 // Methods
@@ -500,6 +510,11 @@ async function confirmDeletePath() {
 // Watch for filter changes to reset pagination
 watch([searchQuery, pathTypeFilter, sortOption], () => {
   currentPage.value = 1
+})
+
+// Watch for changes in user's items per page preference
+watch(userItemsPerPage, () => {
+  currentPage.value = 1 // Reset to first page when items per page changes
 })
 
 // Keyboard shortcuts

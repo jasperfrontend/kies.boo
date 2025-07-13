@@ -15,7 +15,7 @@
       :items-length="totalItems"
       :loading="loading"
       :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
-      items-per-page="15"
+      :items-per-page="userItemsPerPage"
       v-model:options="serverOptions"
       @update:options="updateServerOptions"
       class="elevation-1 bg-surface-darken position-relative"
@@ -157,6 +157,7 @@ import BookmarkTableRow from '@/components/BookmarkTableRow.vue'
 import BookmarkDetailsDialog from '@/components/BookmarkDetailsDialog.vue'
 import BookmarkEditDialog from '@/components/BookmarkEditDialog.vue'
 import BookmarkDeleteButton from '@/components/BookmarkDeleteButton.vue'
+import AppTips from '@/components/AppTips.vue'
 
 const props = defineProps({
   dialogOpen: Boolean,
@@ -177,7 +178,7 @@ const appStore = useAppStore()
 const router = useRouter()
 
 // Get user preferences
-const { domainCollapsing } = useUserPreferences()
+const { domainCollapsing, itemsPerPage: userItemsPerPage } = useUserPreferences()
 
 // Create reactive refs from props so they can be watched
 const reactiveSearchType = toRef(props, 'searchType')
@@ -200,12 +201,22 @@ const {
   resetPagination,
   expandDomain,
   expandedDomains
-} = useBookmarkData(appStore, reactiveSearchType, reactiveSearchTerm)
+} = useBookmarkData(appStore, reactiveSearchType, reactiveSearchTerm, userItemsPerPage)
 
 // Watch for prop changes and reload data
 watch([reactiveSearchType, reactiveSearchTerm], () => {
   // Reset pagination when search parameters change
   resetPagination()
+  loadBookmarks()
+}, { immediate: false })
+
+// Watch for changes in user's items per page preference
+watch(userItemsPerPage, (newItemsPerPage) => {
+  // Update server options with new items per page
+  serverOptions.value.itemsPerPage = newItemsPerPage
+  // Reset to first page when changing items per page
+  serverOptions.value.page = 1
+  // Reload data with new pagination
   loadBookmarks()
 }, { immediate: false })
 

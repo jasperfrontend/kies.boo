@@ -5,6 +5,7 @@ import supabase from '@/lib/supabaseClient'
 // Global reactive state - shared across all component instances
 const globalDoubleClickBehavior = ref('select')
 const globalDomainCollapsing = ref(true)
+const globalItemsPerPage = ref(15) // Default to 15 items per page
 const globalLoading = ref(false)
 let isInitialized = false
 
@@ -17,7 +18,11 @@ export function useUserPreferences() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
-        return { doubleClickBehavior: 'select', domainCollapsing: true }
+        return { 
+          doubleClickBehavior: 'select', 
+          domainCollapsing: true,
+          itemsPerPage: 15
+        }
       }
 
       const { data, error } = await supabase
@@ -28,16 +33,25 @@ export function useUserPreferences() {
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
         console.error('Error fetching user preferences:', error)
-        return { doubleClickBehavior: 'select', domainCollapsing: true }
+        return { 
+          doubleClickBehavior: 'select', 
+          domainCollapsing: true,
+          itemsPerPage: 15
+        }
       }
 
       return {
         doubleClickBehavior: data?.preferences?.doubleClickBehavior || 'select',
-        domainCollapsing: data?.preferences?.domainCollapsing ?? true // Use nullish coalescing to default to true
+        domainCollapsing: data?.preferences?.domainCollapsing ?? true,
+        itemsPerPage: data?.preferences?.itemsPerPage || 15
       }
     } catch (error) {
       console.error('Error getting user preferences:', error)
-      return { doubleClickBehavior: 'select', domainCollapsing: true }
+      return { 
+        doubleClickBehavior: 'select', 
+        domainCollapsing: true,
+        itemsPerPage: 15
+      }
     }
   }
 
@@ -94,6 +108,8 @@ export function useUserPreferences() {
         globalDoubleClickBehavior.value = value
       } else if (key === 'domainCollapsing') {
         globalDomainCollapsing.value = value
+      } else if (key === 'itemsPerPage') {
+        globalItemsPerPage.value = value
       }
       
       return true
@@ -122,6 +138,22 @@ export function useUserPreferences() {
   }
 
   /**
+   * Save user's items per page preference
+   * @param {number} itemsPerPage - Number of items per page (must be from ITEMS_PER_PAGE_OPTIONS, excluding -1)
+   * @returns {Promise<boolean>} Success status
+   */
+  async function saveItemsPerPage(itemsPerPage) {
+    // Validate that the value is allowed (not -1)
+    const allowedValues = [15, 30, 45, 60]
+    if (!allowedValues.includes(itemsPerPage)) {
+      console.error('Invalid items per page value:', itemsPerPage)
+      return false
+    }
+    
+    return savePreference('itemsPerPage', itemsPerPage)
+  }
+
+  /**
    * Load all user preferences
    */
   async function loadAllPreferences() {
@@ -130,10 +162,12 @@ export function useUserPreferences() {
       const preferences = await getAllPreferences()
       globalDoubleClickBehavior.value = preferences.doubleClickBehavior
       globalDomainCollapsing.value = preferences.domainCollapsing
+      globalItemsPerPage.value = preferences.itemsPerPage
     } catch (error) {
       console.error('Error loading preferences:', error)
       globalDoubleClickBehavior.value = 'select'
       globalDomainCollapsing.value = true
+      globalItemsPerPage.value = 15
     } finally {
       globalLoading.value = false
     }
@@ -150,9 +184,11 @@ export function useUserPreferences() {
   return {
     doubleClickBehavior: globalDoubleClickBehavior,
     domainCollapsing: globalDomainCollapsing,
+    itemsPerPage: globalItemsPerPage,
     loading: globalLoading,
     loadAllPreferences,
     saveDoubleClickBehavior,
-    saveDomainCollapsing
+    saveDomainCollapsing,
+    saveItemsPerPage
   }
 }

@@ -238,20 +238,30 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 import supabase from '@/lib/supabaseClient'
 
 const router = useRouter()
+
+// Get user preferences for items per page
+const { itemsPerPage: userItemsPerPage } = useUserPreferences()
 
 const tagsData = ref([])
 const searchQuery = ref('')
 const selectedLetter = ref(null)
 const sortOption = ref('usage-desc') // Changed default from 'alphabetical' to 'usage-desc'
 const currentPage = ref(1)
-const itemsPerPage = 24
 const deleting = ref(false)
 const cleanupDialog = ref(false)
 const searchInput = ref(null)
 const tagRefs = ref([])
+
+// Use user's preferred items per page, but ensure it's not -1 (all items)
+const itemsPerPage = computed(() => {
+  const userPreference = userItemsPerPage.value
+  // Don't allow -1 (show all) for performance reasons
+  return userPreference === -1 ? 30 : userPreference
+})
 
 // Sort options
 const sortOptions = [
@@ -322,13 +332,13 @@ const filteredTags = computed(() => {
 })
 
 const paginatedTags = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
   return filteredTags.value.slice(start, end)
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredTags.value.length / itemsPerPage)
+  return Math.ceil(filteredTags.value.length / itemsPerPage.value)
 })
 
 const availableLetters = computed(() => {
@@ -531,6 +541,11 @@ async function deleteUnusedTags() {
 // Watch for filter changes to reset pagination
 watch([searchQuery, selectedLetter, sortOption], () => {
   currentPage.value = 1
+})
+
+// Watch for changes in user's items per page preference
+watch(userItemsPerPage, () => {
+  currentPage.value = 1 // Reset to first page when items per page changes
 })
 
 // Keyboard shortcuts
