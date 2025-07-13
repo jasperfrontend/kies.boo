@@ -71,7 +71,7 @@
             class="ma-2 pa-3 collapsed-domain-card"
             color="surface-variant"
           >
-            <div class="d-flex align-center justify-space-between trigger-collapsed-bookmarks" @click="handleExpandDomain(domain.name)">
+            <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
                 <v-icon icon="mdi-domain" class="mr-2" color="primary" />
                 <div>
@@ -406,17 +406,21 @@ watch(domainCollapsing, async (newValue, oldValue) => {
     // Reset auto-loading guard
     isAutoLoading.value = false
     
-    // Just recompute the display with current data first
-    computeDisplayBookmarks()
-    
-    // Check if we need to reload based on the actual fetched data vs target
-    const target = serverOptions.value.itemsPerPage
-    const actualFetched = bookmarks.value.length // This is the real fetched count
-    const visible = visibleBookmarkCount.value   // This is what's displayed
-    
-    // Only reload if we fetched too many items and collapsing is now disabled
-    if (!newValue && target !== -1 && actualFetched > target) {
+    // When enabling/disabling collapsing, always reload to reset the state properly
+    if (newValue) {
+      // Enabling collapsing: reload to get fresh data and allow collapsing to work
       await loadBookmarks()
+    } else {
+      // Disabling collapsing: check if we need to reload due to too many fetched items
+      const target = serverOptions.value.itemsPerPage
+      const actualFetched = bookmarks.value.length
+      
+      if (target !== -1 && actualFetched > target) {
+        await loadBookmarks()
+      } else {
+        // Just recompute display if no reload needed
+        computeDisplayBookmarks()
+      }
     }
   }
 }, { immediate: false })
@@ -505,10 +509,6 @@ function handleDeleteCompleted(deletedIds) {
   box-shadow: 
     0 4px 12px rgba(var(--v-theme-primary), 0.2),
     0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.trigger-collapsed-bookmarks {
-  cursor: pointer;
 }
 
 .collapsed-domain-card:hover::before {
