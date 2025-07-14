@@ -1,9 +1,12 @@
 <template>
   <tr
     :class="rowClasses"
+    :style="rowStyles"
     tabindex="0"
     @dblclick="handleDoubleClick"
-    class="cursor-pointer"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
+    class="cursor-pointer bookmark-table-row"
   >
     <td>
       <v-checkbox
@@ -115,6 +118,7 @@ const props = defineProps({
 const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit'])
 
 const actionsMenu = ref(false)
+const isHovered = ref(false)
 
 // Get user preferences for double-click behavior
 const { doubleClickBehavior } = useUserPreferences()
@@ -131,6 +135,22 @@ const rowClasses = computed(() => {
   }
   
   return classes.join(' ')
+})
+
+const rowStyles = computed(() => {
+  const styles = {}
+  
+  // Add hover gradient if hovering and we have average color data
+  if (isHovered.value && props.item.metadata?.avg_color) {
+    const [r, g, b] = props.item.metadata.avg_color
+    const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
+    const endColor = `rgba(${r}, ${g}, ${b}, 0)`
+    
+    styles.background = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${endColor} 15%, transparent 15%)`
+    styles.transition = 'background 0.2s ease-in-out'
+  }
+  
+  return styles
 })
 
 function displayUrl(url) {
@@ -169,3 +189,13 @@ function handleEdit() {
   emit('edit', props.item)
 }
 </script>
+
+<style scoped>
+.bookmark-table-row {
+  position: relative;
+}
+
+.bookmark-table-row:hover {
+  z-index: 1;
+}
+</style>

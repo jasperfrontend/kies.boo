@@ -210,6 +210,29 @@ function getBestFavicon() {
   return harvestedData.value.favicon || `https://www.google.com/s2/favicons?domain=${normalizeUrl(form.value.url)}&sz=128`
 }
 
+function getMetadata() {
+  if (!harvestedData.value) {
+    return null
+  }
+  
+  // Create metadata object with average color info
+  const metadata = {
+    title: harvestedData.value.title || null,
+    description: harvestedData.value.description || null,
+    favicon: harvestedData.value.favicon || null,
+    og_image: harvestedData.value.og_image || null,
+    avg_color: harvestedData.value.avg_color || null,
+    avg_color_hex: harvestedData.value.avg_color_hex || null
+  }
+  
+  // Include any other metadata that might be useful
+  if (harvestedData.value.meta) {
+    metadata.meta = harvestedData.value.meta
+  }
+  
+  return metadata
+}
+
 function normalizeUrl(url) {
   if (!url) return url
   url = url.trim()
@@ -262,6 +285,7 @@ async function onSubmit() {
   loading.value = true
 
   const faviconUrl = getBestFavicon()
+  const metadata = getMetadata()
   const tagsArray = form.value.tags 
     ? form.value.tags.split(',').map(tag => tag.trim().toLowerCase()).filter(Boolean)
     : []
@@ -303,13 +327,14 @@ async function onSubmit() {
       }
     }
 
-    // Step 2: Insert the bookmark
+    // Step 2: Insert the bookmark with metadata
     const { data: insertData, error: insertError } = await supabase
       .from('bookmarks')
       .insert([{
         title: form.value.title,
         url: normalizedUrl,
         favicon: faviconUrl,
+        metadata: metadata, // Add the metadata including avg_color
         user_id: user.value.id
       }])
       .select()

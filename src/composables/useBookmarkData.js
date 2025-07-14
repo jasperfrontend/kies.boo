@@ -76,7 +76,7 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '', u
       // Calculate how many items to fetch
       let fetchCount = itemsPerPage === -1 ? 1000 : itemsPerPage + additionalItems
       
-      // Build the query
+      // Build the query - now including metadata column
       let query = supabase
         .from('bookmarks')
         .select(`
@@ -84,6 +84,7 @@ export function useBookmarkData(appStore, searchType = 'all', searchTerm = '', u
           url,
           title,
           favicon,
+          metadata,
           created_at,
           bookmark_tags ( 
             tags (
