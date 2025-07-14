@@ -158,7 +158,7 @@
     </v-card>
 
     <!-- Information Section -->
-    <v-card class="pa-6 mb-6" flat>
+    <v-card class="pa-6 ma-10 bg-transparent" variant="outlined">
       <v-card-title class="text-h5 mb-4 d-flex align-center">
         <v-icon icon="mdi-information-outline" class="mr-3" />
         What are Saved Paths?

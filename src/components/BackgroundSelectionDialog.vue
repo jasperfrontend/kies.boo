@@ -330,11 +330,11 @@ async function loadPreviewPhotos() {
  * @param {string} photo - The Unsplash photo object
  */
 async function selectPhoto(photo) {
-
+  let downloadFile = photo.links.download_location
   saving.value = true
   try {
     // Trigger download for Unsplash analytics
-    await unsplashService.triggerDownload(photo.links.download_location)
+    await unsplashService.triggerDownload(downloadFile)
     
     const backgroundData = {
       type: 'image',

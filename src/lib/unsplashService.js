@@ -102,7 +102,7 @@ class UnsplashService {
         ...photo,
         attributionHtml: this.generateAttributionHtml(photo),
         attributionText: this.generateAttributionText(photo),
-        downloadUrl: `${photo.links.download}?${this.utmParams}`
+        downloadUrl: `${photo.links.download_location}?${this.utmParams}`
       }))
     } catch (error) {
       console.error('Error getting curated photos:', error)

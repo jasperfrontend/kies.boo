@@ -400,7 +400,8 @@ function handleOpenProfileMenu() {
 
 // Background change handler
 function onBackgroundChanged(backgroundData) {
-  console.log('Background changed:', backgroundData)
+  return
+  //console.log('Background changed:', backgroundData)
 }
 
 // Theme management
