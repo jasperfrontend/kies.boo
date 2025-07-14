@@ -1,5 +1,6 @@
 <template>
   <tr
+    style="background-image: none; transition: background-image 200ms ease"
     :class="rowClasses"
     :style="rowStyles"
     tabindex="0"
@@ -141,13 +142,14 @@ const rowStyles = computed(() => {
   const styles = {}
   
   // Add hover gradient if hovering and we have average color data
-  if (isHovered.value && props.item.metadata?.avg_color) {
-    const [r, g, b] = props.item.metadata.avg_color
+  if (isHovered.value && props.item.metadata?.vibrant_color) {
+    const [r, g, b] = props.item.metadata.vibrant_color
     const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
-    const endColor = `rgba(${r}, ${g}, ${b}, 0)`
+    const startColorMinimal = `rgba(${r}, ${g}, ${b}, 0.05)`
+    const endColor = "transparent"   
     
-    styles.background = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${endColor} 15%, transparent 15%)`
-    styles.transition = 'background 0.2s ease-in-out'
+    styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
+    // styles.transition = 'background 0.2s ease-in-out'
   }
   
   return styles

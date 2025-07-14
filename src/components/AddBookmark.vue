@@ -222,7 +222,9 @@ function getMetadata() {
     favicon: harvestedData.value.favicon || null,
     og_image: harvestedData.value.og_image || null,
     avg_color: harvestedData.value.avg_color || null,
-    avg_color_hex: harvestedData.value.avg_color_hex || null
+    avg_color_hex: harvestedData.value.avg_color_hex || null,
+    vibrant_color: harvestedData.value.vibrant_color || null,
+    vibrant_color_hex: harvestedData.value.vibrant_color_hex || null
   }
   
   // Include any other metadata that might be useful
