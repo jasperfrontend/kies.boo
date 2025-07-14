@@ -10,10 +10,6 @@
       @delete-selected="onBookmarkDeleted"
     />
 
-    <AddBookmarkDialog
-      v-model="appStore.addBookmarkDialog"
-      @bookmark-added="onBookmarkAdded"
-    />
 
     <!-- Global Delete Handler (now just handles undo functionality) -->
     <GlobalDeleteHandler />
@@ -32,7 +28,6 @@
 import { ref } from 'vue';
 import NotificationComponent from '@/components/NotificationComponent.vue';
 import BookmarkTable from '@/components/BookmarkTable.vue';
-import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue';
 import GlobalDeleteHandler from '@/components/GlobalDeleteHandler.vue';
 import { useAppStore } from '@/stores/app';
 
@@ -46,24 +41,11 @@ const notification = ref({
   message: ''
 });
 
-function showNotification(type, message) {
-  notification.value = {
-    show: true,
-    type,
-    message
-  };
-}
 
 function closeNotification() {
   notification.value.show = false;
 }
 
-// Handle bookmark update from BookmarkTable
-function onBookmarkUpdated() {
-  // Trigger refresh for recent bookmarks in sidebar
-  appStore.triggerBookmarkRefresh();
-  showNotification('success', 'Bookmark updated successfully!');
-}
 
 function onBookmarkDeleted() {
   // Just clear selected items, delete component handles everything else

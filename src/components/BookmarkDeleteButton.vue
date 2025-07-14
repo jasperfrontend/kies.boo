@@ -15,7 +15,7 @@
       <v-badge
         v-if="showKeyboardShortcut"
         color="grey-darken-3"
-        content="Alt+I"
+        content="Ctrl+Del"
         inline
       />
     </v-btn>

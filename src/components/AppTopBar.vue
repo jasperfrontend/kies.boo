@@ -178,7 +178,7 @@
                     <span class="text-body-2">Collapse similar domains 
                       <v-tooltip 
                         location="bottom" 
-                        text="This feature works best when at least 30 bookmarks are shown per page"
+                        text="This feature works best when Items per page it set to 30 or more"
                       >
                         <template v-slot:activator="{ props }">
                           <v-chip v-bind="props" color="warning" variant="tonal" density="compact" class="ml-2" append-icon="mdi-alert-circle-outline">Experimental</v-chip>
