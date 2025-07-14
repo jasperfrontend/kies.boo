@@ -126,7 +126,6 @@ const { doubleClickBehavior } = useUserPreferences()
 
 const rowClasses = computed(() => {
   const classes = []
-  
   if (props.isFocused && props.isSelected) {
     classes.push('bg-red-darken-3')
   } else if (props.isFocused && !props.isSelected) {
@@ -149,7 +148,7 @@ const rowStyles = computed(() => {
     const endColor = "transparent"   
     
     styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
-    // styles.transition = 'background 0.2s ease-in-out'
+    styles.transition = 'background 0.2s ease-in-out'
   }
   
   return styles
@@ -199,5 +198,8 @@ function handleEdit() {
 
 .bookmark-table-row:hover {
   z-index: 1;
+}
+.bookmark-table-row:hover td {
+  border-color: red;
 }
 </style>

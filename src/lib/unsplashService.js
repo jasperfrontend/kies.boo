@@ -3,7 +3,7 @@ class UnsplashService {
   constructor() {
     this.accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY
     this.baseUrl = 'https://api.unsplash.com'
-    this.utmParams = 'utm_source=kies_boo&utm_medium=referral'
+    this.utmParams = 'utm_source=kies.boo&utm_medium=referral'
   }
 
   /**
@@ -97,7 +97,7 @@ class UnsplashService {
       }
 
       const photos = await response.json()
-      
+
       return photos.map(photo => ({
         ...photo,
         attributionHtml: this.generateAttributionHtml(photo),
@@ -112,7 +112,7 @@ class UnsplashService {
 
   /**
    * Trigger a download event for Unsplash analytics
-   * @param {string} downloadUrl - The download URL from the photo object
+   * @param {string} downloadUrl - The download_location URL from the photo object
    */
   async triggerDownload(downloadUrl) {
     try {

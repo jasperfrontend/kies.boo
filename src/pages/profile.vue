@@ -316,11 +316,6 @@ function formatDate(dateString) {
       :title="user.user_metadata?.custom_claims?.global_name || user.user_metadata?.full_name || user.email"
       :subtitle="user.email"
     >
-      <template v-slot:append>
-        <v-avatar color="blue-darken-2">
-          <v-icon icon="mdi-alarm"></v-icon>
-        </v-avatar>
-      </template>
       <template v-slot:prepend>
         <v-avatar size="40">
           <v-img

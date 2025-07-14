@@ -32,12 +32,16 @@ onUnmounted(() => {
   <v-text-field
     ref="searchInputRef"
     v-model="searchQuery"
-    label="Search bookmarks (Alt+K to focus here, Enter to search)"
+    label="Find bookmarks (F to focus here, Enter to search)"
     prepend-inner-icon="mdi-magnify"
     variant="outlined"
     density="compact"
     hide-details
     clearable
     @keydown.enter="handleSearch"
-  />
+  > 
+  
+  </v-text-field>
+
+
 </template>

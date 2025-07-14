@@ -95,8 +95,8 @@ export function useAppHotkeys(router, appStore) {
       inputs: false
     })
 
-    // Alt+K - Focus search (keep existing)
-    useHotkey('alt+k', () => {
+    // F - Focus search
+    useHotkey('f', () => {
       document.dispatchEvent(new CustomEvent('focus-search'))
     }, { 
       inputs: false

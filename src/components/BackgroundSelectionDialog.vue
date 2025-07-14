@@ -325,11 +325,16 @@ async function loadPreviewPhotos() {
   }
 }
 
+/**
+ * Select and download the photo as background image
+ * @param {string} photo - The Unsplash photo object
+ */
 async function selectPhoto(photo) {
+
   saving.value = true
   try {
     // Trigger download for Unsplash analytics
-    await unsplashService.triggerDownload(photo.downloadUrl)
+    await unsplashService.triggerDownload(photo.links.download_location)
     
     const backgroundData = {
       type: 'image',
