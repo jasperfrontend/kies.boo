@@ -504,6 +504,15 @@ function formatDate(dateString) {
               >
                 Import More
               </v-btn>
+              <v-btn
+                to="/generate-pin"
+                size="small"
+                variant="outlined"
+                prepend-icon="mdi-numeric"
+                class="mr-2"
+              >
+                Generate Bookmarklet
+              </v-btn>
             </div>
           </v-card-text>
         </v-card>

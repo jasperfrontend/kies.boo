@@ -21,6 +21,8 @@ declare module 'vue-router/auto-routes' {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
     '/apidemo': RouteRecordInfo<'/apidemo', '/apidemo', Record<never, never>, Record<never, never>>,
     '/export': RouteRecordInfo<'/export', '/export', Record<never, never>, Record<never, never>>,
+    '/generate-bookmarklet': RouteRecordInfo<'/generate-bookmarklet', '/generate-bookmarklet', Record<never, never>, Record<never, never>>,
+    '/generate-pin': RouteRecordInfo<'/generate-pin', '/generate-pin', Record<never, never>, Record<never, never>>,
     '/import': RouteRecordInfo<'/import', '/import', Record<never, never>, Record<never, never>>,
     '/paths': RouteRecordInfo<'/paths', '/paths', Record<never, never>, Record<never, never>>,
     '/profile': RouteRecordInfo<'/profile', '/profile', Record<never, never>, Record<never, never>>,
