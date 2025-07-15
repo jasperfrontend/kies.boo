@@ -59,12 +59,17 @@
             How to Install
           </v-card-title>
           <v-card-text>
-            <v-stepper-vertical>
-              <v-stepper-item title="Show Bookmarks Bar" value="1">
-                <div class="text-body-2 mb-2">
+            <div class="steps-list">
+              <div class="step-item mb-4">
+                <div class="d-flex align-center mb-2">
+                  <v-icon icon="mdi-numeric-1-circle" color="success" class="mr-2" />
+                  <span class="text-h6">Show Bookmarks Bar</span>
+                  <v-chip color="success" size="small" class="ml-2">✓ Complete</v-chip>
+                </div>
+                <div class="text-body-2 mb-2 ml-8">
                   Make sure your browser's bookmarks bar is visible:
                 </div>
-                <v-list density="compact" class="mb-3">
+                <v-list density="compact" class="mb-3 ml-8">
                   <v-list-item>
                     <v-list-item-title>Chrome/Edge:</v-list-item-title>
                     <v-list-item-subtitle>Ctrl+Shift+B (Cmd+Shift+B on Mac)</v-list-item-subtitle>
@@ -78,15 +83,20 @@
                     <v-list-item-subtitle>View → Show Favorites Bar</v-list-item-subtitle>
                   </v-list-item>
                 </v-list>
-              </v-stepper-item>
+              </div>
               
-              <v-stepper-item title="Drag the Bookmarklet" value="2">
-                <div class="text-body-2 mb-3">
+              <div class="step-item mb-4">
+                <div class="d-flex align-center mb-2">
+                  <v-icon icon="mdi-numeric-2-circle" color="primary" class="mr-2" />
+                  <span class="text-h6">Drag the Bookmarklet</span>
+                  <v-chip color="primary" size="small" class="ml-2">Current Step</v-chip>
+                </div>
+                <div class="text-body-2 mb-3 ml-8">
                   Drag the blue "Add to Kies.boo" button below to your bookmarks bar:
                 </div>
                 
                 <!-- The Draggable Bookmarklet -->
-                <div class="text-center mb-4">
+                <div class="text-center mb-4 ml-8">
                   <a 
                     :href="bookmarkletCode"
                     class="bookmarklet-link"
@@ -106,21 +116,27 @@
                   </a>
                 </div>
                 
-                <v-alert type="info" variant="tonal" density="compact">
-                  <div class="text-body-2">
-                    <strong>Tip:</strong> If dragging doesn't work, you can right-click the button 
-                    and select "Add to bookmarks" or "Bookmark this link"
-                  </div>
-                </v-alert>
-              </v-stepper-item>
+                <div class="ml-8">
+                  <v-alert type="info" variant="tonal" density="compact">
+                    <div class="text-body-2">
+                      <strong>Tip:</strong> If dragging doesn't work, you can right-click the button 
+                      and select "Add to bookmarks" or "Bookmark this link"
+                    </div>
+                  </v-alert>
+                </div>
+              </div>
               
-              <v-stepper-item title="Start Using It" value="3">
-                <div class="text-body-2">
+              <div class="step-item">
+                <div class="d-flex align-center mb-2">
+                  <v-icon icon="mdi-numeric-3-circle" color="grey" class="mr-2" />
+                  <span class="text-h6">Start Using It</span>
+                </div>
+                <div class="text-body-2 ml-8">
                   Visit any webpage and click your new bookmark to save it to kies.boo!
                   The bookmarklet will automatically extract the page title, URL, and suggest tags.
                 </div>
-              </v-stepper-item>
-            </v-stepper-vertical>
+              </div>
+            </div>
           </v-card-text>
         </v-card>
 
@@ -134,11 +150,20 @@
                 <p class="text-body-2 mb-3">
                   If dragging doesn't work, you can manually create a bookmark:
                 </p>
-                <ol class="text-body-2 mb-3">
-                  <li>Create a new bookmark in your browser</li>
-                  <li>Set the name to "Add to Kies.boo"</li>
-                  <li>Copy and paste the code below as the URL</li>
-                </ol>
+                <div class="manual-steps mb-3">
+                  <div class="step-item-small mb-2">
+                    <v-icon icon="mdi-numeric-1-circle" size="16" class="mr-2" color="primary" />
+                    <span class="text-body-2">Create a new bookmark in your browser</span>
+                  </div>
+                  <div class="step-item-small mb-2">
+                    <v-icon icon="mdi-numeric-2-circle" size="16" class="mr-2" color="primary" />
+                    <span class="text-body-2">Set the name to "Add to Kies.boo"</span>
+                  </div>
+                  <div class="step-item-small mb-2">
+                    <v-icon icon="mdi-numeric-3-circle" size="16" class="mr-2" color="primary" />
+                    <span class="text-body-2">Copy and paste the code below as the URL</span>
+                  </div>
+                </div>
                 
                 <v-textarea
                   :model-value="bookmarkletCode"
@@ -411,6 +436,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Custom step styling */
+.steps-list .step-item {
+  border-left: 2px solid rgba(var(--v-theme-primary), 0.2);
+  padding-left: 1rem;
+  position: relative;
+}
+
+.steps-list .step-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  bottom: -1rem;
+  height: 1rem;
+  border-left: 2px solid rgba(var(--v-theme-primary), 0.2);
+}
+
+/* Manual installation steps */
+.manual-steps .step-item-small {
+  display: flex;
+  align-items: center;
+}
+
 .bookmarklet-link {
   text-decoration: none;
   display: inline-block;
@@ -428,10 +475,6 @@ onMounted(() => {
 .bookmarklet-button:active {
   cursor: grabbing;
   transform: scale(0.98);
-}
-
-.v-stepper-vertical {
-  box-shadow: none;
 }
 
 /* Custom styles for drag indication */
