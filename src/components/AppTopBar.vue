@@ -18,19 +18,19 @@
         </v-btn>
 
         <v-btn
-          to="/hellotags"
+          to="/tags"
           variant="text"
           class="mr-4 text-body-1"
-          :class="{ 'text-primary': $route.path === '/hellotags' }"
+          :class="{ 'text-primary': $route.path === '/tags' }"
         >
           Tags
         </v-btn>
         
         <v-btn
-          to="/saved-searches"
+          to="/paths"
           variant="text"
           class="text-body-1"
-          :class="{ 'text-primary': $route.path === '/saved-searches' }"
+          :class="{ 'text-primary': $route.path === '/paths' }"
         >
           Paths
         </v-btn>

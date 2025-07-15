@@ -23,7 +23,7 @@ export function useAppHotkeys(router, appStore) {
 
     // G then T - Go to tags
     useHotkey('g-t', () => {
-      router.push('/hellotags')
+      router.push('/tags')
     }, { 
       inputs: false,
       sequenceTimeout: 1000

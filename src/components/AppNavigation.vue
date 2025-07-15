@@ -40,7 +40,7 @@
 </v-btn>
 
 <v-btn 
-  to="/hellotags"
+  to="/tags"
   variant="tonal"
   color="primary"
   class="mr-2"
@@ -52,7 +52,7 @@
 </v-btn>
 
 <v-btn 
-  to="/saved-searches"
+  to="/paths"
   variant="tonal"
   color="primary"
   class="mr-2"

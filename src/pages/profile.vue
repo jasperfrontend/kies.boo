@@ -478,7 +478,7 @@ function formatDate(dateString) {
                 View Bookmarks
               </v-btn>
               <v-btn
-                to="/hellotags"
+                to="/tags"
                 size="small"
                 variant="outlined"
                 prepend-icon="mdi-tag"
@@ -487,7 +487,7 @@ function formatDate(dateString) {
                 Manage Tags
               </v-btn>
               <v-btn
-                to="/saved-searches"
+                to="/paths"
                 size="small"
                 variant="outlined"
                 prepend-icon="mdi-magnify-plus"

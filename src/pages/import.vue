@@ -93,7 +93,7 @@
             </v-card-text>
           </v-card>
         </div>
-        <p v-if="!success">Learn how to <RouterLink to="/how-export" class="text-primary-lighten-3">export your bookmarks</RouterLink> from your browser into kies.boo or click the field above to upload your bookmarks.</p>
+        <p v-if="!success">Learn how to <RouterLink to="/export" class="text-primary-lighten-3">export your bookmarks</RouterLink> from your browser into kies.boo or click the field above to upload your bookmarks.</p>
         <v-card-actions class="px-0 pt-6">
           <v-spacer />
           
