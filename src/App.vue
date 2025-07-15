@@ -25,6 +25,14 @@ const { showShortcutsDialog } = useGlobalHotkeys()
 const { setupHotkeys } = useAppHotkeys(router, appStore)
 
 onMounted(async () => {
+  // Clean up URL after OAuth redirect
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.has('code')) {
+    // Remove the code parameter from URL without page reload
+    const cleanUrl = window.location.origin + window.location.pathname
+    window.history.replaceState({}, document.title, cleanUrl)
+  }
+
   const { data: { session } } = await supabase.auth.getSession()
   isAuthenticated.value = !!session
   
