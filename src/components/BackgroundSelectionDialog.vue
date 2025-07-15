@@ -252,6 +252,7 @@ const loadingPhotos = ref(false)
 const saving = ref(false)
 const currentBackground = ref(null)
 const searchTimeout = ref(null)
+const downloadFile = ref()
 
 // Options
 const gradientOptions = computed(() => backgroundPreferencesService.getGradientOptions())
@@ -330,11 +331,11 @@ async function loadPreviewPhotos() {
  * @param {string} photo - The Unsplash photo object
  */
 async function selectPhoto(photo) {
-  let downloadFile = photo.links.download_location
+  downloadFile.value = photo.links.download_location
   saving.value = true
   try {
     // Trigger download for Unsplash analytics
-    await unsplashService.triggerDownload(downloadFile)
+    await unsplashService.triggerDownload(downloadFile.value)
     
     const backgroundData = {
       type: 'image',
@@ -347,6 +348,7 @@ async function selectPhoto(photo) {
         unsplashUrl: 'https://unsplash.com'
       }
     }
+    console.log("BackgroundSelectionDialog.vue:339 - backgroundData", backgroundData);
     
     const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
     if (success) {

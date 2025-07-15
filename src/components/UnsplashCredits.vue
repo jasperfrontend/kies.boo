@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import supabase from '@/lib/supabaseClient';
 
 const userObject = ref()
-const userPreferences = ref(null) // is object, geen array
+const userPreferences = ref(null)
 const attributionHtml = ref(null)
 
 async function getCurrentlyLoggedInUser() {
@@ -21,7 +21,7 @@ async function getUserBackground(uid) {
     .from('user_preferences')
     .select('preferences')
     .eq('user_id', uid)
-    .single() // We verwachten maar 1 resultaat!
+    .single()
 
   if (error) {
     console.error("error getting user background", error)
