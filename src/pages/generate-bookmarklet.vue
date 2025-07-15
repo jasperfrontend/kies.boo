@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="pa-6 mx-auto" max-width="800" outlined>
+    <v-card class="pa-6 mx-auto bg-transparent" max-width="800" outlined>
       <v-card-title class="text-h4 mb-4">
         <v-icon icon="mdi-bookmark-plus" class="mr-3" />
         Generate Your Bookmarklet
@@ -52,51 +52,67 @@
           Your bookmarklet has been generated successfully!
         </v-alert>
 
-        <!-- Instructions -->
+        <!-- Custom Steps Implementation -->
         <v-card variant="outlined" class="mb-6">
           <v-card-title>
             <v-icon icon="mdi-information" class="mr-2" />
-            How to Install
+            Installation Steps
           </v-card-title>
           <v-card-text>
-            <div class="steps-list">
-              <div class="step-item mb-4">
-                <div class="d-flex align-center mb-2">
-                  <v-icon icon="mdi-numeric-1-circle" color="success" class="mr-2" />
-                  <span class="text-h6">Show Bookmarks Bar</span>
-                  <v-chip color="success" size="small" class="ml-2">✓ Complete</v-chip>
+            <!-- Step 1 -->
+            <div class="custom-step mb-6">
+              <div class="step-header mb-3">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <h3 class="text-h6 mb-2">Show Bookmarks Bar</h3>
+                  <v-chip color="success" size="small" variant="flat">
+                    <v-icon icon="mdi-check" size="16" class="mr-1" />
+                    Ready
+                  </v-chip>
                 </div>
-                <div class="text-body-2 mb-2 ml-8">
-                  Make sure your browser's bookmarks bar is visible:
-                </div>
-                <v-list density="compact" class="mb-3 ml-8">
-                  <v-list-item>
-                    <v-list-item-title>Chrome/Edge:</v-list-item-title>
-                    <v-list-item-subtitle>Ctrl+Shift+B (Cmd+Shift+B on Mac)</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title>Firefox:</v-list-item-title>
-                    <v-list-item-subtitle>Ctrl+Shift+B (Cmd+Shift+B on Mac)</v-list-item-subtitle>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title>Safari:</v-list-item-title>
-                    <v-list-item-subtitle>View → Show Favorites Bar</v-list-item-subtitle>
-                  </v-list-item>
-                </v-list>
               </div>
-              
-              <div class="step-item mb-4">
-                <div class="d-flex align-center mb-2">
-                  <v-icon icon="mdi-numeric-2-circle" color="primary" class="mr-2" />
-                  <span class="text-h6">Drag the Bookmarklet</span>
-                  <v-chip color="primary" size="small" class="ml-2">Current Step</v-chip>
+              <div class="step-body ml-12">
+                <p class="text-body-2 mb-3">
+                  Make sure your browser's bookmarks bar is visible:
+                </p>
+                <div class="browser-shortcuts">
+                  <div class="shortcut-item mb-2">
+                    <strong>Chrome/Edge:</strong> 
+                    <v-chip size="x-small" variant="outlined" class="ml-2">Ctrl+Shift+B</v-chip>
+                    <span class="text-caption ml-2">(Cmd+Shift+B on Mac)</span>
+                  </div>
+                  <div class="shortcut-item mb-2">
+                    <strong>Firefox:</strong> 
+                    <v-chip size="x-small" variant="outlined" class="ml-2">Ctrl+Shift+B</v-chip>
+                    <span class="text-caption ml-2">(Cmd+Shift+B on Mac)</span>
+                  </div>
+                  <div class="shortcut-item">
+                    <strong>Safari:</strong> 
+                    <span class="text-caption ml-2">View → Show Favorites Bar</span>
+                  </div>
                 </div>
-                <div class="text-body-2 mb-3 ml-8">
-                  Drag the blue "Add to Kies.boo" button below to your bookmarks bar:
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="custom-step mb-6">
+              <div class="step-header mb-3">
+                <div class="step-number active">2</div>
+                <div class="step-content">
+                  <h3 class="text-h6 mb-2">Drag the Bookmarklet</h3>
+                  <v-chip color="primary" size="small" variant="flat">
+                    <v-icon icon="mdi-arrow-right" size="16" class="mr-1" />
+                    Current Step
+                  </v-chip>
                 </div>
+              </div>
+              <div class="step-body ml-12">
+                <p class="text-body-2 mb-4">
+                  Drag the blue button below to your bookmarks bar:
+                </p>
                 
                 <!-- The Draggable Bookmarklet -->
-                <div class="text-center mb-4 ml-8">
+                <div class="text-center mb-4">
                   <a 
                     :href="bookmarkletCode"
                     class="bookmarklet-link"
@@ -116,25 +132,32 @@
                   </a>
                 </div>
                 
-                <div class="ml-8">
-                  <v-alert type="info" variant="tonal" density="compact">
-                    <div class="text-body-2">
-                      <strong>Tip:</strong> If dragging doesn't work, you can right-click the button 
-                      and select "Add to bookmarks" or "Bookmark this link"
-                    </div>
-                  </v-alert>
+                <v-alert type="info" variant="tonal" density="compact">
+                  <div class="text-body-2">
+                    <strong>Tip:</strong> If dragging doesn't work, you can right-click the button 
+                    and select "Add to bookmarks" or "Bookmark this link"
+                  </div>
+                </v-alert>
+              </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="custom-step">
+              <div class="step-header mb-3">
+                <div class="step-number pending">3</div>
+                <div class="step-content">
+                  <h3 class="text-h6 mb-2">Start Using It</h3>
+                  <v-chip color="grey" size="small" variant="outlined">
+                    <v-icon icon="mdi-clock-outline" size="16" class="mr-1" />
+                    Pending
+                  </v-chip>
                 </div>
               </div>
-              
-              <div class="step-item">
-                <div class="d-flex align-center mb-2">
-                  <v-icon icon="mdi-numeric-3-circle" color="grey" class="mr-2" />
-                  <span class="text-h6">Start Using It</span>
-                </div>
-                <div class="text-body-2 ml-8">
+              <div class="step-body ml-12">
+                <p class="text-body-2">
                   Visit any webpage and click your new bookmark to save it to kies.boo!
                   The bookmarklet will automatically extract the page title, URL, and suggest tags.
-                </div>
+                </p>
               </div>
             </div>
           </v-card-text>
@@ -151,15 +174,15 @@
                   If dragging doesn't work, you can manually create a bookmark:
                 </p>
                 <div class="manual-steps mb-3">
-                  <div class="step-item-small mb-2">
+                  <div class="manual-step mb-2">
                     <v-icon icon="mdi-numeric-1-circle" size="16" class="mr-2" color="primary" />
                     <span class="text-body-2">Create a new bookmark in your browser</span>
                   </div>
-                  <div class="step-item-small mb-2">
+                  <div class="manual-step mb-2">
                     <v-icon icon="mdi-numeric-2-circle" size="16" class="mr-2" color="primary" />
                     <span class="text-body-2">Set the name to "Add to Kies.boo"</span>
                   </div>
-                  <div class="step-item-small mb-2">
+                  <div class="manual-step mb-2">
                     <v-icon icon="mdi-numeric-3-circle" size="16" class="mr-2" color="primary" />
                     <span class="text-body-2">Copy and paste the code below as the URL</span>
                   </div>
@@ -437,30 +460,85 @@ onMounted(() => {
 
 <style scoped>
 /* Custom step styling */
-.steps-list .step-item {
-  border-left: 2px solid rgba(var(--v-theme-primary), 0.2);
-  padding-left: 1rem;
+.custom-step {
   position: relative;
+  padding-bottom: 2rem;
 }
 
-.steps-list .step-item:not(:last-child)::after {
+.custom-step:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: -1px;
+  left: 20px;
+  top: 50px;
   bottom: -1rem;
-  height: 1rem;
-  border-left: 2px solid rgba(var(--v-theme-primary), 0.2);
+  width: 2px;
+  background: rgba(var(--v-theme-primary), 0.2);
 }
 
-/* Manual installation steps */
-.manual-steps .step-item-small {
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(var(--v-theme-surface), 1);
+  border: 2px solid rgba(var(--v-theme-primary), 0.3);
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number.active {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.step-number.pending {
+  background: rgba(var(--v-theme-surface), 1);
+  border-color: rgba(var(--v-theme-on-surface), 0.2);
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-body {
+  margin-top: 1rem;
+}
+
+.browser-shortcuts {
+  background: rgba(var(--v-theme-surface), 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.manual-steps .manual-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .bookmarklet-link {
   text-decoration: none;
   display: inline-block;
+  position: relative;
 }
 
 .bookmarklet-button {
@@ -488,6 +566,7 @@ onMounted(() => {
   border: 2px dashed transparent;
   border-radius: 8px;
   transition: border-color 0.2s ease;
+  pointer-events: none;
 }
 
 .bookmarklet-link:hover::after {
