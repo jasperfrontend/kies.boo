@@ -48,7 +48,6 @@
       <!-- Generated Bookmarklet -->
       <div v-if="bookmarkletGenerated && bookmarkletCode">
         <v-alert type="success" variant="tonal" class="mb-6">
-          <v-icon icon="mdi-check-circle" class="mr-2" />
           Your bookmarklet has been generated successfully!
         </v-alert>
 

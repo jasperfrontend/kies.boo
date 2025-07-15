@@ -13,7 +13,6 @@
         </p>
         
         <v-alert type="info" variant="tonal" class="mb-4">
-          <v-icon icon="mdi-information" class="mr-2" />
           API keys expire after 30 days for security. You can regenerate them anytime.
         </v-alert>
       </v-card-text>
