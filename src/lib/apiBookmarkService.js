@@ -3,7 +3,7 @@ import supabase from '@/lib/supabaseClient'
 
 class ApiBookmarkService {
   constructor() {
-    this.apiEndpoint = 'https://jasper.monster/harvest/addbookmark.php' // Your PHP endpoint
+    this.apiEndpoint = `${import.meta.env.VITE_HARVEST_API_URL}/harvest/addbookmark.php` // Your PHP endpoint
   }
 
   /**

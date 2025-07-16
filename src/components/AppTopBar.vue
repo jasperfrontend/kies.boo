@@ -15,6 +15,12 @@
           :class="{ 'text-primary': $route.path === '/' }"
         >
           Bookmarks
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            G then B
+          </v-tooltip>
         </v-btn>
 
         <v-btn
@@ -24,6 +30,12 @@
           :class="{ 'text-primary': $route.path === '/tags' }"
         >
           Tags
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            G then T
+          </v-tooltip>
         </v-btn>
         
         <v-btn
@@ -33,6 +45,12 @@
           :class="{ 'text-primary': $route.path === '/paths' }"
         >
           Paths
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            G then P
+          </v-tooltip>
         </v-btn>
 
       </div>
@@ -47,15 +65,16 @@
                 
         <v-btn
           @click="appStore.openAddBookmarkDialog()"
-          variant="text"
-          class="text-body-1"
+          variant="elevated"
+          color="primary-darken-1"
         >
-          Add
-          <v-badge
-            color="grey-darken-3"
-            content="Ctrl+I"
-            inline
-          />
+          New bookmark
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            Ctrl+i
+          </v-tooltip>
         </v-btn>
 
         <v-menu
@@ -229,7 +248,15 @@
                 @click="profileMenu = false"
                 prepend-icon="mdi-account"
               >
-                <v-list-item-title>Your Profile</v-list-item-title>
+                <v-list-item-title>
+                  Your Profile
+                  <v-tooltip
+                    activator="parent"
+                    location="bottom"
+                  >
+                    G then U
+                  </v-tooltip>
+                </v-list-item-title>
               </v-list-item>
               <v-list-item
                 @click="showBackgroundDialog = true; profileMenu = false"

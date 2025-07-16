@@ -211,7 +211,7 @@ async function generateApiKey() {
     }
 
     // Call our PHP endpoint to generate the API key
-    const response = await fetch('https://jasper.monster/harvest/generate-api-key.php', {
+    const response = await fetch(`${import.meta.env.VITE_HARVEST_API_URL}/harvest/generate-api-key.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

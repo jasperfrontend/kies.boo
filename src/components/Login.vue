@@ -79,8 +79,8 @@
             <div class="mt-6 text-center text-medium-emphasis text-caption">
               <v-icon icon="mdi-lock" class="mr-1 mb-1" size="18"/>
               <span>
-                We use the providers above <span class="font-italic">solely</span> to help you sign in.<br>
-                We <strong>cannot</strong> post or make any changes to your accounts.
+                We use the providers above soley to help you sign in. 
+                We can't make any changes to your accounts, nor do we store or are able to view or use your passwords.
               </span>
             </div>
           </v-card-text>

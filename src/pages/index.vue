@@ -3,15 +3,7 @@
     fluid
     class="pa-1"
   >
-  
-    <v-sheet
-      width="100%"
-      class="pa-2 mt-2 text-caption"
-      color="blue-lighten-4"
-    >
-      Hi and welcome to Kies.boo. This project is in active development so if you encounter bugs, 
-      know that I'm on top of it to fix them all and extend the features of Kies.boo!
-    </v-sheet>
+
     <BookmarkTable
       :dialog-open="appStore.addBookmarkDialog"
       v-model:selected-items="appStore.selectedItems"

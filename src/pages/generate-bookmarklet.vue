@@ -298,7 +298,7 @@ async function generateBookmarklet() {
     }
 
     // Validate the API key with our backend
-    const response = await fetch('https://jasper.monster/harvest/validate-api-key.php', {
+    const response = await fetch(`${import.meta.env.VITE_HARVEST_API_URL}/harvest/validate-api-key.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ function generateBookmarkletCode(apiKey) {
         keywords.push(...metaKeywords.content.split(',').map(k => k.trim()).slice(0, 3));
       }
       
-      var apiUrl = 'https://jasper.monster/harvest/addbookmark-secure.php';
+      var apiUrl = '${import.meta.env.VITE_HARVEST_API_URL}/harvest/addbookmark-secure.php';
       var data = {
         title: title || null,
         url: url,

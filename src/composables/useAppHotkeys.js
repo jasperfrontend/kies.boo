@@ -31,7 +31,7 @@ export function useAppHotkeys(router, appStore) {
 
     // G then P - Go to saved paths
     useHotkey('g-p', () => {
-      router.push('/saved-searches')
+      router.push('/paths')
     }, { 
       inputs: false,
       sequenceTimeout: 1000
@@ -39,8 +39,7 @@ export function useAppHotkeys(router, appStore) {
 
     // G then U - Open user profile menu
     useHotkey('g-u', () => {
-      // Emit event to open profile menu in AppTopBar
-      document.dispatchEvent(new CustomEvent('open-profile-menu'))
+      router.push('/profile')
     }, { 
       inputs: false,
       sequenceTimeout: 1000
@@ -71,6 +70,15 @@ export function useAppHotkeys(router, appStore) {
     })
 
     // Ctrl+Delete - Delete selected items
+    // I decided against using just Delete to delete a bookmark to make
+    // the decision to delete much more intentional by the user.
+    // Ctrl+Delete requires two hands or at least an unnatural right-hand
+    // position to push this keyboard shortcut, which is good.
+    // Also, this prevents a bunch of weird edge cases I don't even want to
+    // seriously think about, like having a row selected while adding a new
+    // bookmark, then hitting delete because you want to delete a charachter
+    // in the Save Bookmark modal and woops, now you deleted your selected
+    // bookmark in the background behind the modal. Not a good idea. At all.
     useHotkey('ctrl+delete', () => {
       document.dispatchEvent(new CustomEvent('delete-selected-bookmarks'))
     }, { 

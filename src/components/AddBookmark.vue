@@ -62,11 +62,12 @@
         block
       >
         Add Bookmark 
-        <v-badge
-          color="grey-darken-3"
-          content="Ctrl+S"
-          inline
-        ></v-badge>
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+        >
+          Ctrl+s
+        </v-tooltip>
       </v-btn>
     </v-form>
   </v-card>
@@ -170,7 +171,7 @@ async function harvestMetadata(url) {
   harvestLoading.value = true
   
   try {
-    const response = await fetch(`https://jasper.monster/harvest/harvest.php?url=${encodeURIComponent(url)}`)
+    const response = await fetch(`${import.meta.env.VITE_HARVEST_API_URL}/harvest/harvest.php?url=${encodeURIComponent(url)}`)
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
