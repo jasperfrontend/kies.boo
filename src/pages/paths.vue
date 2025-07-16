@@ -25,7 +25,6 @@
               variant="outlined"
               density="comfortable"
               clearable
-              @keydown.enter="focusFirstPath"
               ref="searchInput"
             />
           </v-col>
@@ -43,9 +42,9 @@
         <!-- Quick Filters -->
         <div class="d-flex flex-wrap gap-2 mb-4">
           <v-chip
-            :variant="pathTypeFilter === 'tag' ? 'flat' : 'outlined'"
+            :variant="pathTypeFilter === 'tag' ? 'flat' : 'tonal'"
             :color="pathTypeFilter === 'tag' ? 'primary' : 'default'"
-            size="small"
+
             @click="filterByType('tag')"
             class="cursor-pointer"
             prepend-icon="mdi-tag"
@@ -53,9 +52,9 @@
             Tags
           </v-chip>
           <v-chip
-            :variant="pathTypeFilter === 'search' ? 'flat' : 'outlined'"
+            :variant="pathTypeFilter === 'search' ? 'flat' : 'tonal'"
             :color="pathTypeFilter === 'search' ? 'primary' : 'default'"
-            size="small"
+
             @click="filterByType('search')"
             class="cursor-pointer"
             prepend-icon="mdi-text-search"
@@ -63,9 +62,9 @@
             Searches
           </v-chip>
           <v-chip
-            :variant="pathTypeFilter === null ? 'flat' : 'outlined'"
+            :variant="pathTypeFilter === null ? 'flat' : 'tonal'"
             :color="pathTypeFilter === null ? 'primary' : 'default'"
-            size="small"
+
             @click="clearTypeFilter"
             class="cursor-pointer"
           >
@@ -95,10 +94,10 @@
             :key="search.id || index"
             :ref="el => pathRefs[index] = el"
             class="path-card cursor-pointer"
-            variant="outlined"
+            variant="tonal"
             hover
-            @click="navigateToPath(search.url)"
-            :tabindex="0"
+            @click.stop="navigateToPath(search.url)"
+            :tabindex="index+1"
             @keydown.enter="navigateToPath(search.url)"
             @keydown.delete="handleDeletePath(search)"
           >
@@ -108,19 +107,19 @@
                   <div class="d-flex align-center mb-2">
                     <v-icon 
                       :icon="getPathIcon(search.url)" 
-                      size="16" 
+                      size="20" 
                       class="mr-2"
                       :color="getPathColor(search.url)"
                     />
                     <v-chip
                       :color="getPathColor(search.url)"
-                      size="x-small"
+                      size="small"
                       variant="tonal"
                     >
                       {{ getPathType(search.url) }}
                     </v-chip>
                   </div>
-                  <div class="text-subtitle-1 font-weight-medium mb-1">
+                  <div class="text-h5 font-weight-medium mb-1">
                     {{ formatPathDisplay(search.url) }}
                   </div>
                   <div class="text-caption text-grey-darken-1">
@@ -135,7 +134,6 @@
                     @click.stop="handleDeletePath(search)"
                     icon="mdi-delete"
                     variant="text"
-                    size="small"
                     color="error"
                     :title="`Delete path: ${search.url}`"
                   />
@@ -454,14 +452,6 @@ function clearTypeFilter() {
   currentPage.value = 1
 }
 
-function focusFirstPath() {
-  nextTick(() => {
-    if (pathRefs.value[0]) {
-      pathRefs.value[0].$el.focus()
-    }
-  })
-}
-
 async function confirmDeletePath() {
   if (!confirmDialog.value.search) return
   
@@ -549,7 +539,7 @@ onUnmounted(() => {
 }
 
 .path-card:hover {
-  transform: translateY(-2px);
+  transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

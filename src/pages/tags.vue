@@ -43,20 +43,21 @@
         <!-- Quick Filters -->
         <div class="d-flex flex-wrap gap-2 mb-4">
           <v-chip
-            v-for="letter in availableLetters"
+            v-for="(letter, index) in availableLetters"
             :key="letter"
-            :variant="selectedLetter === letter ? 'flat' : 'outlined'"
+            :variant="selectedLetter === letter ? 'flat' : 'tonal'"
             :color="selectedLetter === letter ? 'primary' : 'default'"
-            size="small"
+
+            :tabindex="index"
             @click="filterByLetter(letter)"
             class="cursor-pointer"
           >
             {{ letter }}
           </v-chip>
           <v-chip
-            :variant="selectedLetter === null ? 'flat' : 'outlined'"
+            :variant="selectedLetter === null ? 'flat' : 'tonal'"
             :color="selectedLetter === null ? 'primary' : 'default'"
-            size="small"
+
             @click="clearLetterFilter"
             class="cursor-pointer"
           >
@@ -86,17 +87,17 @@
             :key="tag.id"
             :ref="el => tagRefs[index] = el"
             class="tag-card cursor-pointer"
-            variant="outlined"
+            variant="tonal"
             hover
-            @click="handleSearchTag(tag.title)"
-            :tabindex="0"
+            @click.stop="handleSearchTag(tag.title)"
+            :tabindex="index+1"
             @keydown.enter="handleSearchTag(tag.title)"
             @keydown.delete="handleDeleteTag(tag)"
           >
             <v-card-text class="pa-3">
               <div class="d-flex align-center justify-space-between">
                 <div class="flex-grow-1 mr-2">
-                  <div class="text-subtitle-1 font-weight-medium mb-1">
+                  <div class="text-h5 font-weight-medium mb-1">
                     {{ tag.title }}
                   </div>
                   <div class="text-caption text-grey-darken-1">
@@ -108,7 +109,7 @@
                     @click.stop="handleDeleteTag(tag)"
                     icon="mdi-delete"
                     variant="text"
-                    size="small"
+        
                     color="error"
                     :title="`Delete tag: ${tag.title}`"
                   />
@@ -580,7 +581,7 @@ onUnmounted(() => {
 }
 
 .tag-card:hover {
-  transform: translateY(-2px);
+  transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
