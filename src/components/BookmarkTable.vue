@@ -8,6 +8,29 @@
       @delete-completed="handleDeleteCompleted"
     />
 
+    <!-- Page Navigation Indicator -->
+    <v-fade-transition>
+      <v-alert 
+        v-if="numberBuffer"
+        type="info"
+        variant="tonal"
+        density="compact"
+        class="mb-4 text-center"
+        style="position: fixed; top: 80px; right: 20px; z-index: 1000; min-width: 200px;"
+      >
+        <div class="d-flex align-center justify-center">
+          <v-icon icon="mdi-keyboard" class="mr-2" size="16" />
+          <span>Going to page: <strong>{{ numberBuffer }}</strong></span>
+          <v-progress-circular 
+            indeterminate 
+            size="16" 
+            width="2" 
+            class="ml-2"
+          />
+        </div>
+      </v-alert>
+    </v-fade-transition>
+
     <v-data-table-server
       :key="tableKey"
       :headers="BOOKMARK_TABLE_HEADERS"
@@ -107,6 +130,7 @@ import { useUserPreferences } from '@/composables/useUserPreferences'
 import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
 import { useBookmarkTableDialogs } from '@/composables/useBookmarkTableDialogs'
 import { useDomainCollapsing } from '@/composables/useDomainCollapsing'
+import { useNumericPagination } from '@/composables/useNumericPagination'
 import { ITEMS_PER_PAGE_OPTIONS, BOOKMARK_TABLE_HEADERS } from '@/lib/tableConstants'
 import BookmarkTableRow from '@/components/BookmarkTableRow.vue'
 import BookmarkTableCollapseIndicators from '@/components/BookmarkTableCollapseIndicators.vue'
@@ -198,6 +222,18 @@ const { focusedRowIndex } = useBookmarkTableKeyboard(
   router,
   handleEdit,
   handleViewDetails
+)
+
+// Numeric pagination
+const { numberBuffer } = useNumericPagination(
+  (pageNumber) => {
+    // Update both the server options and trigger the data reload
+    const newOptions = { ...serverOptions.value, page: pageNumber }
+    serverOptions.value = newOptions
+    updateServerOptions(newOptions)
+  },
+  () => Math.ceil(totalItems.value / serverOptions.value.itemsPerPage),
+  () => Object.values(dialogsOpen.value).some(isOpen => isOpen)
 )
 
 // Watch for prop changes and reload data

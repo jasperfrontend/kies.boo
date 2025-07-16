@@ -55,7 +55,7 @@ export const keyboardShortcuts = [
       }
     ]
   },
-  {
+   {
     category: 'Table Navigation',
     shortcuts: [
       {
@@ -97,6 +97,26 @@ export const keyboardShortcuts = [
         key: 'L',
         description: 'Open the highlighted link in a new tab',
         action: 'viewDetailsFocused'
+      }
+    ]
+  },
+  {
+    category: 'Pagination',
+    shortcuts: [
+      {
+        key: '1-9',
+        description: 'Jump to page number (type digits within 1.5 seconds)',
+        action: 'goToPage'
+      },
+      {
+        key: '5 4',
+        description: 'Go to page 54 (type "5" then "4" quickly)',
+        action: 'goToPageMultiDigit'
+      },
+      {
+        key: 'Esc',
+        description: 'Cancel page number input',
+        action: 'cancelPageInput'
       }
     ]
   },

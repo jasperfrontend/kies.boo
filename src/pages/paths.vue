@@ -73,6 +73,29 @@
         </div>
       </v-card-text>
 
+      <!-- Page Navigation Indicator -->
+      <v-fade-transition>
+        <v-alert 
+          v-if="numberBuffer"
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mb-4 text-center"
+          style="position: fixed; top: 80px; right: 20px; z-index: 1000; min-width: 200px;"
+        >
+          <div class="d-flex align-center justify-center">
+            <v-icon icon="mdi-keyboard" class="mr-2" size="16" />
+            <span>Going to page: <strong>{{ numberBuffer }}</strong></span>
+            <v-progress-circular 
+              indeterminate 
+              size="16" 
+              width="2" 
+              class="ml-2"
+            />
+          </div>
+        </v-alert>
+      </v-fade-transition>
+
       <!-- Paths Display -->
       <v-card-text>
         <div v-if="filteredSearches.length === 0 && searchQuery" class="text-center text-grey-darken-1 py-8">
@@ -240,6 +263,7 @@ import { computed, onMounted, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useUserPreferences } from '@/composables/useUserPreferences'
+import { useNumericPagination } from '@/composables/useNumericPagination'
 import supabase from '@/lib/supabaseClient'
 
 const appStore = useAppStore()
@@ -349,6 +373,18 @@ const paginatedSearches = computed(() => {
 const totalPages = computed(() => {
   return Math.ceil(filteredSearches.value.length / itemsPerPage.value)
 })
+
+// Numeric pagination
+const { numberBuffer } = useNumericPagination(
+  (pageNumber) => {
+    // Ensure the pagination component updates by using nextTick
+    nextTick(() => {
+      currentPage.value = pageNumber
+    })
+  },
+  () => totalPages.value,
+  () => confirmDialog.value.show
+)
 
 // Methods
 function showNotification(type, message) {
