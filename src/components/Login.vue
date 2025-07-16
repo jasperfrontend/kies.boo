@@ -1,11 +1,9 @@
 <template>
   <div class="bg-fade-stack">
-    <!-- Main (nieuwe) wallpaper -->
     <div
       class="bg-fade"
       :style="{ backgroundImage: `url('${wallpaperUrl}')`, opacity: 1 }"
     ></div>
-    <!-- Overlay (oude) wallpaper fade-out -->
     <div
       v-if="isFading"
       class="bg-fade bg-fade--overlay"
@@ -25,7 +23,6 @@
         </v-menu>
       </v-btn>
     </div>
-
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
         <v-card class="pa-8 shiny-login">
@@ -38,7 +35,6 @@
               Sign in to manage your bookmarks
             </div>
           </div>
-
           <v-card-text>
             <v-row dense>
               <v-col cols="12" sm="6" class="d-flex justify-center">
@@ -50,7 +46,7 @@
                     class="provider-btn mb-2"
                     size="large"
                     style="color: white;"
-                    @click="signInWithDiscord"
+                    @click="signInWith('discord')"
                     v-bind="props"
                   >
                     <span class="me-2" style="display: flex; align-items: center;">
@@ -69,7 +65,7 @@
                     class="provider-btn mb-2"
                     size="large"
                     style="color: white;"
-                    @click="signInWithGithub"
+                    @click="signInWith('github')"
                     v-bind="props"
                   >
                     <span class="me-2" style="display: flex; align-items: center;">
@@ -80,7 +76,6 @@
                 </v-hover>
               </v-col>
             </v-row>
-
             <div class="mt-6 text-center text-medium-emphasis text-caption">
               <v-icon icon="mdi-lock" class="mr-1 mb-1" size="18"/>
               <span>
@@ -118,25 +113,21 @@ watch(wallpaperUrl, (newUrl, oldUrl) => {
   prevWallpaperUrl.value = oldUrl
   isFading.value = true
   fadeOpacity.value = 1
-  // Start fade out
+
   setTimeout(() => {
     fadeOpacity.value = 0
   }, 0)
-  // Remove overlay na de fade:
+
   setTimeout(() => {
     isFading.value = false
-  }, 450) // fade duur = css transition tijd
+  }, 450)
 })
 
-function signInWithDiscord() {
-  supabase.auth.signInWithOAuth({ provider: 'discord' })
+async function signInWith(provider) {
+  await supabase.auth.signInWithOAuth({ provider: provider })
 }
-
-function signInWithGithub() {
-  supabase.auth.signInWithOAuth({ provider: 'github' })
-}
-
 </script>
+
 <style scoped>
 .bg-fade-stack {
   position: fixed;
