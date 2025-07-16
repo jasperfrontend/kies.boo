@@ -24,7 +24,7 @@ export const keyboardShortcuts = [
         action: 'saveAction'
       },
       {
-        key: 'Alt + K',
+        key: 'F',
         description: 'Focus search bar',
         action: 'focusSearch'
       }
@@ -82,6 +82,16 @@ export const keyboardShortcuts = [
         key: '←',
         description: 'Remove highlight from table row',
         action: 'clearFocus'
+      },
+      {
+        key: 'E',
+        description: 'Edit the highlighted bookmark',
+        action: 'editFocused'
+      },
+      {
+        key: 'D',
+        description: 'View details of the highlighted bookmark',
+        action: 'viewDetailsFocused'
       }
     ]
   },

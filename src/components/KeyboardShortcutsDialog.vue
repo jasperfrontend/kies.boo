@@ -105,11 +105,6 @@ const formatKeyCombo = (key) => {
           to open this dialog anytime
         </div>
 
-        <v-alert type="info" variant="tonal" class="mt-4">
-          <v-icon icon="mdi-information" class="mr-2" />
-          <strong>New in this version:</strong> We've upgraded to Vuetify's native hotkey system! 
-          Keyboard shortcuts are now more reliable and support standard combinations like Ctrl+S and Ctrl+A.
-        </v-alert>
       </v-card-text>
       
       <v-divider />

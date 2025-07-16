@@ -1,6 +1,14 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
-export function useBookmarkTableKeyboard(bookmarks, selectedItems, toggleItemSelection, dialogsOpen) {
+export function useBookmarkTableKeyboard(
+  bookmarks, 
+  selectedItems, 
+  toggleItemSelection, 
+  dialogsOpen,
+  router,
+  handleEdit,
+  handleViewDetails
+) {
   const focusedRowIndex = ref(-1)
 
   const handleKeydown = (event) => {
@@ -56,12 +64,124 @@ export function useBookmarkTableKeyboard(bookmarks, selectedItems, toggleItemSel
     }
   }
 
+  // Keyboard navigation functions
+  function handleTableNavigateNext() {
+    const bookmarkCount = bookmarks.value.length
+    if (!hasOpenDialogs() && bookmarkCount > 0) {
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
+        ? focusedRowIndex.value + 1 
+        : 0
+    }
+  }
+
+  function handleTableNavigatePrev() {
+    const bookmarkCount = bookmarks.value.length
+    if (!hasOpenDialogs() && bookmarkCount > 0) {
+      focusedRowIndex.value = focusedRowIndex.value > 0 
+        ? focusedRowIndex.value - 1 
+        : bookmarkCount - 1
+    }
+  }
+
+  function handleTableToggleSelection() {
+    if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
+      const item = bookmarks.value[focusedRowIndex.value]
+      if (item) {
+        toggleItemSelection(item.id)
+      }
+    }
+  }
+
+  function handleTableArrowDown() {
+    const bookmarkCount = bookmarks.value.length
+    if (!hasOpenDialogs() && bookmarkCount > 0) {
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
+        ? focusedRowIndex.value + 1 
+        : 0
+    }
+  }
+
+  function handleTableArrowUp() {
+    const bookmarkCount = bookmarks.value.length
+    if (!hasOpenDialogs() && bookmarkCount > 0) {
+      focusedRowIndex.value = focusedRowIndex.value > 0 
+        ? focusedRowIndex.value - 1 
+        : bookmarkCount - 1
+    }
+  }
+
+  function handleTableClearFocus() {
+    if (!hasOpenDialogs()) {
+      focusedRowIndex.value = -1
+    }
+  }
+
+  function handleTableEditFocused() {
+    if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
+      const item = bookmarks.value[focusedRowIndex.value]
+      if (item) {
+        handleEdit(item)
+      }
+    }
+  }
+
+  function handleTableViewDetailsFocused() {
+    if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
+      const item = bookmarks.value[focusedRowIndex.value]
+      if (item) {
+        handleViewDetails(item)
+      }
+    }
+  }
+
+  function handleSelectAllBookmarks() {
+    // Only trigger if we're on a bookmark table page
+    const isBookmarkPage = ['/', '/search', '/tag'].some(path => 
+      router.currentRoute.value.path.startsWith(path)
+    )
+    
+    if (isBookmarkPage) {
+      // This will be handled by the parent component's toggleSelectAll
+      document.dispatchEvent(new CustomEvent('select-all-internal'))
+    }
+  }
+
+  function handleDeleteSelectedBookmarks() {
+    // Only trigger if we have selected items
+    if (selectedItems.value.length > 0) {
+      document.dispatchEvent(new CustomEvent('delete-selected-bookmarks-internal'))
+    }
+  }
+
+  function hasOpenDialogs() {
+    return Object.values(dialogsOpen.value).some(isOpen => isOpen)
+  }
+
   onMounted(() => {
-    document.addEventListener('keydown', handleKeydown)
+    // Listen for hotkey events
+    document.addEventListener('table-navigate-next', handleTableNavigateNext)
+    document.addEventListener('table-navigate-prev', handleTableNavigatePrev)
+    document.addEventListener('table-toggle-selection', handleTableToggleSelection)
+    document.addEventListener('table-arrow-down', handleTableArrowDown)
+    document.addEventListener('table-arrow-up', handleTableArrowUp)
+    document.addEventListener('table-clear-focus', handleTableClearFocus)
+    document.addEventListener('table-edit-focused', handleTableEditFocused)
+    document.addEventListener('table-view-details-focused', handleTableViewDetailsFocused)
+    document.addEventListener('select-all-bookmarks', handleSelectAllBookmarks)
+    document.addEventListener('delete-selected-bookmarks', handleDeleteSelectedBookmarks)
   })
 
   onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeydown)
+    document.removeEventListener('table-navigate-next', handleTableNavigateNext)
+    document.removeEventListener('table-navigate-prev', handleTableNavigatePrev)
+    document.removeEventListener('table-toggle-selection', handleTableToggleSelection)
+    document.removeEventListener('table-arrow-down', handleTableArrowDown)
+    document.removeEventListener('table-arrow-up', handleTableArrowUp)
+    document.removeEventListener('table-clear-focus', handleTableClearFocus)
+    document.removeEventListener('table-edit-focused', handleTableEditFocused)
+    document.removeEventListener('table-view-details-focused', handleTableViewDetailsFocused)
+    document.removeEventListener('select-all-bookmarks', handleSelectAllBookmarks)
+    document.removeEventListener('delete-selected-bookmarks', handleDeleteSelectedBookmarks)
   })
 
   return {

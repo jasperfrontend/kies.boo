@@ -20,6 +20,8 @@ declare module 'vue' {
     BookmarkDetailsDialog: typeof import('./src/components/BookmarkDetailsDialog.vue')['default']
     BookmarkEditDialog: typeof import('./src/components/BookmarkEditDialog.vue')['default']
     BookmarkTable: typeof import('./src/components/BookmarkTable.vue')['default']
+    BookmarkTableCollapseIndicator: typeof import('./src/components/BookmarkTableCollapseIndicators.vue')['default']
+    BookmarkTableCollapseIndicators: typeof import('./src/components/BookmarkTableCollapseIndicators.vue')['default']
     BookmarkTableRow: typeof import('./src/components/BookmarkTableRow.vue')['default']
     ButtonAddBookmark: typeof import('./src/components/ButtonAddBookmark.vue')['default']
     GlobalDeleteHandler: typeof import('./src/components/GlobalDeleteHandler.vue')['default']

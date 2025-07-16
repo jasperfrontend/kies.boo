@@ -84,7 +84,20 @@
           class="rounded-xl px-6 "
           size="large"
         >
-          Open Link
+          Open Link 
+          <v-tooltip activator="parent" location="bottom">
+            Press L to open this link
+          </v-tooltip>
+        <v-chip
+          pill="true"
+          ripple="false"
+          size="small"
+          variant="tonal"
+          class="ml-3"
+        >
+          L
+          
+        </v-chip>
         </v-btn>
         <v-spacer />
         <v-btn
@@ -95,7 +108,15 @@
         >
           <v-icon icon="mdi-close" size="22" class="mr-2" /> 
           <span class="">Close</span>
-          <span class="ms-3 text-sm text-grey-darken-2 font-mono px-2 py-1 rounded bg-grey-darken-4" style="letter-spacing: 1px;">ESC</span>
+          <v-chip
+            pill="true"
+            ripple="false"
+            size="small"
+            variant="tonal"
+            class="ml-3"
+          >
+            ESC
+          </v-chip>
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -103,9 +124,22 @@
 </template>
 
 <script setup>
-defineProps({
+import { toRefs } from 'vue'
+import { useHotkey } from 'vuetify'
+
+const props = defineProps({
   modelValue: Boolean,
   bookmark: Object
+})
+const { bookmark } = toRefs(props)
+
+useHotkey('l', () => {
+  // check of bookmark bestaat, want bij eerste render kan het undefined zijn
+  if (bookmark.value && bookmark.value.url) {
+    window.open(bookmark.value.url, '_blank')
+  }
+}, { 
+  inputs: false
 })
 
 defineEmits(['update:modelValue'])

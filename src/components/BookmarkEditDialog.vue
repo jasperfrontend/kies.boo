@@ -45,17 +45,17 @@
             type="submit"
           >
             Save Changes
-            <v-badge
-              color="grey-darken-3"
-              content="Ctrl+S"
-              inline
-            />
+            <v-tooltip activator="parent" location="bottom">Ctrl+s</v-tooltip>
           </v-btn>
           <v-btn
             text="Cancel"
             @click="handleCancel"
             :disabled="loading"
-          />
+          >
+            <v-tooltip activator="parent" location="bottom">Escape</v-tooltip>
+            Cancel
+          </v-btn>
+
         </v-card-actions>
       </v-card>
     </v-form>
@@ -65,6 +65,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import supabase from '@/lib/supabaseClient'
+import { useHotkey } from 'vuetify'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -83,6 +84,12 @@ const form = ref({
 const loading = ref(false)
 const error = ref('')
 const formRef = ref(null)
+
+useHotkey('esc', () => {
+  handleCancel()
+}, { 
+  inputs: true
+})
 
 // Handle save action hotkey event
 function handleSaveAction(event) {

@@ -171,6 +171,26 @@ export function useAppHotkeys(router, appStore) {
     }, { 
       inputs: false
     })
+
+    // E - Edit focused bookmark
+    useHotkey('e', (e) => {
+      if (isInTableContext() && !hasOpenDialogs()) {
+        e.preventDefault()
+        document.dispatchEvent(new CustomEvent('table-edit-focused'))
+      }
+    }, { 
+      inputs: false
+    })
+
+    // D - View details of focused bookmark
+    useHotkey('d', (e) => {
+      if (isInTableContext() && !hasOpenDialogs()) {
+        e.preventDefault()
+        document.dispatchEvent(new CustomEvent('table-view-details-focused'))
+      }
+    }, { 
+      inputs: false
+    })
   }
 
   // Helper functions
