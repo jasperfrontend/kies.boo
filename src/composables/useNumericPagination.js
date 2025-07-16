@@ -45,8 +45,13 @@ export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
       const pageNumber = parseInt(numberBuffer.value)
       const totalPages = getTotalPages()
       
+      console.log(`🔢 Numeric pagination: Attempting to go to page ${pageNumber} of ${totalPages}`)
+      
       if (pageNumber > 0 && pageNumber <= totalPages) {
+        console.log(`✅ Valid page number, calling updatePage(${pageNumber})`)
         updatePage(pageNumber)
+      } else {
+        console.log(`❌ Invalid page number: ${pageNumber} (total pages: ${totalPages})`)
       }
       
       clearNumberBuffer()

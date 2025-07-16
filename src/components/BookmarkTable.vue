@@ -227,13 +227,27 @@ const { focusedRowIndex } = useBookmarkTableKeyboard(
 // Numeric pagination
 const { numberBuffer } = useNumericPagination(
   (pageNumber) => {
-    // Update both the server options and trigger the data reload
-    const newOptions = { ...serverOptions.value, page: pageNumber }
-    serverOptions.value = newOptions
-    updateServerOptions(newOptions)
+    console.log(`📊 BookmarkTable: Received page change request to page ${pageNumber}`)
+    console.log(`📊 BookmarkTable: Current serverOptions.page = ${serverOptions.value.page}`)
+    
+    // Method 1: Direct update of serverOptions (this should trigger v-model reactivity)
+    serverOptions.value = { ...serverOptions.value, page: pageNumber }
+    console.log(`📊 BookmarkTable: Direct update - serverOptions.page = ${serverOptions.value.page}`)
+    
+    // Method 2: Also call updateServerOptions to ensure data reload
+    updateServerOptions(serverOptions.value)
+    console.log(`📊 BookmarkTable: Called updateServerOptions, final serverOptions.page = ${serverOptions.value.page}`)
   },
-  () => Math.ceil(totalItems.value / serverOptions.value.itemsPerPage),
-  () => Object.values(dialogsOpen.value).some(isOpen => isOpen)
+  () => {
+    const totalPages = Math.ceil(totalItems.value / serverOptions.value.itemsPerPage)
+    console.log(`📊 BookmarkTable: Total pages calculated as ${totalPages} (totalItems: ${totalItems.value}, itemsPerPage: ${serverOptions.value.itemsPerPage})`)
+    return totalPages
+  },
+  () => {
+    const hasOpenDialogs = Object.values(dialogsOpen.value).some(isOpen => isOpen)
+    console.log(`📊 BookmarkTable: Dialog check - hasOpenDialogs: ${hasOpenDialogs}`)
+    return hasOpenDialogs
+  }
 )
 
 // Watch for prop changes and reload data

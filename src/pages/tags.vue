@@ -380,13 +380,33 @@ const availableLetters = computed(() => {
 // Numeric pagination
 const { numberBuffer } = useNumericPagination(
   (pageNumber) => {
-    // Ensure the pagination component updates by using nextTick
+    console.log(`🏷️ Tags: Received page change request to page ${pageNumber}`)
+    console.log(`🏷️ Tags: Current currentPage.value = ${currentPage.value}`)
+    
+    // Force reactivity by using nextTick and ensuring the value changes
     nextTick(() => {
-      currentPage.value = pageNumber
+      if (currentPage.value !== pageNumber) {
+        console.log(`🏷️ Tags: Updating currentPage from ${currentPage.value} to ${pageNumber}`)
+        currentPage.value = pageNumber
+        
+        // Force a re-render by triggering reactivity
+        nextTick(() => {
+          console.log(`🏷️ Tags: After nextTick, currentPage.value = ${currentPage.value}`)
+        })
+      } else {
+        console.log(`🏷️ Tags: Page already set to ${pageNumber}, no change needed`)
+      }
     })
   },
-  () => totalPages.value,
-  () => confirmDialog.value.show || cleanupDialog.value
+  () => {
+    console.log(`🏷️ Tags: Total pages calculated as ${totalPages.value}`)
+    return totalPages.value
+  },
+  () => {
+    const hasOpenDialogs = confirmDialog.value.show || cleanupDialog.value
+    console.log(`🏷️ Tags: Dialog check - hasOpenDialogs: ${hasOpenDialogs}`)
+    return hasOpenDialogs
+  }
 )
 
 // Methods
