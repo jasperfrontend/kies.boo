@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height bg-image" :style="`background-image: url('${wallpaperUrl}');`" fluid>
+  <v-container class="fill-height bg-image" :style="`background: url('${wallpaperUrl}');`" fluid>
     <div class="position-fixed top-0 right-0 ma-5 d-flex">
       <v-btn color="surface">
       <v-tooltip
