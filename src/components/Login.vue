@@ -1,37 +1,34 @@
 <template>
-  <v-container class="fill-height bg-image" :style="`background: url('${wallpaperUrl}');`" fluid>
+  <div class="bg-fade-stack">
+    <!-- Main (nieuwe) wallpaper -->
+    <div
+      class="bg-fade"
+      :style="{ backgroundImage: `url('${wallpaperUrl}')`, opacity: 1 }"
+    ></div>
+    <!-- Overlay (oude) wallpaper fade-out -->
+    <div
+      v-if="isFading"
+      class="bg-fade bg-fade--overlay"
+      :style="{ backgroundImage: `url('${prevWallpaperUrl}')`, opacity: fadeOpacity }"
+    ></div>
+  </div>
+  <v-container class="fill-height" fluid>
     <div class="position-fixed top-0 right-0 ma-5 d-flex">
       <v-btn color="surface">
-      <v-tooltip
-        activator="parent"
-        location="start"
-      >Toggle Dark / Light mode</v-tooltip>
+        <v-tooltip activator="parent" location="start">Toggle Dark / Light mode</v-tooltip>
         <v-icon icon="mdi-theme-light-dark"/>
-          <v-menu activator="parent">
-            <v-list>
-              <v-list-item
-                @click="theme.change('dark')" 
-                prepend-icon="mdi-weather-night"
-              >
-                Dark
-              </v-list-item>
-              <v-list-item
-                @click="theme.change('light')" 
-                prepend-icon="mdi-white-balance-sunny"
-              >
-                Light
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </v-btn>
-      
+        <v-menu activator="parent">
+          <v-list>
+            <v-list-item @click="theme.change('dark')" prepend-icon="mdi-weather-night">Dark</v-list-item>
+            <v-list-item @click="theme.change('light')" prepend-icon="mdi-white-balance-sunny">Light</v-list-item>
+          </v-list>
+        </v-menu>
+      </v-btn>
     </div>
 
     <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="4">
-        <v-card
-          class="pa-8 shiny-login"
-        >
+        <v-card class="pa-8 shiny-login">
           <div class="text-center mb-4">
             <v-avatar size="56" class="mb-2" color="transparent" image="/favicon.png"/>
             <h2 class="mb-1 font-weight-bold text-h5">
@@ -45,7 +42,7 @@
           <v-card-text>
             <v-row dense>
               <v-col cols="12" sm="6" class="d-flex justify-center">
-                <v-hover v-slot="{ isHovering, props }">
+                <v-hover v-slot="{ props }">
                   <v-btn
                     block
                     variant="elevated"
@@ -64,7 +61,7 @@
                 </v-hover>
               </v-col>
               <v-col cols="12" sm="6" class="d-flex justify-center">
-                <v-hover v-slot="{ isHovering, props }">
+                <v-hover v-slot="{ props }">
                   <v-btn
                     block
                     variant="elevated"
@@ -98,15 +95,37 @@
   </v-container>
 </template>
 
+
 <script setup>
 import supabase from '@/lib/supabaseClient'
+import { ref, computed, watch } from 'vue'
 import { useTheme } from 'vuetify'
 
 const theme = useTheme()
-const wallpaperUrl = computed(() => {
-  return theme.current.value.dark
+const wallpaperUrl = computed(() =>
+  theme.current.value.dark
     ? 'https://images.unsplash.com/photo-1579548122080-c35fd6820ecb?ixid=M3w3NzIzNjh8MHwxfHNlYXJjaHw2fHxncmFkaWVudHxlbnwwfDB8fHwxNzUyNjc2NzAzfDA&ixlib=rb-4.1.0&w=2560&q=80'
     : 'https://images.unsplash.com/photo-1668853853439-923e013afff1?ixid=M3w3NzIzNjh8MHwxfHNlYXJjaHw1fHxibHVycnklMjBpbWFnZSUyMGJsdWUlMjBiYWNrZ3JvdW5kfGVufDB8MHx8fDE3NTI2Nzc1MjZ8MA&ixlib=rb-4.1.0&w=2560&q=80'
+)
+
+const isFading = ref(false)
+const fadeOpacity = ref(1)
+const prevWallpaperUrl = ref(wallpaperUrl.value)
+
+// Detect theme/wallpaper change:
+watch(wallpaperUrl, (newUrl, oldUrl) => {
+  if (newUrl === oldUrl) return
+  prevWallpaperUrl.value = oldUrl
+  isFading.value = true
+  fadeOpacity.value = 1
+  // Start fade out
+  setTimeout(() => {
+    fadeOpacity.value = 0
+  }, 0)
+  // Remove overlay na de fade:
+  setTimeout(() => {
+    isFading.value = false
+  }, 450) // fade duur = css transition tijd
 })
 
 function signInWithDiscord() {
@@ -116,8 +135,29 @@ function signInWithDiscord() {
 function signInWithGithub() {
   supabase.auth.signInWithOAuth({ provider: 'github' })
 }
+
 </script>
 <style scoped>
+.bg-fade-stack {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-fade {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+  will-change: opacity;
+}
+.bg-fade--overlay {
+  transition: opacity 0.44s cubic-bezier(.55, .12, .39, .98);
+  z-index: 1;
+}
+
 .bg-image {
   background: center center no-repeat; 
   background-attachment: fixed; 
