@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { computed, toRef, watch } from 'vue'
+import { computed, toRef, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useBookmarkData } from '@/composables/useBookmarkData'
