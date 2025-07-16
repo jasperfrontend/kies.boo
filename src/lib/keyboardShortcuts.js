@@ -92,6 +92,11 @@ export const keyboardShortcuts = [
         key: 'D',
         description: 'View details of the highlighted bookmark',
         action: 'viewDetailsFocused'
+      },
+      {
+        key: 'L',
+        description: 'Open the highlighted link in a new tab',
+        action: 'viewDetailsFocused'
       }
     ]
   },

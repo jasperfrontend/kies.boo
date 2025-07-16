@@ -17,7 +17,6 @@
           />
         </v-avatar>
         <div class="flex-1">
-          <!-- Lange titels netjes wrappen, groot, semi-bold -->
           <div class="bookmark-title">
             {{ bookmark.title }}
           </div>
@@ -77,27 +76,19 @@
         <v-btn
           color="primary"
           variant="flat"
-          :href="bookmark.url"
-          @click="$emit('update:modelValue', false)"
+          @click="openLinkAndClose"
           target="_blank"
           prepend-icon="mdi-open-in-new"
-          class="rounded-xl px-6 "
+          class="rounded-xl px-6"
           size="large"
         >
           Open Link 
           <v-tooltip activator="parent" location="bottom">
             Press L to open this link
           </v-tooltip>
-        <v-chip
-          pill="true"
-          ripple="false"
-          size="small"
-          variant="tonal"
-          class="ml-3"
-        >
-          L
-          
-        </v-chip>
+          <v-chip pill="true" ripple="false" size="small" variant="tonal" class="ml-3">
+            L
+          </v-chip>
         </v-btn>
         <v-spacer />
         <v-btn
@@ -131,18 +122,18 @@ const props = defineProps({
   modelValue: Boolean,
   bookmark: Object
 })
+const emit = defineEmits(['update:modelValue'])
 const { bookmark } = toRefs(props)
 
-useHotkey('l', () => {
-  // check of bookmark bestaat, want bij eerste render kan het undefined zijn
+function openLinkAndClose() {
   if (bookmark.value && bookmark.value.url) {
     window.open(bookmark.value.url, '_blank')
+    emit('update:modelValue', false)
   }
-}, { 
-  inputs: false
-})
+}
 
-defineEmits(['update:modelValue'])
+// Hotkey L for "Open and close"
+useHotkey('l', openLinkAndClose, { inputs: false })
 
 function formatDate(dateString) {
   const d = new Date(dateString)
@@ -150,6 +141,7 @@ function formatDate(dateString) {
   return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().substring(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 </script>
+
 
 <style scoped>
 .rounded-2xl { border-radius: 1.4rem !important; }
