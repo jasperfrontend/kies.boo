@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-  import { toRefs } from 'vue'
+  import { toRefs, onUnmounted } from 'vue'
   import { useHotkey } from 'vuetify'
 
   const props = defineProps({
@@ -129,10 +129,23 @@
     bookmark: Object,
   })
   const emit = defineEmits(['update:modelValue'])
-  const { bookmark } = toRefs(props)
+  const { modelValue, bookmark } = toRefs(props)
+  let removeHotkey = null
+
+  watch(modelValue, (isOpen) => {
+    // Remove previous hotkey handler if any
+    if (removeHotkey) {
+      removeHotkey()
+      removeHotkey = null
+    }
+    if (isOpen) {
+      // Register the hotkey, save the cleanup function
+      removeHotkey = useHotkey('l', openLinkAndClose, { inputs: false })
+    }
+  }, { immediate: true })
 
   function openLinkAndClose () {
-    if (bookmark.value && bookmark.value.url) {
+    if (bookmark.value && bookmark.value.url && modelValue.value === true) {
       window.open(bookmark.value.url, '_blank')
       emit('update:modelValue', false)
     }
@@ -146,6 +159,11 @@
     const pad = n => String(n).padStart(2, '0')
     return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
+
+  onUnmounted(() => {
+    // Clean up when component is destroyed
+    if (removeHotkey) removeHotkey()
+  })
 </script>
 
 <style scoped>
