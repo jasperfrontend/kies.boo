@@ -197,7 +197,6 @@
   // Better stability detection - wait for actual user preference loading
   watch(userItemsPerPage, (newValue, oldValue) => {
     preferencesLoadCount.value++
-    console.log(`📊 User preferences change #${preferencesLoadCount.value}: ${oldValue} → ${newValue}`)
 
     // Only mark as stable after the second change (first is default, second is real user pref)
     // Or if we get a non-default value that's not 15 (since 15 seems to be the default)
@@ -205,7 +204,6 @@
       // Wait a bit longer to ensure no more changes are coming
       setTimeout(() => {
         userPreferencesStable.value = true
-        console.log(`📊 User preferences marked as stable after ${preferencesLoadCount.value} changes with final value: ${newValue}`)
       }, 200)
     }
   }, { immediate: true })
@@ -220,7 +218,6 @@
       // Loading finished, mark as stable
       setTimeout(() => {
         userPreferencesStable.value = true
-        console.log('📊 User preferences marked as stable (loading finished)')
       }, 100)
     }
   }, { immediate: true })
@@ -232,7 +229,6 @@
   // Keep localServerOptions in sync with serverOptions from the composable
   watch(serverOptions, newOptions => {
     if (!isUpdatingFromTable.value) {
-      console.log('🔄 Syncing localServerOptions with serverOptions:', JSON.stringify(newOptions, null, 2))
       isUpdatingFromComposable.value = true
       localServerOptions.value = { ...newOptions }
       nextTick(() => {
@@ -244,7 +240,6 @@
   // Watch localServerOptions for changes and update the data composable
   watch(localServerOptions, newOptions => {
     if (!isUpdatingFromComposable.value) {
-      console.log('📊 localServerOptions changed, updating composable:', JSON.stringify(newOptions, null, 2))
       isUpdatingFromTable.value = true
       updateServerOptions(newOptions)
       nextTick(() => {
@@ -255,7 +250,6 @@
 
   // Handle table options updates
   function handleOptionsUpdate (newOptions) {
-    console.log('📊 Table options update:', newOptions)
     localServerOptions.value = { ...newOptions }
   }
 
@@ -310,7 +304,6 @@
     pageNumber => {
       // Don't allow keyboard navigation until user preferences are stable
       if (!userPreferencesStable.value) {
-        console.log('📊 Keyboard navigation blocked - user preferences not stable yet')
         return
       }
 
