@@ -74,27 +74,10 @@
       </v-card-text>
 
       <!-- Page Navigation Indicator -->
-      <v-fade-transition>
-        <v-alert
-          v-if="numberBuffer"
-          class="mb-4 text-center"
-          density="compact"
-          style="position: fixed; top: 80px; right: 20px; z-index: 1000; min-width: 200px;"
-          type="info"
-          variant="elevated"
-        >
-          <div class="d-flex align-center justify-center">
-            <v-icon class="mr-2" icon="mdi-keyboard" size="16" />
-            <span>Going to page: <strong>{{ numberBuffer }}</strong></span>
-            <v-progress-circular
-              class="ml-2"
-              indeterminate
-              size="16"
-              width="2"
-            />
-          </div>
-        </v-alert>
-      </v-fade-transition>
+      <PageNavigationIndicator 
+        :number-buffer="numberBuffer" 
+        :error-message="errorMessage"
+      />
 
       <!-- Paths Display -->
       <v-card-text>
@@ -263,6 +246,7 @@
   import { useRouter } from 'vue-router'
   import { useNumericPagination } from '@/composables/useNumericPagination'
   import { useUserPreferences } from '@/composables/useUserPreferences'
+  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import supabase from '@/lib/supabaseClient'
   import { useAppStore } from '@/stores/app'
 
@@ -380,7 +364,7 @@
   })
 
   // Numeric pagination
-  const { numberBuffer } = useNumericPagination(
+  const { numberBuffer, errorMessage } = useNumericPagination(
     pageNumber => {
       console.log(`🛤️ Paths: Received page change request to page ${pageNumber}`)
       console.log(`🛤️ Paths: Current currentPage.value = ${currentPage.value}`)

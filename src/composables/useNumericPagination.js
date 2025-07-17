@@ -3,8 +3,11 @@ import { onMounted, onUnmounted, ref } from 'vue'
 
 export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
   const numberBuffer = ref('')
+  const errorMessage = ref('')
   const numberTimeout = ref(null)
+  const errorTimeout = ref(null)
   const SEQUENCE_TIMEOUT = 1500 // 1.5 seconds to complete number sequence
+  const ERROR_DISPLAY_TIMEOUT = 3000 // 3 seconds to show error
 
   function clearNumberBuffer () {
     numberBuffer.value = ''
@@ -12,6 +15,23 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
       clearTimeout(numberTimeout.value)
       numberTimeout.value = null
     }
+  }
+
+  function clearErrorMessage () {
+    errorMessage.value = ''
+    if (errorTimeout.value) {
+      clearTimeout(errorTimeout.value)
+      errorTimeout.value = null
+    }
+  }
+
+  function showError (message) {
+    clearErrorMessage()
+    errorMessage.value = message
+    
+    errorTimeout.value = setTimeout(() => {
+      clearErrorMessage()
+    }, ERROR_DISPLAY_TIMEOUT)
   }
 
   function handleNumberInput (digit) {
@@ -31,6 +51,9 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
     )) {
       return
     }
+
+    // Clear any existing error message when starting new input
+    clearErrorMessage()
 
     // Add digit to buffer
     numberBuffer.value += digit
@@ -52,6 +75,7 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
         updatePage(pageNumber)
       } else {
         console.log(`❌ Invalid page number: ${pageNumber} (total pages: ${totalPages})`)
+        showError(`Invalid page ${pageNumber} (total: ${totalPages})`)
       }
 
       clearNumberBuffer()
@@ -65,9 +89,10 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
       handleNumberInput(event.key)
     }
 
-    // Clear buffer on Escape
+    // Clear buffer and error on Escape
     if (event.key === 'Escape') {
       clearNumberBuffer()
+      clearErrorMessage()
     }
   }
 
@@ -78,10 +103,13 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeydown)
     clearNumberBuffer()
+    clearErrorMessage()
   })
 
   return {
     numberBuffer,
+    errorMessage,
     clearNumberBuffer,
+    clearErrorMessage,
   }
 }

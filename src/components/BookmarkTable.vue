@@ -10,27 +10,10 @@
     />
 
     <!-- Page Navigation Indicator -->
-    <v-fade-transition>
-      <v-alert
-        v-if="numberBuffer"
-        class="mb-4 text-center"
-        density="compact"
-        style="position: fixed; top: 80px; right: 20px; z-index: 1000; min-width: 200px;"
-        type="info"
-        variant="elevated"
-      >
-        <div class="d-flex align-center justify-center">
-          <v-icon class="mr-2" icon="mdi-keyboard" size="16" />
-          <span>Going to page: <strong>{{ numberBuffer }}</strong></span>
-          <v-progress-circular
-            class="ml-2"
-            indeterminate
-            size="16"
-            width="2"
-          />
-        </div>
-      </v-alert>
-    </v-fade-transition>
+    <PageNavigationIndicator 
+      :number-buffer="numberBuffer" 
+      :error-message="errorMessage"
+    />
 
     <v-data-table-server
       :key="tableKey"
@@ -137,6 +120,7 @@
   import { useNumericPagination } from '@/composables/useNumericPagination'
   import { useTableSelection } from '@/composables/useTableSelection'
   import { useUserPreferences } from '@/composables/useUserPreferences'
+  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import { BOOKMARK_TABLE_HEADERS, ITEMS_PER_PAGE_OPTIONS } from '@/lib/tableConstants'
   import { useAppStore } from '@/stores/app'
 
@@ -300,7 +284,7 @@
   )
 
   // Numeric pagination - now updates localServerOptions directly
-  const { numberBuffer } = useNumericPagination(
+  const { numberBuffer, errorMessage } = useNumericPagination(
     pageNumber => {
       // Don't allow keyboard navigation until user preferences are stable
       if (!userPreferencesStable.value) {
@@ -318,7 +302,6 @@
 
       // Try to force the table to recognize the change
       nextTick(() => {
-
         // Method 1: Try to trigger the table's update:options event manually
         if (dataTableRef.value) {
           // This might trigger the table's internal update mechanism
