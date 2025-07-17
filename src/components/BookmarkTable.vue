@@ -1,17 +1,5 @@
 <template>
   <div>
-    <!-- Debug Info -->
-    <v-card class="mb-4 pa-2" color="warning" variant="outlined">
-      <div class="text-caption">
-        <strong>Debug Info:</strong><br>
-        localServerOptions.page: {{ localServerOptions.page }}<br>
-        localServerOptions: {{ JSON.stringify(localServerOptions, null, 2) }}<br>
-        totalItems: {{ totalItems }}<br>
-        userItemsPerPage: {{ userItemsPerPage }}<br>
-        userPreferencesStable: {{ userPreferencesStable }}<br>
-        preferencesLoadCount: {{ preferencesLoadCount }}
-      </div>
-    </v-card>
 
     <!-- Delete Button - Shows when items are selected -->
     <BookmarkDeleteButton
