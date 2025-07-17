@@ -140,16 +140,31 @@
   const rowStyles = computed(() => {
     const styles = {}
 
-    // Add hover gradient if hovering and we have average color data
-    if (isHovered.value && props.item.metadata?.vibrant_color) {
+    // Always set a background image for smooth transitions
+    if (props.item.metadata?.vibrant_color) {
       const [r, g, b] = props.item.metadata.vibrant_color
-      const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
-      const startColorMinimal = `rgba(${r}, ${g}, ${b}, 0.05)`
-      const endColor = 'transparent'
+      
+      if (isHovered.value) {
+        // Hover state - visible gradient
+        const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
+        const startColorMinimal = `rgba(${r}, ${g}, ${b}, 0.05)`
+        const endColor = 'transparent'
 
-      styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
-      styles.transition = 'background 0.2s ease-in-out'
+        styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
+      } else {
+        // Default state - transparent gradient (same structure, but invisible)
+        const transparentColor = `rgba(${r}, ${g}, ${b}, 0)`
+        
+        styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 5%, ${transparentColor} 15%, ${transparentColor} 20%, ${transparentColor} 70%, ${transparentColor} 85%, ${transparentColor} 100%)`
+      }
+    } else {
+      // No vibrant color available - set transparent gradient for consistency
+      const transparentColor = `rgba(128, 128, 128, 0)`
+      styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 100%)`
     }
+
+    // Always set transition since we always have a background image now
+    styles.transition = 'background-image 200ms ease-in-out'
 
     return styles
   })
