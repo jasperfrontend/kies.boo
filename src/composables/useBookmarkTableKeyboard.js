@@ -11,6 +11,37 @@ export function useBookmarkTableKeyboard (
 ) {
   const focusedRowIndex = ref(-1)
 
+  // Function to get the currently focused row element
+  function getFocusedRowElement() {
+    if (focusedRowIndex.value >= 0) {
+      return document.querySelector(`[data-bookmark-row-index="${focusedRowIndex.value}"]`)
+    }
+    return null
+  }
+
+  // Function to focus a specific row and scroll it into view
+  function focusRow(index) {
+    if (index >= 0 && index < bookmarks.value.length) {
+      focusedRowIndex.value = index
+      
+      // Use nextTick equivalent to ensure DOM is updated
+      setTimeout(() => {
+        const rowElement = document.querySelector(`[data-bookmark-row-index="${index}"]`)
+        if (rowElement) {
+          // Focus the row element and scroll it into view
+          rowElement.focus({ preventScroll: false })
+          
+          // Additional scroll into view with smooth behavior
+          rowElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest',
+            inline: 'nearest'
+          })
+        }
+      }, 0)
+    }
+  }
+
   const handleKeydown = event => {
     // Only handle keyboard navigation when no dialogs are open
     const anyDialogOpen = Object.values(dialogsOpen.value).some(Boolean)
@@ -23,17 +54,19 @@ export function useBookmarkTableKeyboard (
     // Tab to focus on table rows
     if (event.key === 'Tab' && !event.shiftKey && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+      const newIndex = focusedRowIndex.value < bookmarkCount - 1
         ? focusedRowIndex.value + 1
         : 0
+      focusRow(newIndex)
     }
 
     // Shift+Tab to go backwards through table rows
     if (event.key === 'Tab' && event.shiftKey && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value > 0
+      const newIndex = focusedRowIndex.value > 0
         ? focusedRowIndex.value - 1
         : bookmarkCount - 1
+      focusRow(newIndex)
     }
 
     // Spacebar to select/deselect focused row
@@ -48,21 +81,28 @@ export function useBookmarkTableKeyboard (
     // Arrow keys for navigation
     if (event.key === 'ArrowDown' && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+      const newIndex = focusedRowIndex.value < bookmarkCount - 1
         ? focusedRowIndex.value + 1
         : 0
+      focusRow(newIndex)
     }
 
     if (event.key === 'ArrowUp' && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value > 0
+      const newIndex = focusedRowIndex.value > 0
         ? focusedRowIndex.value - 1
         : bookmarkCount - 1
+      focusRow(newIndex)
     }
 
     if (event.key === 'ArrowLeft' && bookmarkCount > 0) {
       event.preventDefault()
       focusedRowIndex.value = -1
+      // Remove focus from any row element
+      const focusedElement = document.activeElement
+      if (focusedElement && focusedElement.hasAttribute('data-bookmark-row-index')) {
+        focusedElement.blur()
+      }
     }
   }
 
@@ -70,18 +110,20 @@ export function useBookmarkTableKeyboard (
   function handleTableNavigateNext () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+      const newIndex = focusedRowIndex.value < bookmarkCount - 1
         ? focusedRowIndex.value + 1
         : 0
+      focusRow(newIndex)
     }
   }
 
   function handleTableNavigatePrev () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value > 0
+      const newIndex = focusedRowIndex.value > 0
         ? focusedRowIndex.value - 1
         : bookmarkCount - 1
+      focusRow(newIndex)
     }
   }
 
@@ -97,24 +139,31 @@ export function useBookmarkTableKeyboard (
   function handleTableArrowDown () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+      const newIndex = focusedRowIndex.value < bookmarkCount - 1
         ? focusedRowIndex.value + 1
         : 0
+      focusRow(newIndex)
     }
   }
 
   function handleTableArrowUp () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value > 0
+      const newIndex = focusedRowIndex.value > 0
         ? focusedRowIndex.value - 1
         : bookmarkCount - 1
+      focusRow(newIndex)
     }
   }
 
   function handleTableClearFocus () {
     if (!hasOpenDialogs()) {
       focusedRowIndex.value = -1
+      // Remove focus from any row element
+      const focusedElement = document.activeElement
+      if (focusedElement && focusedElement.hasAttribute('data-bookmark-row-index')) {
+        focusedElement.blur()
+      }
     }
   }
 
@@ -188,5 +237,6 @@ export function useBookmarkTableKeyboard (
 
   return {
     focusedRowIndex,
+    focusRow,
   }
 }

@@ -2,10 +2,13 @@
   <tr
     class="cursor-pointer bookmark-table-row"
     :class="rowClasses"
+    :data-bookmark-row-index="index"
     style="background-image: none; transition: background-image 200ms ease"
     :style="rowStyles"
     tabindex="0"
     @dblclick="handleDoubleClick"
+    @focus="handleFocus"
+    @blur="handleBlur"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
@@ -116,21 +119,24 @@
     },
   })
 
-  const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit'])
+  const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit', 'focus-changed'])
 
   const actionsMenu = ref(false)
   const isHovered = ref(false)
+  const isFocusedByKeyboard = ref(false)
 
   // Get user preferences for double-click behavior
   const { doubleClickBehavior } = useUserPreferences()
 
   const rowClasses = computed(() => {
     const classes = []
-    if (props.isFocused && props.isSelected) {
+    
+    // Use isFocusedByKeyboard instead of props.isFocused for better control
+    if (isFocusedByKeyboard.value && props.isSelected) {
       classes.push('bg-red-darken-3')
-    } else if (props.isFocused && !props.isSelected) {
+    } else if (isFocusedByKeyboard.value && !props.isSelected) {
       classes.push('bg-blue-grey-darken-3')
-    } else if (props.isSelected && !props.isFocused) {
+    } else if (props.isSelected && !isFocusedByKeyboard.value) {
       classes.push('bg-red-darken-3')
     }
 
@@ -185,6 +191,16 @@
     return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
+  function handleFocus() {
+    isFocusedByKeyboard.value = true
+    emit('focus-changed', props.index, true)
+  }
+
+  function handleBlur() {
+    isFocusedByKeyboard.value = false
+    emit('focus-changed', props.index, false)
+  }
+
   function handleDoubleClick () {
     if (doubleClickBehavior.value === 'open') {
       // Open bookmark in new tab
@@ -214,6 +230,12 @@
 .bookmark-table-row:hover {
   z-index: 1;
 }
+
+.bookmark-table-row:focus {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
+
 .bookmark-table-row:hover td {
   border-color: red;
 }

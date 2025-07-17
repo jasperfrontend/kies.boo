@@ -53,11 +53,13 @@
           :is-selected="selectedItems.includes(item.id)"
           :item="item"
           @edit="handleEdit"
+          @focus-changed="handleRowFocusChanged"
           @search-tag="handleSearchTag"
           @toggle-selection="toggleItemSelection"
           @view-details="handleViewDetails"
         />
       </template>
+
 
       <!-- Collapsed domains indicators -->
       <template #top>
@@ -272,8 +274,8 @@
     handleBookmarkUpdated,
   } = useBookmarkTableDialogs(emit, loadBookmarks)
 
-  // Keyboard navigation
-  const { focusedRowIndex } = useBookmarkTableKeyboard(
+  // Keyboard navigation - now with auto-scrolling support
+  const { focusedRowIndex, focusRow } = useBookmarkTableKeyboard(
     displayBookmarks,
     toRef(props, 'selectedItems'),
     toggleItemSelection,
@@ -282,6 +284,15 @@
     handleEdit,
     handleViewDetails,
   )
+
+  // Handle row focus changes from keyboard navigation
+  function handleRowFocusChanged(index, isFocused) {
+    if (isFocused) {
+      focusedRowIndex.value = index
+    } else if (focusedRowIndex.value === index) {
+      focusedRowIndex.value = -1
+    }
+  }
 
   // Numeric pagination - now updates localServerOptions directly
   const { numberBuffer, errorMessage } = useNumericPagination(
