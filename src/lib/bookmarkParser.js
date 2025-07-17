@@ -1,29 +1,29 @@
 /**
  * src/lib/bookmarkParser.js
- * 
+ *
  * Bookmark parser for HTML bookmark files exported from browsers
  */
 
-export class BookmarkParser {
+export const BookmarkParser = {
   /**
    * Parse bookmarks from HTML content
    * @param {string} htmlContent - The HTML content of the bookmark file
    * @returns {Array} Array of parsed bookmark objects
    */
-  static parseBookmarksFile(htmlContent) {
-    const cleanedContent = htmlContent.replace(/<\/?p>/gi, '');
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(cleanedContent, 'text/html');
+  parseBookmarksFile (htmlContent) {
+    const cleanedContent = htmlContent.replace(/<\/?p>/gi, '')
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(cleanedContent, 'text/html')
 
-    const rootDL = doc.querySelector('DL');
-    const bookmarks = [];
+    const rootDL = doc.querySelector('DL')
+    const bookmarks = []
 
     if (rootDL) {
-      this.recursiveParseDL(rootDL, [], bookmarks);
+      this.recursiveParseDL(rootDL, [], bookmarks)
     }
 
-    return bookmarks;
-  }
+    return bookmarks
+  },
 
   /**
    * Recursively parse DL elements to extract bookmarks and folders
@@ -31,29 +31,31 @@ export class BookmarkParser {
    * @param {Array} path - Current folder path
    * @param {Array} bookmarks - Array to store parsed bookmarks
    */
-  static recursiveParseDL(dl, path, bookmarks) {
-    const dtElements = dl.querySelectorAll(':scope > DT');
+  recursiveParseDL (dl, path, bookmarks) {
+    const dtElements = dl.querySelectorAll(':scope > DT')
 
     for (const dt of dtElements) {
-      const h3 = dt.querySelector('H3');
-      const a = dt.querySelector('A');
+      const h3 = dt.querySelector('H3')
+      const a = dt.querySelector('A')
 
       if (h3) {
-        const folderName = h3.textContent?.trim() ?? '';
-        const newPath = [...path, folderName];
+        const folderName = h3.textContent?.trim() ?? ''
+        const newPath = [...path, folderName]
 
-        const nestedDL = dt.querySelector('DL');
+        const nestedDL = dt.querySelector('DL')
         if (nestedDL) {
-          this.recursiveParseDL(nestedDL, newPath, bookmarks);
+          this.recursiveParseDL(nestedDL, newPath, bookmarks)
         }
       }
 
       if (a) {
-        const parsed = this.parseBookmarkAnchor(a, path);
-        if (parsed) bookmarks.push(parsed);
+        const parsed = this.parseBookmarkAnchor(a, path)
+        if (parsed) {
+          bookmarks.push(parsed)
+        }
       }
     }
-  }
+  },
 
   /**
    * Parse individual bookmark anchor element
@@ -61,28 +63,30 @@ export class BookmarkParser {
    * @param {Array} folderPath - Current folder path for tags
    * @returns {Object|null} Parsed bookmark object or null if invalid
    */
-  static parseBookmarkAnchor(anchor, folderPath) {
-    const href = anchor.getAttribute('HREF');
-    const title = anchor.textContent?.trim();
-    const addDate = anchor.getAttribute('ADD_DATE');
-    const icon = anchor.getAttribute('ICON');
-    const iconUri = anchor.getAttribute('ICON_URI');
+  parseBookmarkAnchor (anchor, folderPath) {
+    const href = anchor.getAttribute('HREF')
+    const title = anchor.textContent?.trim()
+    const addDate = anchor.getAttribute('ADD_DATE')
+    const icon = anchor.getAttribute('ICON')
+    const iconUri = anchor.getAttribute('ICON_URI')
 
-    if (!href || !title) return null;
+    if (!href || !title) {
+      return null
+    }
 
-    const timestamp = addDate && /^\d+$/.test(addDate) ? parseInt(addDate) * 1000 : Date.now();
-    const createdAt = new Date(timestamp).toISOString();
+    const timestamp = addDate && /^\d+$/.test(addDate) ? Number.parseInt(addDate) * 1000 : Date.now()
+    const createdAt = new Date(timestamp).toISOString()
 
-    let faviconUrl = icon?.startsWith('data:')
+    const faviconUrl = icon?.startsWith('data:')
       ? icon
       : iconUri ?? (() => {
-          try {
-            const url = new URL(href);
-            return `https://www.google.com/s2/favicons?domain=${url.hostname}`;
-          } catch {
-            return undefined;
-          }
-        })();
+        try {
+          const url = new URL(href)
+          return `https://www.google.com/s2/favicons?domain=${url.hostname}`
+        } catch {
+          return undefined
+        }
+      })()
 
     return {
       title,
@@ -92,6 +96,6 @@ export class BookmarkParser {
       tags: folderPath.filter(Boolean),
       is_favorite: false,
       created_at: createdAt,
-    };
-  }
+    }
+  },
 }

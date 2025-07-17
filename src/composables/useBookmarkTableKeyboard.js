@@ -1,39 +1,41 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-export function useBookmarkTableKeyboard(
-  bookmarks, 
-  selectedItems, 
-  toggleItemSelection, 
+export function useBookmarkTableKeyboard (
+  bookmarks,
+  selectedItems,
+  toggleItemSelection,
   dialogsOpen,
   router,
   handleEdit,
-  handleViewDetails
+  handleViewDetails,
 ) {
   const focusedRowIndex = ref(-1)
 
-  const handleKeydown = (event) => {
+  const handleKeydown = event => {
     // Only handle keyboard navigation when no dialogs are open
-    const anyDialogOpen = Object.values(dialogsOpen.value).some(isOpen => isOpen)
-    if (anyDialogOpen) return
+    const anyDialogOpen = Object.values(dialogsOpen.value).some(Boolean)
+    if (anyDialogOpen) {
+      return
+    }
 
     const bookmarkCount = bookmarks.value.length
 
     // Tab to focus on table rows
     if (event.key === 'Tab' && !event.shiftKey && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
-        ? focusedRowIndex.value + 1 
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+        ? focusedRowIndex.value + 1
         : 0
     }
-    
+
     // Shift+Tab to go backwards through table rows
     if (event.key === 'Tab' && event.shiftKey && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value > 0 
-        ? focusedRowIndex.value - 1 
+      focusedRowIndex.value = focusedRowIndex.value > 0
+        ? focusedRowIndex.value - 1
         : bookmarkCount - 1
     }
-    
+
     // Spacebar to select/deselect focused row
     if (event.key === ' ' && focusedRowIndex.value >= 0) {
       event.preventDefault()
@@ -42,19 +44,19 @@ export function useBookmarkTableKeyboard(
         toggleItemSelection(item.id)
       }
     }
-    
+
     // Arrow keys for navigation
     if (event.key === 'ArrowDown' && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
-        ? focusedRowIndex.value + 1 
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+        ? focusedRowIndex.value + 1
         : 0
     }
-    
+
     if (event.key === 'ArrowUp' && bookmarkCount > 0) {
       event.preventDefault()
-      focusedRowIndex.value = focusedRowIndex.value > 0 
-        ? focusedRowIndex.value - 1 
+      focusedRowIndex.value = focusedRowIndex.value > 0
+        ? focusedRowIndex.value - 1
         : bookmarkCount - 1
     }
 
@@ -65,25 +67,25 @@ export function useBookmarkTableKeyboard(
   }
 
   // Keyboard navigation functions
-  function handleTableNavigateNext() {
+  function handleTableNavigateNext () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
-        ? focusedRowIndex.value + 1 
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+        ? focusedRowIndex.value + 1
         : 0
     }
   }
 
-  function handleTableNavigatePrev() {
+  function handleTableNavigatePrev () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value > 0 
-        ? focusedRowIndex.value - 1 
+      focusedRowIndex.value = focusedRowIndex.value > 0
+        ? focusedRowIndex.value - 1
         : bookmarkCount - 1
     }
   }
 
-  function handleTableToggleSelection() {
+  function handleTableToggleSelection () {
     if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
       const item = bookmarks.value[focusedRowIndex.value]
       if (item) {
@@ -92,31 +94,31 @@ export function useBookmarkTableKeyboard(
     }
   }
 
-  function handleTableArrowDown() {
+  function handleTableArrowDown () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1 
-        ? focusedRowIndex.value + 1 
+      focusedRowIndex.value = focusedRowIndex.value < bookmarkCount - 1
+        ? focusedRowIndex.value + 1
         : 0
     }
   }
 
-  function handleTableArrowUp() {
+  function handleTableArrowUp () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      focusedRowIndex.value = focusedRowIndex.value > 0 
-        ? focusedRowIndex.value - 1 
+      focusedRowIndex.value = focusedRowIndex.value > 0
+        ? focusedRowIndex.value - 1
         : bookmarkCount - 1
     }
   }
 
-  function handleTableClearFocus() {
+  function handleTableClearFocus () {
     if (!hasOpenDialogs()) {
       focusedRowIndex.value = -1
     }
   }
 
-  function handleTableEditFocused() {
+  function handleTableEditFocused () {
     if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
       const item = bookmarks.value[focusedRowIndex.value]
       if (item) {
@@ -125,7 +127,7 @@ export function useBookmarkTableKeyboard(
     }
   }
 
-  function handleTableViewDetailsFocused() {
+  function handleTableViewDetailsFocused () {
     if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
       const item = bookmarks.value[focusedRowIndex.value]
       if (item) {
@@ -134,27 +136,27 @@ export function useBookmarkTableKeyboard(
     }
   }
 
-  function handleSelectAllBookmarks() {
+  function handleSelectAllBookmarks () {
     // Only trigger if we're on a bookmark table page
-    const isBookmarkPage = ['/', '/search', '/tag'].some(path => 
-      router.currentRoute.value.path.startsWith(path)
+    const isBookmarkPage = ['/', '/search', '/tag'].some(path =>
+      router.currentRoute.value.path.startsWith(path),
     )
-    
+
     if (isBookmarkPage) {
       // This will be handled by the parent component's toggleSelectAll
       document.dispatchEvent(new CustomEvent('select-all-internal'))
     }
   }
 
-  function handleDeleteSelectedBookmarks() {
+  function handleDeleteSelectedBookmarks () {
     // Only trigger if we have selected items
     if (selectedItems.value.length > 0) {
       document.dispatchEvent(new CustomEvent('delete-selected-bookmarks-internal'))
     }
   }
 
-  function hasOpenDialogs() {
-    return Object.values(dialogsOpen.value).some(isOpen => isOpen)
+  function hasOpenDialogs () {
+    return Object.values(dialogsOpen.value).some(Boolean)
   }
 
   onMounted(() => {
@@ -185,6 +187,6 @@ export function useBookmarkTableKeyboard(
   })
 
   return {
-    focusedRowIndex
+    focusedRowIndex,
   }
 }

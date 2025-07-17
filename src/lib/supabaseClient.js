@@ -9,4 +9,4 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 })
 
-export default supabase;
+export default supabase

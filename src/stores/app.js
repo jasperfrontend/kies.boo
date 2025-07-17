@@ -6,80 +6,80 @@ export const useAppStore = defineStore('app', {
   state: () => ({
     // Search state
     bookmarkSearch: '',
-    
+
     // Add bookmark dialog state
     addBookmarkDialog: false,
-    
+
     // Selected items state
     selectedItems: [],
-    
+
     // Deleting state
     deleting: false,
-    
+
     // Bookmark refresh trigger
     bookmarkRefreshTrigger: 0,
-    
+
     // Saved searches state
     savedSearches: [],
     savedSearchesLoaded: false,
   }),
-  
+
   getters: {
-    isPathSaved: (state) => {
-      return (path) => state.savedSearches.some(search => search.url === path)
+    isPathSaved: state => {
+      return path => state.savedSearches.some(search => search.url === path)
     },
-    
-    getSavedSearchByPath: (state) => {
-      return (path) => state.savedSearches.find(search => search.url === path)
-    }
+
+    getSavedSearchByPath: state => {
+      return path => state.savedSearches.find(search => search.url === path)
+    },
   },
-  
+
   actions: {
-    setBookmarkSearch(value) {
+    setBookmarkSearch (value) {
       this.bookmarkSearch = value
     },
-    
-    openAddBookmarkDialog() {
+
+    openAddBookmarkDialog () {
       this.addBookmarkDialog = true
     },
-    
-    closeAddBookmarkDialog() {
+
+    closeAddBookmarkDialog () {
       this.addBookmarkDialog = false
     },
-    
-    toggleAddBookmarkDialog() {
+
+    toggleAddBookmarkDialog () {
       this.addBookmarkDialog = !this.addBookmarkDialog
     },
-    
-    setSelectedItems(items) {
+
+    setSelectedItems (items) {
       this.selectedItems = items
     },
-    
-    clearSelectedItems() {
+
+    clearSelectedItems () {
       this.selectedItems = []
     },
-    
-    setDeleting(value) {
+
+    setDeleting (value) {
       this.deleting = value
     },
-    
-    triggerBookmarkRefresh() {
+
+    triggerBookmarkRefresh () {
       this.bookmarkRefreshTrigger++
     },
-    
+
     // Saved searches actions
-    async loadSavedSearches() {
+    async loadSavedSearches () {
       try {
         const { data, error } = await supabase
           .from('saved_searches')
           .select('*')
           .order('created_at', { ascending: false })
-        
+
         if (error) {
           console.error('Error loading saved searches:', error)
           return false
         }
-        
+
         this.savedSearches = data || []
         this.savedSearchesLoaded = true
         return true
@@ -88,20 +88,20 @@ export const useAppStore = defineStore('app', {
         return false
       }
     },
-    
-    async addSavedSearch(path) {
+
+    async addSavedSearch (path) {
       try {
         const { data, error } = await supabase
           .from('saved_searches')
           .insert({ url: path })
           .select()
           .single()
-        
+
         if (error) {
           console.error('Error saving search:', error)
           return { success: false, error: error.message }
         }
-        
+
         // Add to local state
         this.savedSearches.unshift(data)
         return { success: true, data }
@@ -110,19 +110,19 @@ export const useAppStore = defineStore('app', {
         return { success: false, error: error.message }
       }
     },
-    
-    async removeSavedSearch(path) {
+
+    async removeSavedSearch (path) {
       try {
         const { error } = await supabase
           .from('saved_searches')
           .delete()
           .eq('url', path)
-        
+
         if (error) {
           console.error('Error removing saved search:', error)
           return { success: false, error: error.message }
         }
-        
+
         // Remove from local state
         this.savedSearches = this.savedSearches.filter(search => search.url !== path)
         return { success: true }
@@ -131,12 +131,12 @@ export const useAppStore = defineStore('app', {
         return { success: false, error: error.message }
       }
     },
-    
+
     // Initialize saved searches if not loaded
-    async ensureSavedSearchesLoaded() {
+    async ensureSavedSearchesLoaded () {
       if (!this.savedSearchesLoaded) {
         await this.loadSavedSearches()
       }
-    }
-  }
+    },
+  },
 })

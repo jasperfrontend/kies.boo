@@ -5,41 +5,41 @@ export const BOOKMARK_TABLE_HEADERS = [
     title: '',
     key: 'select',
     sortable: false,
-    width: '48px'
+    width: '48px',
   },
   {
     title: '',
     key: 'favicon',
     sortable: false,
-    width: '48px'
+    width: '48px',
   },
   {
     title: 'Title',
     key: 'title',
     sortable: true,
-    width: '400px'
+    width: '400px',
   },
   {
     title: 'URL',
     key: 'url',
     sortable: true,
-    width: '400px'
+    width: '400px',
   },
   {
     title: 'Tags',
     key: 'tags',
     sortable: false,
-    width: '600px'
+    width: '600px',
   },
   {
     title: 'Created',
     key: 'created_at',
-    sortable: true
+    sortable: true,
   },
   {
     title: 'Actions',
     key: 'actions',
     sortable: false,
-    width: '75px'
-  }
+    width: '75px',
+  },
 ]

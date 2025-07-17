@@ -2,18 +2,18 @@
   <AppTopBar />
   <v-app id="inspire" class="mt-16">
     <v-main>
-      <router-view></router-view>
+      <router-view />
       <UnsplashCredits />
     </v-main>
   </v-app>
 </template>
 
 <script setup>
-import { useBackground } from '@/composables/useBackground'
-import UnsplashCredits from '@/components/UnsplashCredits.vue';
+  import UnsplashCredits from '@/components/UnsplashCredits.vue'
+  import { useBackground } from '@/composables/useBackground'
 
-// Initialize background management
-useBackground()
+  // Initialize background management
+  useBackground()
 </script>
 
 <style>

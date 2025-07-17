@@ -1,5 +1,5 @@
 // src/composables/useAverageColor.js
-export async function averageColor(srcOrImgElement) {
+export async function averageColor (srcOrImgElement) {
   return new Promise((resolve, reject) => {
     let img
     if (typeof srcOrImgElement === 'string') {
@@ -9,7 +9,7 @@ export async function averageColor(srcOrImgElement) {
     } else {
       img = srcOrImgElement
     }
-    img.onload = function () {
+    img.addEventListener('load', function () {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
       canvas.width = img.naturalWidth || img.width
@@ -28,11 +28,11 @@ export async function averageColor(srcOrImgElement) {
         g = Math.round(g / count)
         b = Math.round(b / count)
         resolve([r, g, b])
-      } catch (e) {
+      } catch {
         // Cross-origin issue or empty canvas
         resolve([128, 128, 128]) // fallback grey
       }
-    }
+    })
     img.onerror = () => resolve([128, 128, 128]) // fallback grey
     if (typeof srcOrImgElement !== 'string' && img.complete) {
       img.onload() // trigger if already loaded

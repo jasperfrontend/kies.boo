@@ -2,16 +2,18 @@
   <AppTopBar />
   <v-app id="inspire" class="mt-16">
     <v-main>
-      <v-container fluid class="pa-4 content-page-layout">
+      <v-container class="pa-4 content-page-layout" fluid>
         <v-row justify="center">
-          <v-col 
-            cols="12" md="8" lg="8" 
+          <v-col
             class="mt-3"
+            cols="12"
+            lg="8"
+            md="8"
             :style="{
               backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
             }"
           >
-            <router-view></router-view>
+            <router-view />
           </v-col>
         </v-row>
       </v-container>
@@ -21,11 +23,11 @@
 </template>
 
 <script setup>
-import { useBackground } from '@/composables/useBackground'
-import UnsplashCredits from '@/components/UnsplashCredits.vue'
+  import UnsplashCredits from '@/components/UnsplashCredits.vue'
+  import { useBackground } from '@/composables/useBackground'
 
-// Initialize background management
-useBackground()
+  // Initialize background management
+  useBackground()
 </script>
 
 <style>

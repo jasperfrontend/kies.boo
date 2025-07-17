@@ -2,7 +2,7 @@
 import supabase from '@/lib/supabaseClient'
 
 class BackgroundPreferencesService {
-  constructor() {
+  constructor () {
     this.defaultBackground = null
   }
 
@@ -10,7 +10,7 @@ class BackgroundPreferencesService {
    * Get user's background preferences
    * @returns {Promise<Object|null>} User preferences or null
    */
-  async getUserPreferences() {
+  async getUserPreferences () {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -39,7 +39,7 @@ class BackgroundPreferencesService {
    * Get all user preferences (background, double-click behavior, etc.)
    * @returns {Promise<Object|null>} User preferences object or null
    */
-  async getAllUserPreferences() {
+  async getAllUserPreferences () {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -68,7 +68,7 @@ class BackgroundPreferencesService {
    * Get user's double-click behavior preference
    * @returns {Promise<string>} 'select' or 'open' (defaults to 'select')
    */
-  async getDoubleClickBehavior() {
+  async getDoubleClickBehavior () {
     try {
       const preferences = await this.getAllUserPreferences()
       return preferences?.doubleClickBehavior || 'select'
@@ -83,7 +83,7 @@ class BackgroundPreferencesService {
    * @param {string} behavior - 'select' or 'open'
    * @returns {Promise<boolean>} Success status
    */
-  async saveDoubleClickBehavior(behavior) {
+  async saveDoubleClickBehavior (behavior) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -100,7 +100,7 @@ class BackgroundPreferencesService {
       const currentPreferences = existingData?.preferences || {}
       const updatedPreferences = {
         ...currentPreferences,
-        doubleClickBehavior: behavior
+        doubleClickBehavior: behavior,
       }
 
       let result
@@ -110,7 +110,7 @@ class BackgroundPreferencesService {
           .from('user_preferences')
           .insert({
             user_id: session.user.id,
-            preferences: updatedPreferences
+            preferences: updatedPreferences,
           })
       } else {
         // Update existing record
@@ -137,7 +137,7 @@ class BackgroundPreferencesService {
    * @param {Object} backgroundData - Background preference object
    * @returns {Promise<boolean>} Success status
    */
-  async saveBackgroundPreference(backgroundData) {
+  async saveBackgroundPreference (backgroundData) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) {
@@ -154,7 +154,7 @@ class BackgroundPreferencesService {
       const currentPreferences = existingData?.preferences || {}
       const updatedPreferences = {
         ...currentPreferences,
-        background: backgroundData
+        background: backgroundData,
       }
 
       let result
@@ -164,7 +164,7 @@ class BackgroundPreferencesService {
           .from('user_preferences')
           .insert({
             user_id: session.user.id,
-            preferences: updatedPreferences
+            preferences: updatedPreferences,
           })
       } else {
         // Update existing record
@@ -190,9 +190,9 @@ class BackgroundPreferencesService {
    * Apply background to the document
    * @param {Object} backgroundData - Background preference object
    */
-  applyBackground(backgroundData) {
+  applyBackground (backgroundData) {
     const body = document.body
-    const app = document.getElementById('inspire') || body
+    const app = document.querySelector('#inspire') || body
 
     // Remove any existing background classes/styles
     this.clearBackground()
@@ -202,30 +202,33 @@ class BackgroundPreferencesService {
     }
 
     switch (backgroundData.type) {
-      case 'gradient':
+      case 'gradient': {
         app.style.background = this.getGradientCss(backgroundData.value)
         app.style.backgroundAttachment = 'fixed'
         break
-      
-      case 'solid':
+      }
+
+      case 'solid': {
         app.style.background = backgroundData.value
         break
-      
-      case 'image':
+      }
+
+      case 'image': {
         app.style.background = `url(${backgroundData.value}) center center no-repeat`
         app.style.backgroundSize = 'cover'
         app.style.backgroundAttachment = 'fixed'
         break
+      }
     }
   }
 
   /**
    * Clear all background styles
    */
-  clearBackground() {
+  clearBackground () {
     const body = document.body
-    const app = document.getElementById('inspire') || body
-    
+    const app = document.querySelector('#inspire') || body
+
     app.style.background = ''
     app.style.backgroundImage = ''
     app.style.backgroundSize = ''
@@ -239,7 +242,7 @@ class BackgroundPreferencesService {
    * @param {string} gradientKey - Gradient identifier
    * @returns {string} CSS gradient string
    */
-  getGradientCss(gradientKey) {
+  getGradientCss (gradientKey) {
     const gradients = {
       'gradient-1': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       'gradient-2': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -252,7 +255,7 @@ class BackgroundPreferencesService {
       'gradient-9': 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
       'gradient-10': 'linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%)',
       'gradient-11': 'linear-gradient(135deg, #20c997 0%, #b8e994 100%)',
-      'gradient-12': 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)'
+      'gradient-12': 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
     }
 
     return gradients[gradientKey] || gradients['gradient-1']
@@ -262,7 +265,7 @@ class BackgroundPreferencesService {
    * Get available gradient options
    * @returns {Array} Array of gradient options
    */
-  getGradientOptions() {
+  getGradientOptions () {
     return [
       { key: 'gradient-1', label: 'Purple Blue', css: this.getGradientCss('gradient-1') },
       { key: 'gradient-2', label: 'Pink Red', css: this.getGradientCss('gradient-2') },
@@ -275,7 +278,7 @@ class BackgroundPreferencesService {
       { key: 'gradient-9', label: 'Blue Ocean', css: this.getGradientCss('gradient-9') },
       { key: 'gradient-10', label: 'Pink Orange', css: this.getGradientCss('gradient-10') },
       { key: 'gradient-11', label: 'Teal Lime', css: this.getGradientCss('gradient-11') },
-      { key: 'gradient-12', label: 'Gold Coral', css: this.getGradientCss('gradient-12') }
+      { key: 'gradient-12', label: 'Gold Coral', css: this.getGradientCss('gradient-12') },
     ]
   }
 
@@ -283,7 +286,7 @@ class BackgroundPreferencesService {
    * Get available solid color options
    * @returns {Array} Array of solid color options
    */
-  getSolidColorOptions() {
+  getSolidColorOptions () {
     return [
       { key: '#007fff', label: 'Azure', color: '#007fff' },
       { key: '#6a994e', label: 'Moss', color: '#6a994e' },
@@ -296,7 +299,7 @@ class BackgroundPreferencesService {
       { key: '#e0c097', label: 'Sand', color: '#e0c097' },
       { key: '#b06c49', label: 'Clay', color: '#b06c49' },
       { key: '#62757f', label: 'Slate', color: '#62757f' },
-      { key: '#c65d7b', label: 'Rosewood', color: '#c65d7b' }
+      { key: '#c65d7b', label: 'Rosewood', color: '#c65d7b' },
     ]
   }
 }
