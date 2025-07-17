@@ -1,21 +1,21 @@
 // src/composables/useBackground.js
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import backgroundPreferencesService from '@/lib/backgroundPreferencesService'
 import supabase from '@/lib/supabaseClient'
 
-export function useBackground() {
+export function useBackground () {
   const currentBackground = ref(null)
   const loading = ref(false)
 
   /**
    * Load and apply user's background preference
    */
-  async function loadBackground() {
+  async function loadBackground () {
     loading.value = true
     try {
       const background = await backgroundPreferencesService.getUserPreferences()
       currentBackground.value = background
-      
+
       if (background) {
         backgroundPreferencesService.applyBackground(background)
       }
@@ -29,7 +29,7 @@ export function useBackground() {
   /**
    * Handle authentication state changes
    */
-  function handleAuthChange(event, session) {
+  function handleAuthChange (event, session) {
     if (session?.user) {
       // User logged in, load their background
       loadBackground()
@@ -43,9 +43,9 @@ export function useBackground() {
   /**
    * Set up auth listener
    */
-  function setupAuthListener() {
+  function setupAuthListener () {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange)
-    
+
     // Return cleanup function
     return () => {
       subscription?.unsubscribe()
@@ -55,20 +55,20 @@ export function useBackground() {
   /**
    * Update background preference
    */
-  async function updateBackground(backgroundData) {
+  async function updateBackground (backgroundData) {
     try {
       const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
-      
+
       if (success) {
         currentBackground.value = backgroundData
-        
+
         if (backgroundData) {
           backgroundPreferencesService.applyBackground(backgroundData)
         } else {
           backgroundPreferencesService.clearBackground()
         }
       }
-      
+
       return success
     } catch (error) {
       console.error('Error updating background:', error)
@@ -78,10 +78,10 @@ export function useBackground() {
 
   // Set up auth listener and load initial background
   let unsubscribeAuth
-  
+
   onMounted(async () => {
     unsubscribeAuth = setupAuthListener()
-    
+
     // Check if user is already authenticated
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.user) {
@@ -99,6 +99,6 @@ export function useBackground() {
     currentBackground,
     loading,
     loadBackground,
-    updateBackground
+    updateBackground,
   }
 }

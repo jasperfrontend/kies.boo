@@ -1,30 +1,30 @@
 <template>
-  <v-dialog 
-    :model-value="modelValue" 
-    @update:model-value="$emit('update:modelValue', $event)"
+  <v-dialog
     max-width="600"
+    :model-value="modelValue"
     scrollable
+    @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card>
       <!-- Header -->
       <v-card-title class="d-flex align-center pa-4">
         <v-btn
           v-if="currentView !== 'main'"
-          @click="goBack"
-          icon
-          variant="text"
-          size="small"
           class="mr-3"
+          icon
+          size="small"
+          variant="text"
+          @click="goBack"
         >
           <v-icon icon="mdi-arrow-left" />
         </v-btn>
         <span>{{ dialogTitle }}</span>
         <v-spacer />
         <v-btn
-          @click="$emit('update:modelValue', false)"
           icon
-          variant="text"
           size="small"
+          variant="text"
+          @click="$emit('update:modelValue', false)"
         >
           <v-icon icon="mdi-close" />
         </v-btn>
@@ -37,15 +37,15 @@
         <v-row>
           <!-- Photos Option -->
           <v-col cols="6">
-            <v-card 
-              @click="currentView = 'photos'"
+            <v-card
               class="background-option-card cursor-pointer"
-              :ripple="true"
               hover
+              :ripple="true"
+              @click="currentView = 'photos'"
             >
               <div class="pa-4 text-center">
                 <div class="background-preview-grid mb-3">
-                  <div 
+                  <div
                     v-for="(photo, index) in previewPhotos.slice(0, 4)"
                     :key="index"
                     class="preview-photo"
@@ -59,21 +59,21 @@
 
           <!-- Colors Option -->
           <v-col cols="6">
-            <v-card 
-              @click="currentView = 'colors'"
+            <v-card
               class="background-option-card cursor-pointer"
-              :ripple="true"
               hover
+              :ripple="true"
+              @click="currentView = 'colors'"
             >
               <div class="pa-4 text-center">
                 <div class="background-preview-grid mb-3">
-                  <div 
+                  <div
                     v-for="(gradient, index) in gradientOptions.slice(0, 2)"
                     :key="index"
                     class="preview-gradient"
                     :style="{ background: gradient.css }"
                   />
-                  <div 
+                  <div
                     v-for="(color, index) in solidColorOptions.slice(0, 2)"
                     :key="`solid-${index}`"
                     class="preview-solid"
@@ -90,11 +90,11 @@
         <v-row class="mt-2">
           <v-col cols="12">
             <v-btn
-              @click="removeBackground"
-              variant="outlined"
+              block
               color="error"
               prepend-icon="mdi-delete"
-              block
+              variant="outlined"
+              @click="removeBackground"
             >
               Remove Background
             </v-btn>
@@ -107,14 +107,14 @@
         <!-- Search Bar -->
         <v-text-field
           v-model="searchQuery"
-          @keydown.enter="searchPhotos"
-          @input="onSearchInput"
+          class="mb-4"
+          clearable
+          density="compact"
           label="Search photos"
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
-          density="compact"
-          class="mb-4"
-          clearable
+          @input="onSearchInput"
+          @keydown.enter="searchPhotos"
         />
 
         <!-- Photos Grid -->
@@ -122,9 +122,9 @@
           <div
             v-for="photo in photos"
             :key="photo.id"
-            @click="selectPhoto(photo)"
             class="photo-item cursor-pointer"
             :style="{ backgroundImage: `url(${photo.urls.small})` }"
+            @click="selectPhoto(photo)"
           >
             <div class="photo-overlay">
               <div class="photo-attribution">
@@ -136,23 +136,23 @@
 
         <!-- Loading State -->
         <div v-else-if="loadingPhotos" class="text-center py-8">
-          <v-progress-circular indeterminate color="primary" />
+          <v-progress-circular color="primary" indeterminate />
           <div class="mt-2">Searching photos...</div>
         </div>
 
         <!-- No Results -->
         <div v-else-if="!loadingPhotos && searchQuery" class="text-center py-8">
-          <v-icon icon="mdi-image-off" size="48" class="text-grey-darken-1 mb-2" />
+          <v-icon class="text-grey-darken-1 mb-2" icon="mdi-image-off" size="48" />
           <div class="text-h6 text-grey-darken-1 mb-2">No photos found</div>
           <div class="text-body-2 text-grey-darken-1">Try searching for something else</div>
         </div>
 
         <!-- Unsplash Attribution -->
         <div class="text-center mt-4 text-caption text-grey-darken-1">
-          By using images from Unsplash, you agree to their 
-          <a href="https://unsplash.com/license" target="_blank" class="text-primary">license</a>
-          and 
-          <a href="https://unsplash.com/terms" target="_blank" class="text-primary">Terms of Service</a>
+          By using images from Unsplash, you agree to their
+          <a class="text-primary" href="https://unsplash.com/license" target="_blank">license</a>
+          and
+          <a class="text-primary" href="https://unsplash.com/terms" target="_blank">Terms of Service</a>
         </div>
       </v-card-text>
 
@@ -162,23 +162,23 @@
         <div class="mb-6">
           <h3 class="text-h6 mb-3">Gradients</h3>
           <v-row>
-            <v-col 
+            <v-col
               v-for="gradient in gradientOptions"
               :key="gradient.key"
               cols="6"
-              sm="4"
               md="3"
+              sm="4"
             >
               <div
-                @click="selectGradient(gradient)"
                 class="color-option cursor-pointer"
                 :style="{ background: gradient.css }"
                 :title="gradient.label"
+                @click="selectGradient(gradient)"
               >
-                <v-icon 
+                <v-icon
                   v-if="currentBackground?.type === 'gradient' && currentBackground?.value === gradient.key"
-                  icon="mdi-check"
                   color="white"
+                  icon="mdi-check"
                   size="24"
                 />
               </div>
@@ -190,23 +190,23 @@
         <div>
           <h3 class="text-h6 mb-3">Solid Colors</h3>
           <v-row>
-            <v-col 
+            <v-col
               v-for="color in solidColorOptions"
               :key="color.key"
               cols="6"
-              sm="4"
               md="3"
+              sm="4"
             >
               <div
-                @click="selectSolidColor(color)"
                 class="color-option cursor-pointer"
                 :style="{ background: color.color }"
                 :title="color.label"
+                @click="selectSolidColor(color)"
               >
-                <v-icon 
+                <v-icon
                   v-if="currentBackground?.type === 'solid' && currentBackground?.value === color.key"
-                  icon="mdi-check"
                   color="white"
+                  icon="mdi-check"
                   size="24"
                 />
               </div>
@@ -219,12 +219,12 @@
     <!-- Loading Overlay -->
     <v-overlay
       v-model="saving"
-      contained
       class="align-center justify-center"
+      contained
     >
       <v-progress-circular
-        indeterminate
         color="primary"
+        indeterminate
         size="64"
       />
       <div class="mt-2">Saving...</div>
@@ -233,227 +233,230 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import unsplashService from '@/lib/unsplashService'
-import backgroundPreferencesService from '@/lib/backgroundPreferencesService'
+  import { computed, onMounted, ref, watch } from 'vue'
+  import backgroundPreferencesService from '@/lib/backgroundPreferencesService'
+  import unsplashService from '@/lib/unsplashService'
 
-const props = defineProps({
-  modelValue: Boolean
-})
+  const props = defineProps({
+    modelValue: Boolean,
+  })
 
-const emit = defineEmits(['update:modelValue', 'background-changed'])
+  const emit = defineEmits(['update:modelValue', 'background-changed'])
 
-// State
-const currentView = ref('main') // 'main', 'photos', 'colors'
-const searchQuery = ref('')
-const photos = ref([])
-const previewPhotos = ref([])
-const loadingPhotos = ref(false)
-const saving = ref(false)
-const currentBackground = ref(null)
-const searchTimeout = ref(null)
-const downloadFile = ref()
+  // State
+  const currentView = ref('main') // 'main', 'photos', 'colors'
+  const searchQuery = ref('')
+  const photos = ref([])
+  const previewPhotos = ref([])
+  const loadingPhotos = ref(false)
+  const saving = ref(false)
+  const currentBackground = ref(null)
+  const searchTimeout = ref(null)
+  const downloadFile = ref()
 
-// Options
-const gradientOptions = computed(() => backgroundPreferencesService.getGradientOptions())
-const solidColorOptions = computed(() => backgroundPreferencesService.getSolidColorOptions())
+  // Options
+  const gradientOptions = computed(() => backgroundPreferencesService.getGradientOptions())
+  const solidColorOptions = computed(() => backgroundPreferencesService.getSolidColorOptions())
 
-// Computed
-const dialogTitle = computed(() => {
-  switch (currentView.value) {
-    case 'photos': return 'Photos from Unsplash'
-    case 'colors': return 'Colors'
-    default: return 'Change background'
-  }
-})
-
-// Methods
-function goBack() {
-  currentView.value = 'main'
-  searchQuery.value = ''
-}
-
-function onSearchInput() {
-  // Debounce search
-  if (searchTimeout.value) {
-    clearTimeout(searchTimeout.value)
-  }
-  
-  searchTimeout.value = setTimeout(() => {
-    if (searchQuery.value.trim()) {
-      searchPhotos()
-    } else {
-      loadCuratedPhotos()
-    }
-  }, 500)
-}
-
-async function searchPhotos() {
-  if (!searchQuery.value.trim()) return
-  
-  loadingPhotos.value = true
-  try {
-    const results = await unsplashService.searchPhotos(searchQuery.value.trim(), 1, 20)
-    photos.value = results.results
-  } catch (error) {
-    console.error('Error searching photos:', error)
-    photos.value = []
-  } finally {
-    loadingPhotos.value = false
-  }
-}
-
-async function loadCuratedPhotos() {
-  loadingPhotos.value = true
-  try {
-    const results = await unsplashService.getCuratedPhotos(1, 20)
-    photos.value = results
-  } catch (error) {
-    console.error('Error loading curated photos:', error)
-    photos.value = []
-  } finally {
-    loadingPhotos.value = false
-  }
-}
-
-async function loadPreviewPhotos() {
-  try {
-    const results = await unsplashService.getCuratedPhotos(1, 4)
-    previewPhotos.value = results
-  } catch (error) {
-    console.error('Error loading preview photos:', error)
-    previewPhotos.value = []
-  }
-}
-
-/**
- * Select and download the photo as background image
- * @param {string} photo - The Unsplash photo object
- */
-async function selectPhoto(photo) {
-  downloadFile.value = photo.links.download_location
-  saving.value = true
-  try {
-    // Trigger download for Unsplash analytics
-    await unsplashService.triggerDownload(downloadFile.value)
-    
-    const backgroundData = {
-      type: 'image',
-      value: `${photo.urls.raw}&w=2560&q=80`,
-      attribution: {
-        html: photo.attributionHtml,
-        text: photo.attributionText,
-        photographer: photo.user.name,
-        photographerUrl: photo.user.links.html,
-        unsplashUrl: 'https://unsplash.com'
+  // Computed
+  const dialogTitle = computed(() => {
+    switch (currentView.value) {
+      case 'photos': { return 'Photos from Unsplash'
+      }
+      case 'colors': { return 'Colors'
+      }
+      default: { return 'Change background'
       }
     }
-    console.log("BackgroundSelectionDialog.vue:339 - backgroundData", backgroundData);
-    
-    const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
-    if (success) {
-      backgroundPreferencesService.applyBackground(backgroundData)
-      currentBackground.value = backgroundData
-      emit('background-changed', backgroundData)
-      emit('update:modelValue', false)
-    }
-  } catch (error) {
-    console.error('Error selecting photo:', error)
-  } finally {
-    saving.value = false
-  }
-}
+  })
 
-async function selectGradient(gradient) {
-  saving.value = true
-  try {
-    const backgroundData = {
-      type: 'gradient',
-      value: gradient.key
-    }
-    
-    const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
-    if (success) {
-      backgroundPreferencesService.applyBackground(backgroundData)
-      currentBackground.value = backgroundData
-      emit('background-changed', backgroundData)
-      emit('update:modelValue', false)
-    }
-  } catch (error) {
-    console.error('Error selecting gradient:', error)
-  } finally {
-    saving.value = false
-  }
-}
-
-async function selectSolidColor(color) {
-  saving.value = true
-  try {
-    const backgroundData = {
-      type: 'solid',
-      value: color.key
-    }
-    
-    const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
-    if (success) {
-      backgroundPreferencesService.applyBackground(backgroundData)
-      currentBackground.value = backgroundData
-      emit('background-changed', backgroundData)
-      emit('update:modelValue', false)
-    }
-  } catch (error) {
-    console.error('Error selecting solid color:', error)
-  } finally {
-    saving.value = false
-  }
-}
-
-async function removeBackground() {
-  saving.value = true
-  try {
-    const success = await backgroundPreferencesService.saveBackgroundPreference(null)
-    if (success) {
-      backgroundPreferencesService.clearBackground()
-      currentBackground.value = null
-      emit('background-changed', null)
-      emit('update:modelValue', false)
-    }
-  } catch (error) {
-    console.error('Error removing background:', error)
-  } finally {
-    saving.value = false
-  }
-}
-
-async function loadCurrentBackground() {
-  try {
-    const background = await backgroundPreferencesService.getUserPreferences()
-    currentBackground.value = background
-  } catch (error) {
-    console.error('Error loading current background:', error)
-  }
-}
-
-// Watch for dialog open
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
+  // Methods
+  function goBack () {
     currentView.value = 'main'
     searchQuery.value = ''
-    loadPreviewPhotos()
+  }
+
+  function onSearchInput () {
+    // Debounce search
+    if (searchTimeout.value) {
+      clearTimeout(searchTimeout.value)
+    }
+
+    searchTimeout.value = setTimeout(() => {
+      if (searchQuery.value.trim()) {
+        searchPhotos()
+      } else {
+        loadCuratedPhotos()
+      }
+    }, 500)
+  }
+
+  async function searchPhotos () {
+    if (!searchQuery.value.trim()) return
+
+    loadingPhotos.value = true
+    try {
+      const results = await unsplashService.searchPhotos(searchQuery.value.trim(), 1, 20)
+      photos.value = results.results
+    } catch (error) {
+      console.error('Error searching photos:', error)
+      photos.value = []
+    } finally {
+      loadingPhotos.value = false
+    }
+  }
+
+  async function loadCuratedPhotos () {
+    loadingPhotos.value = true
+    try {
+      const results = await unsplashService.getCuratedPhotos(1, 20)
+      photos.value = results
+    } catch (error) {
+      console.error('Error loading curated photos:', error)
+      photos.value = []
+    } finally {
+      loadingPhotos.value = false
+    }
+  }
+
+  async function loadPreviewPhotos () {
+    try {
+      const results = await unsplashService.getCuratedPhotos(1, 4)
+      previewPhotos.value = results
+    } catch (error) {
+      console.error('Error loading preview photos:', error)
+      previewPhotos.value = []
+    }
+  }
+
+  /**
+   * Select and download the photo as background image
+   * @param {string} photo - The Unsplash photo object
+   */
+  async function selectPhoto (photo) {
+    downloadFile.value = photo.links.download_location
+    saving.value = true
+    try {
+      // Trigger download for Unsplash analytics
+      await unsplashService.triggerDownload(downloadFile.value)
+
+      const backgroundData = {
+        type: 'image',
+        value: `${photo.urls.raw}&w=2560&q=80`,
+        attribution: {
+          html: photo.attributionHtml,
+          text: photo.attributionText,
+          photographer: photo.user.name,
+          photographerUrl: photo.user.links.html,
+          unsplashUrl: 'https://unsplash.com',
+        },
+      }
+      console.log('BackgroundSelectionDialog.vue:339 - backgroundData', backgroundData)
+
+      const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
+      if (success) {
+        backgroundPreferencesService.applyBackground(backgroundData)
+        currentBackground.value = backgroundData
+        emit('background-changed', backgroundData)
+        emit('update:modelValue', false)
+      }
+    } catch (error) {
+      console.error('Error selecting photo:', error)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function selectGradient (gradient) {
+    saving.value = true
+    try {
+      const backgroundData = {
+        type: 'gradient',
+        value: gradient.key,
+      }
+
+      const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
+      if (success) {
+        backgroundPreferencesService.applyBackground(backgroundData)
+        currentBackground.value = backgroundData
+        emit('background-changed', backgroundData)
+        emit('update:modelValue', false)
+      }
+    } catch (error) {
+      console.error('Error selecting gradient:', error)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function selectSolidColor (color) {
+    saving.value = true
+    try {
+      const backgroundData = {
+        type: 'solid',
+        value: color.key,
+      }
+
+      const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
+      if (success) {
+        backgroundPreferencesService.applyBackground(backgroundData)
+        currentBackground.value = backgroundData
+        emit('background-changed', backgroundData)
+        emit('update:modelValue', false)
+      }
+    } catch (error) {
+      console.error('Error selecting solid color:', error)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function removeBackground () {
+    saving.value = true
+    try {
+      const success = await backgroundPreferencesService.saveBackgroundPreference(null)
+      if (success) {
+        backgroundPreferencesService.clearBackground()
+        currentBackground.value = null
+        emit('background-changed', null)
+        emit('update:modelValue', false)
+      }
+    } catch (error) {
+      console.error('Error removing background:', error)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  async function loadCurrentBackground () {
+    try {
+      const background = await backgroundPreferencesService.getUserPreferences()
+      currentBackground.value = background
+    } catch (error) {
+      console.error('Error loading current background:', error)
+    }
+  }
+
+  // Watch for dialog open
+  watch(() => props.modelValue, isOpen => {
+    if (isOpen) {
+      currentView.value = 'main'
+      searchQuery.value = ''
+      loadPreviewPhotos()
+      loadCurrentBackground()
+    }
+  })
+
+  // Watch for photos view
+  watch(currentView, newView => {
+    if (newView === 'photos') {
+      loadCuratedPhotos()
+    }
+  })
+
+  onMounted(() => {
     loadCurrentBackground()
-  }
-})
-
-// Watch for photos view
-watch(currentView, (newView) => {
-  if (newView === 'photos') {
-    loadCuratedPhotos()
-  }
-})
-
-onMounted(() => {
-  loadCurrentBackground()
-})
+  })
 </script>
 
 <style scoped>

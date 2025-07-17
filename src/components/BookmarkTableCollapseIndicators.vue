@@ -1,23 +1,23 @@
 <template>
   <div class="d-flex">
-    <div 
-      v-for="domain in collapsedDomains" 
-      :key="domain.name" 
+    <div
+      v-for="domain in collapsedDomains"
+      :key="domain.name"
       class="collapse-indicator"
       :title="`Expand ${domain.count} collapsed links from ${domain.name}`"
     >
       <v-card
-        variant="outlined"
         class="ma-2 pa-1 collapsed-domain-card"
         color="surface-variant"
+        variant="outlined"
       >
-        <div 
+        <div
           class="d-flex align-center justify-space-between cursor-pointer"
-          @click="$emit('expand-domain', domain.name)"
           :class="{ 'loading': expandingDomain === domain.name }"
+          @click="$emit('expand-domain', domain.name)"
         >
           <div class="d-flex align-center">
-            <v-icon icon="mdi-arrow-expand-vertical" class="mr-2" color="primary" />
+            <v-icon class="mr-2" color="primary" icon="mdi-arrow-expand-vertical" />
             <div>
               <div class="text-subtitle-2 font-weight-medium collapsed-domain-text">
                 {{ domain.count }} &times; {{ domain.name }}
@@ -31,18 +31,18 @@
 </template>
 
 <script setup>
-defineProps({
-  collapsedDomains: {
-    type: Array,
-    default: () => []
-  },
-  expandingDomain: {
-    type: String,
-    default: null
-  }
-})
+  defineProps({
+    collapsedDomains: {
+      type: Array,
+      default: () => [],
+    },
+    expandingDomain: {
+      type: String,
+      default: null,
+    },
+  })
 
-defineEmits(['expand-domain'])
+  defineEmits(['expand-domain'])
 </script>
 
 <style scoped>
@@ -63,7 +63,7 @@ defineEmits(['expand-domain'])
   border-color: rgba(var(--v-theme-primary), 0.6);
   background: rgba(var(--v-theme-surface), 0.7);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(var(--v-theme-primary), 0.2),
     0 2px 6px rgba(0, 0, 0, 0.1);
 }

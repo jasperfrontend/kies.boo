@@ -1,42 +1,41 @@
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue'
 
-export function useKeyboardShortcuts(callbacks) {
-  const handleKeydown = (event) => {
-
+export function useKeyboardShortcuts (callbacks) {
+  const handleKeydown = event => {
     // Alt+a to add bookmark
     if (event.altKey && event.key === 'a') {
-      event.preventDefault();
-      callbacks.onAddBookmark?.();
+      event.preventDefault()
+      callbacks.onAddBookmark?.()
     }
 
     // Alt+o to refresh bookmarks table
     if (event.altKey && event.key === 'o') {
-      event.preventDefault();
-      callbacks.onRefreshBookmarks?.();
+      event.preventDefault()
+      callbacks.onRefreshBookmarks?.()
     }
 
     // Alt+i to delete selected items
     if (event.altKey && event.key === 'i') {
-      event.preventDefault();
-      callbacks.onDeleteSelected?.();
+      event.preventDefault()
+      callbacks.onDeleteSelected?.()
     }
 
     // Alt+u to undo delete
     if (event.altKey && event.key === 'u') {
-      event.preventDefault();
-      callbacks.onUndoDelete?.();
+      event.preventDefault()
+      callbacks.onUndoDelete?.()
     }
-  };
+  }
 
   onMounted(() => {
-    document.addEventListener('keydown', handleKeydown);
-  });
+    document.addEventListener('keydown', handleKeydown)
+  })
 
   onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeydown);
-  });
+    document.removeEventListener('keydown', handleKeydown)
+  })
 
   return {
-    handleKeydown
-  };
+    handleKeydown,
+  }
 }

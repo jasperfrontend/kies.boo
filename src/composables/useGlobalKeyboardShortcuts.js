@@ -1,25 +1,25 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue'
 
-const showShortcutsDialog = ref(false);
+const showShortcutsDialog = ref(false)
 
-export function useGlobalKeyboardShortcuts() {
-  const handleGlobalKeydown = (event) => {
+export function useGlobalKeyboardShortcuts () {
+  const handleGlobalKeydown = event => {
     // Global shortcut: Ctrl + / to show shortcuts dialog
     if (event.ctrlKey && event.key === '/') {
-      event.preventDefault();
-      showShortcutsDialog.value = true;
+      event.preventDefault()
+      showShortcutsDialog.value = true
     }
-  };
+  }
 
   onMounted(() => {
-    document.addEventListener('keydown', handleGlobalKeydown);
-  });
+    document.addEventListener('keydown', handleGlobalKeydown)
+  })
 
   onUnmounted(() => {
-    document.removeEventListener('keydown', handleGlobalKeydown);
-  });
+    document.removeEventListener('keydown', handleGlobalKeydown)
+  })
 
   return {
-    showShortcutsDialog
-  };
+    showShortcutsDialog,
+  }
 }

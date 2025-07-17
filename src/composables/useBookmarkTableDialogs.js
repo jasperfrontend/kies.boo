@@ -1,7 +1,7 @@
 // src/composables/useBookmarkTableDialogs.js
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
-export function useBookmarkTableDialogs(emit, loadBookmarks) {
+export function useBookmarkTableDialogs (emit, loadBookmarks) {
   const detailsDialog = ref(false)
   const editDialog = ref(false)
   const detailsBookmark = ref(null)
@@ -10,20 +10,20 @@ export function useBookmarkTableDialogs(emit, loadBookmarks) {
   // Track dialog states for keyboard navigation
   const dialogsOpen = computed(() => ({
     details: detailsDialog.value,
-    edit: editDialog.value
+    edit: editDialog.value,
   }))
 
-  function handleViewDetails(bookmark) {
+  function handleViewDetails (bookmark) {
     detailsBookmark.value = bookmark
     detailsDialog.value = true
   }
 
-  function handleEdit(bookmark) {
+  function handleEdit (bookmark) {
     editBookmark.value = bookmark
     editDialog.value = true
   }
 
-  function handleBookmarkUpdated() {
+  function handleBookmarkUpdated () {
     emit('bookmark-updated')
     loadBookmarks()
   }
@@ -36,6 +36,6 @@ export function useBookmarkTableDialogs(emit, loadBookmarks) {
     dialogsOpen,
     handleViewDetails,
     handleEdit,
-    handleBookmarkUpdated
+    handleBookmarkUpdated,
   }
 }

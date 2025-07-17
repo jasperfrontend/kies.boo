@@ -1,12 +1,12 @@
 // src/composables/useNumericPagination.js
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
+export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
   const numberBuffer = ref('')
   const numberTimeout = ref(null)
   const SEQUENCE_TIMEOUT = 1500 // 1.5 seconds to complete number sequence
 
-  function clearNumberBuffer() {
+  function clearNumberBuffer () {
     numberBuffer.value = ''
     if (numberTimeout.value) {
       clearTimeout(numberTimeout.value)
@@ -14,7 +14,7 @@ export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
     }
   }
 
-  function handleNumberInput(digit) {
+  function handleNumberInput (digit) {
     // Don't handle if any dialogs are open
     if (isDialogOpen && isDialogOpen()) {
       return
@@ -23,11 +23,11 @@ export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
     // Don't handle if focused on an input element
     const activeElement = document.activeElement
     if (activeElement && (
-      activeElement.tagName === 'INPUT' || 
-      activeElement.tagName === 'TEXTAREA' || 
-      activeElement.contentEditable === 'true' ||
-      activeElement.closest('.v-field__input') ||
-      activeElement.closest('.v-text-field')
+      activeElement.tagName === 'INPUT'
+      || activeElement.tagName === 'TEXTAREA'
+      || activeElement.contentEditable === 'true'
+      || activeElement.closest('.v-field__input')
+      || activeElement.closest('.v-text-field')
     )) {
       return
     }
@@ -42,29 +42,29 @@ export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
 
     // Set new timeout to execute the page change
     numberTimeout.value = setTimeout(() => {
-      const pageNumber = parseInt(numberBuffer.value)
+      const pageNumber = Number.parseInt(numberBuffer.value)
       const totalPages = getTotalPages()
-      
+
       console.log(`🔢 Numeric pagination: Attempting to go to page ${pageNumber} of ${totalPages}`)
-      
+
       if (pageNumber > 0 && pageNumber <= totalPages) {
         console.log(`✅ Valid page number, calling updatePage(${pageNumber})`)
         updatePage(pageNumber)
       } else {
         console.log(`❌ Invalid page number: ${pageNumber} (total pages: ${totalPages})`)
       }
-      
+
       clearNumberBuffer()
     }, SEQUENCE_TIMEOUT)
   }
 
-  function handleKeydown(event) {
+  function handleKeydown (event) {
     // Only handle single digit keys 1-9 (not numpad)
     if (event.key >= '1' && event.key <= '9' && !event.ctrlKey && !event.altKey && !event.metaKey) {
       event.preventDefault()
       handleNumberInput(event.key)
     }
-    
+
     // Clear buffer on Escape
     if (event.key === 'Escape') {
       clearNumberBuffer()
@@ -82,6 +82,6 @@ export function useNumericPagination(updatePage, getTotalPages, isDialogOpen) {
 
   return {
     numberBuffer,
-    clearNumberBuffer
+    clearNumberBuffer,
   }
 }

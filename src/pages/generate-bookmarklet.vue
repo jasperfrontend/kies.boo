@@ -2,10 +2,10 @@
   <div>
     <v-card class="pa-6 mx-auto bg-transparent" max-width="800" outlined>
       <v-card-title class="text-h4 mb-4">
-        <v-icon icon="mdi-bookmark-plus" class="mr-3" />
+        <v-icon class="mr-3" icon="mdi-bookmark-plus" />
         Generate Your Bookmarklet
       </v-card-title>
-      
+
       <v-card-text class="mb-6">
         <p class="mb-4">
           Enter your API key to generate a secure bookmarklet that you can save in your browser.
@@ -17,28 +17,28 @@
         <v-form @submit.prevent="generateBookmarklet">
           <v-text-field
             v-model="inputApiKey"
-            label="Enter your API key"
-            prepend-icon="mdi-key"
-            :type="showApiKey ? 'text' : 'password'"
             :append-inner-icon="showApiKey ? 'mdi-eye-off' : 'mdi-eye'"
-            @click:append-inner="showApiKey = !showApiKey"
-            variant="outlined"
-            :rules="[v => !!v || 'API key is required']"
-            :loading="validating"
-            :error-messages="validationError"
-            class="mb-4"
             autofocus
+            class="mb-4"
+            :error-messages="validationError"
+            label="Enter your API key"
+            :loading="validating"
+            prepend-icon="mdi-key"
+            :rules="[v => !!v || 'API key is required']"
+            :type="showApiKey ? 'text' : 'password'"
+            variant="outlined"
+            @click:append-inner="showApiKey = !showApiKey"
           />
 
           <v-btn
-            type="submit"
-            color="primary"
-            variant="flat"
-            size="large"
-            prepend-icon="mdi-creation"
-            :loading="validating"
-            :disabled="!inputApiKey.trim()"
             block
+            color="primary"
+            :disabled="!inputApiKey.trim()"
+            :loading="validating"
+            prepend-icon="mdi-creation"
+            size="large"
+            type="submit"
+            variant="flat"
           >
             Generate Bookmarklet
           </v-btn>
@@ -47,14 +47,14 @@
 
       <!-- Generated Bookmarklet -->
       <div v-if="bookmarkletGenerated && bookmarkletCode">
-        <v-alert type="success" variant="tonal" class="mb-6">
+        <v-alert class="mb-6" type="success" variant="tonal">
           Your bookmarklet has been generated successfully!
         </v-alert>
 
         <!-- Custom Steps Implementation -->
-        <v-card variant="outlined" class="mb-6">
+        <v-card class="mb-6" variant="outlined">
           <v-card-title>
-            <v-icon icon="mdi-information" class="mr-2" />
+            <v-icon class="mr-2" icon="mdi-information" />
             Installation Steps
           </v-card-title>
           <v-card-text>
@@ -65,7 +65,7 @@
                 <div class="step-content">
                   <h3 class="text-h6 mb-2">Show Bookmarks Bar</h3>
                   <v-chip color="success" size="small" variant="flat">
-                    <v-icon icon="mdi-check" size="16" class="mr-1" />
+                    <v-icon class="mr-1" icon="mdi-check" size="16" />
                     Ready
                   </v-chip>
                 </div>
@@ -76,17 +76,17 @@
                 </p>
                 <div class="browser-shortcuts">
                   <div class="shortcut-item mb-2">
-                    <strong>Chrome/Edge:</strong> 
-                    <v-chip size="x-small" variant="outlined" class="ml-2">Ctrl+Shift+B</v-chip>
+                    <strong>Chrome/Edge:</strong>
+                    <v-chip class="ml-2" size="x-small" variant="outlined">Ctrl+Shift+B</v-chip>
                     <span class="text-caption ml-2">(Cmd+Shift+B on Mac)</span>
                   </div>
                   <div class="shortcut-item mb-2">
-                    <strong>Firefox:</strong> 
-                    <v-chip size="x-small" variant="outlined" class="ml-2">Ctrl+Shift+B</v-chip>
+                    <strong>Firefox:</strong>
+                    <v-chip class="ml-2" size="x-small" variant="outlined">Ctrl+Shift+B</v-chip>
                     <span class="text-caption ml-2">(Cmd+Shift+B on Mac)</span>
                   </div>
                   <div class="shortcut-item">
-                    <strong>Safari:</strong> 
+                    <strong>Safari:</strong>
                     <span class="text-caption ml-2">View → Show Favorites Bar</span>
                   </div>
                 </div>
@@ -100,7 +100,7 @@
                 <div class="step-content">
                   <h3 class="text-h6 mb-2">Drag the Bookmarklet</h3>
                   <v-chip color="primary" size="small" variant="flat">
-                    <v-icon icon="mdi-arrow-right" size="16" class="mr-1" />
+                    <v-icon class="mr-1" icon="mdi-arrow-right" size="16" />
                     Current Step
                   </v-chip>
                 </div>
@@ -109,37 +109,37 @@
                 <p class="text-body-2 mb-4">
                   Drag the blue button below to your bookmarks bar:
                 </p>
-                
+
                 <!-- The Draggable Bookmarklet -->
                 <div class="text-center mb-4">
-                  <a 
-                    :href="bookmarkletCode"
+                  <a
                     class="bookmarklet-link"
                     draggable="true"
-                    @dragstart="onDragStart"
+                    :href="bookmarkletCode"
                     title="Drag this to your bookmarks bar"
+                    @dragstart="onDragStart"
                   >
                     <v-btn
-                      color="primary"
-                      variant="flat"
-                      size="large"
-                      prepend-icon="mdi-bookmark-plus"
                       class="bookmarklet-button"
+                      color="primary"
+                      prepend-icon="mdi-bookmark-plus"
+                      size="large"
+                      variant="flat"
                     >
                       📌 Add to Kies.boo
                     </v-btn>
                   </a>
                 </div>
-                
-                <v-alert type="info" variant="tonal" density="compact">
+
+                <v-alert density="compact" type="info" variant="tonal">
                   <div class="text-body-2">
-                    <strong>Tip:</strong> If dragging doesn't work, you can right-click the button 
+                    <strong>Tip:</strong> If dragging doesn't work, you can right-click the button
                     and select "Add to bookmarks" or "Bookmark this link"
                   </div>
                 </v-alert>
               </div>
             </div>
-            
+
             <!-- Step 3 -->
             <div class="custom-step">
               <div class="step-header mb-3">
@@ -147,7 +147,7 @@
                 <div class="step-content">
                   <h3 class="text-h6 mb-2">Start Using It</h3>
                   <v-chip color="grey" size="small" variant="outlined">
-                    <v-icon icon="mdi-clock-outline" size="16" class="mr-1" />
+                    <v-icon class="mr-1" icon="mdi-clock-outline" size="16" />
                     Pending
                   </v-chip>
                 </div>
@@ -163,7 +163,7 @@
         </v-card>
 
         <!-- Advanced Options -->
-        <v-expansion-panels variant="accordion" class="mb-6">
+        <v-expansion-panels class="mb-6" variant="accordion">
           <v-expansion-panel title="Advanced Options">
             <v-expansion-panel-text>
               <!-- Manual Installation -->
@@ -174,35 +174,35 @@
                 </p>
                 <div class="manual-steps mb-3">
                   <div class="manual-step mb-2">
-                    <v-icon icon="mdi-numeric-1-circle" size="16" class="mr-2" color="primary" />
+                    <v-icon class="mr-2" color="primary" icon="mdi-numeric-1-circle" size="16" />
                     <span class="text-body-2">Create a new bookmark in your browser</span>
                   </div>
                   <div class="manual-step mb-2">
-                    <v-icon icon="mdi-numeric-2-circle" size="16" class="mr-2" color="primary" />
+                    <v-icon class="mr-2" color="primary" icon="mdi-numeric-2-circle" size="16" />
                     <span class="text-body-2">Set the name to "Add to Kies.boo"</span>
                   </div>
                   <div class="manual-step mb-2">
-                    <v-icon icon="mdi-numeric-3-circle" size="16" class="mr-2" color="primary" />
+                    <v-icon class="mr-2" color="primary" icon="mdi-numeric-3-circle" size="16" />
                     <span class="text-body-2">Copy and paste the code below as the URL</span>
                   </div>
                 </div>
-                
+
                 <v-textarea
-                  :model-value="bookmarkletCode"
-                  label="Bookmarklet Code"
-                  readonly
-                  variant="outlined"
-                  rows="6"
                   class="mb-3"
+                  label="Bookmarklet Code"
+                  :model-value="bookmarkletCode"
+                  readonly
+                  rows="6"
+                  variant="outlined"
                 >
-                  <template v-slot:append-inner>
+                  <template #append-inner>
                     <v-btn
-                      @click="copyBookmarkletCode"
-                      icon
-                      variant="text"
                       color="primary"
+                      icon
                       size="small"
                       :title="copyStatus.copied ? 'Copied!' : 'Copy bookmarklet code'"
+                      variant="text"
+                      @click="copyBookmarkletCode"
                     >
                       <v-icon :icon="copyStatus.copied ? 'mdi-check' : 'mdi-content-copy'" />
                     </v-btn>
@@ -213,13 +213,13 @@
               <!-- Security Information -->
               <div class="mb-4">
                 <h4 class="text-h6 mb-2">Security Information</h4>
-                <v-alert type="warning" variant="tonal" density="compact" class="mb-3">
+                <v-alert class="mb-3" density="compact" type="warning" variant="tonal">
                   <div class="text-body-2">
                     Your API key is embedded in this bookmarklet. Keep it secure and don't share this bookmarklet with others.
                     If you suspect your key is compromised, generate a new one immediately.
                   </div>
                 </v-alert>
-                
+
                 <div class="text-body-2">
                   <strong>Key Details:</strong>
                   <ul class="mt-2">
@@ -236,19 +236,19 @@
         <!-- Actions -->
         <div class="text-center">
           <v-btn
-            @click="generateNew"
-            variant="outlined"
-            prepend-icon="mdi-refresh"
             class="mr-3"
+            prepend-icon="mdi-refresh"
+            variant="outlined"
+            @click="generateNew"
           >
             Generate New Key
           </v-btn>
-          
+
           <v-btn
-            to="/"
             color="primary"
-            variant="text"
             prepend-icon="mdi-arrow-left"
+            to="/"
+            variant="text"
           >
             Back to Bookmarks
           </v-btn>
@@ -258,9 +258,9 @@
       <!-- Error Display -->
       <v-alert
         v-if="error"
-        type="error"
         class="mt-4"
         closable
+        type="error"
         @click:close="error = ''"
       >
         {{ error }}
@@ -270,71 +270,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import supabase from '@/lib/supabaseClient'
+  import { onMounted, ref } from 'vue'
+  import { useRoute } from 'vue-router'
+  import supabase from '@/lib/supabaseClient'
 
-const route = useRoute()
+  const route = useRoute()
 
-const inputApiKey = ref('')
-const showApiKey = ref(false)
-const validating = ref(false)
-const validationError = ref('')
-const bookmarkletGenerated = ref(false)
-const bookmarkletCode = ref('')
-const error = ref('')
-const copyStatus = ref({ copied: false, timeout: null })
+  const inputApiKey = ref('')
+  const showApiKey = ref(false)
+  const validating = ref(false)
+  const validationError = ref('')
+  const bookmarkletGenerated = ref(false)
+  const bookmarkletCode = ref('')
+  const error = ref('')
+  const copyStatus = ref({ copied: false, timeout: null })
 
-async function generateBookmarklet() {
-  validating.value = true
-  validationError.value = ''
-  error.value = ''
+  async function generateBookmarklet () {
+    validating.value = true
+    validationError.value = ''
+    error.value = ''
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.user) {
-      error.value = 'You must be logged in to generate a bookmarklet'
-      return
-    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
+        error.value = 'You must be logged in to generate a bookmarklet'
+        return
+      }
 
-    // Validate the API key with our backend
-    const response = await fetch(`${import.meta.env.VITE_HARVEST_API_URL}/harvest/validate-api-key.php`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({
-        api_key: inputApiKey.value.trim(),
-        user_id: session.user.id
+      // Validate the API key with our backend
+      const response = await fetch(`${import.meta.env.VITE_HARVEST_API_URL}/harvest/validate-api-key.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          api_key: inputApiKey.value.trim(),
+          user_id: session.user.id,
+        }),
       })
-    })
 
-    const result = await response.json()
+      const result = await response.json()
 
-    if (!response.ok) {
-      throw new Error(result.error || `HTTP ${response.status}: Failed to validate API key`)
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}: Failed to validate API key`)
+      }
+
+      if (result.success) {
+        // Generate the bookmarklet code
+        bookmarkletCode.value = generateBookmarkletCode(inputApiKey.value.trim())
+        bookmarkletGenerated.value = true
+      } else {
+        validationError.value = result.error || 'Invalid API key'
+      }
+    } catch (error_) {
+      console.error('Error validating API key:', error_)
+      error.value = error_.message || 'Failed to validate API key'
+    } finally {
+      validating.value = false
     }
-
-    if (result.success) {
-      // Generate the bookmarklet code
-      bookmarkletCode.value = generateBookmarkletCode(inputApiKey.value.trim())
-      bookmarkletGenerated.value = true
-    } else {
-      validationError.value = result.error || 'Invalid API key'
-    }
-
-  } catch (err) {
-    console.error('Error validating API key:', err)
-    error.value = err.message || 'Failed to validate API key'
-  } finally {
-    validating.value = false
   }
-}
 
-function generateBookmarkletCode(apiKey) {
-  // Create the bookmarklet JavaScript code
-  const bookmarkletScript = `
+  function generateBookmarkletCode (apiKey) {
+    // Create the bookmarklet JavaScript code
+    const bookmarkletScript = `
     (function(){
       var title = document.title.trim();
       var url = window.location.href;
@@ -407,54 +406,54 @@ function generateBookmarkletCode(apiKey) {
     })();
   `
 
-  // Minify and encode the bookmarklet
-  const minified = bookmarkletScript
-    .replace(/\s+/g, ' ')
-    .replace(/\/\*.*?\*\//g, '')
-    .trim()
+    // Minify and encode the bookmarklet
+    const minified = bookmarkletScript
+      .replace(/\s+/g, ' ')
+      .replace(/\/\*.*?\*\//g, '')
+      .trim()
 
-  return 'javascript:' + encodeURIComponent(minified)
-}
+    return 'javascript:' + encodeURIComponent(minified)
+  }
 
-function onDragStart(event) {
-  // Set drag data for better browser compatibility
-  event.dataTransfer.setData('text/uri-list', bookmarkletCode.value)
-  event.dataTransfer.setData('text/plain', bookmarkletCode.value)
-}
+  function onDragStart (event) {
+    // Set drag data for better browser compatibility
+    event.dataTransfer.setData('text/uri-list', bookmarkletCode.value)
+    event.dataTransfer.setData('text/plain', bookmarkletCode.value)
+  }
 
-async function copyBookmarkletCode() {
-  try {
-    await navigator.clipboard.writeText(bookmarkletCode.value)
-    copyStatus.value.copied = true
-    
-    if (copyStatus.value.timeout) {
-      clearTimeout(copyStatus.value.timeout)
+  async function copyBookmarkletCode () {
+    try {
+      await navigator.clipboard.writeText(bookmarkletCode.value)
+      copyStatus.value.copied = true
+
+      if (copyStatus.value.timeout) {
+        clearTimeout(copyStatus.value.timeout)
+      }
+
+      copyStatus.value.timeout = setTimeout(() => {
+        copyStatus.value.copied = false
+      }, 2000)
+    } catch (error_) {
+      console.error('Failed to copy:', error_)
     }
-    
-    copyStatus.value.timeout = setTimeout(() => {
-      copyStatus.value.copied = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy:', err)
   }
-}
 
-function generateNew() {
-  bookmarkletGenerated.value = false
-  inputApiKey.value = ''
-  bookmarkletCode.value = ''
-  validationError.value = ''
-  error.value = ''
-}
-
-onMounted(() => {
-  // Check if API key was passed via URL parameter
-  if (route.query.key) {
-    inputApiKey.value = route.query.key
-    // Auto-generate if key is provided
-    generateBookmarklet()
+  function generateNew () {
+    bookmarkletGenerated.value = false
+    inputApiKey.value = ''
+    bookmarkletCode.value = ''
+    validationError.value = ''
+    error.value = ''
   }
-})
+
+  onMounted(() => {
+    // Check if API key was passed via URL parameter
+    if (route.query.key) {
+      inputApiKey.value = route.query.key
+      // Auto-generate if key is provided
+      generateBookmarklet()
+    }
+  })
 </script>
 
 <style scoped>

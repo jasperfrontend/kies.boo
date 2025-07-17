@@ -1,17 +1,17 @@
 <script setup>
-import appTips from '@/lib/appTips'
-const randomTip = appTips[Math.floor(Math.random() * appTips.length)]
+  import appTips from '@/lib/appTips'
+  const randomTip = appTips[Math.floor(Math.random() * appTips.length)]
 </script>
 
 <template>
-<v-card
-  class="mt-1 user-tips"
-  color="surface"
-  title="Kies.boo tips"
-  :subtitle="randomTip"
-  variant="flat"
-  prepend-icon="mdi-lightbulb-on-90"
-/>
+  <v-card
+    class="mt-1 user-tips"
+    color="surface"
+    prepend-icon="mdi-lightbulb-on-90"
+    :subtitle="randomTip"
+    title="Kies.boo tips"
+    variant="flat"
+  />
 </template>
 
 <style>

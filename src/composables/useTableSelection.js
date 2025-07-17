@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-export function useTableSelection(bookmarks, selectedItems, emit) {
+export function useTableSelection (bookmarks, selectedItems, emit) {
   const isAllSelected = computed(() => {
     return bookmarks.value.length > 0 && selectedItems.value.length === bookmarks.value.length
   })
@@ -9,21 +9,21 @@ export function useTableSelection(bookmarks, selectedItems, emit) {
     return selectedItems.value.length > 0 && selectedItems.value.length < bookmarks.value.length
   })
 
-  function toggleSelectAll() {
+  function toggleSelectAll () {
     if (isAllSelected.value) {
       emit('update:selected-items', [])
     } else {
-      emit('update:selected-items', [...bookmarks.value.map(item => item.id)])
+      emit('update:selected-items', bookmarks.value.map(item => item.id))
     }
   }
 
-  function toggleItemSelection(itemId) {
+  function toggleItemSelection (itemId) {
     const newSelection = [...selectedItems.value]
     const index = newSelection.indexOf(itemId)
-    if (index > -1) {
-      newSelection.splice(index, 1)
-    } else {
+    if (index === -1) {
       newSelection.push(itemId)
+    } else {
+      newSelection.splice(index, 1)
     }
     emit('update:selected-items', newSelection)
   }
@@ -32,6 +32,6 @@ export function useTableSelection(bookmarks, selectedItems, emit) {
     isAllSelected,
     isIndeterminate,
     toggleSelectAll,
-    toggleItemSelection
+    toggleItemSelection,
   }
 }

@@ -1,20 +1,20 @@
 <template>
-  <v-dialog 
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
+  <v-dialog
     max-width="560"
+    :model-value="modelValue"
     transition="dialog-bottom-transition"
+    @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card v-if="bookmark" class="rounded-2xl pa-0" elevation="16">
       <v-card-title class="d-flex align-center gap-4 pa-6 pb-1">
-        <v-avatar size="52" rounded="0" class="elevation-1 mr-2">
+        <v-avatar class="elevation-1 mr-2" rounded="0" size="52">
           <img
-            :src="bookmark.favicon"
             alt="favicon"
-            width="52"
             height="52"
+            :src="bookmark.favicon"
+            width="52"
             @error="e => e.target.src = '/favicon.png'"
-          />
+          >
         </v-avatar>
         <div class="flex-1">
           <div class="bookmark-title">
@@ -28,17 +28,17 @@
         <!-- URL -->
         <div class="mb-5">
           <div class="text-caption text-medium-emphasis mb-1">URL</div>
-          <v-tooltip text="Open link in new tab" location="top">
+          <v-tooltip location="top" text="Open link in new tab">
             <template #activator="{ props }">
-              <a 
+              <a
                 v-bind="props"
-                :href="bookmark.url" 
-                target="_blank"
                 class="bookmark-url d-inline-flex align-center"
+                :href="bookmark.url"
                 style="word-break:break-all;"
+                target="_blank"
               >
                 {{ bookmark.url }}
-                <v-icon icon="mdi-open-in-new" size="18" class="ml-1" />
+                <v-icon class="ml-1" icon="mdi-open-in-new" size="18" />
               </a>
             </template>
           </v-tooltip>
@@ -50,15 +50,15 @@
             <v-chip
               v-for="tag in bookmark.tags"
               :key="tag"
-              size="medium"
-              color="primary"
-              variant="tonal"
               class="mr-2 mb-2 px-4 py-2 font-weight-medium"
+              color="primary"
               density="comfortable"
-              :to="`/tag/${tag}`"
               label
+              size="medium"
+              :to="`/tag/${tag}`"
+              variant="tonal"
             >
-              <v-icon icon="mdi-tag" size="15" class="mr-1" />{{ tag }}
+              <v-icon class="mr-1" icon="mdi-tag" size="15" />{{ tag }}
             </v-chip>
           </div>
           <span v-else class="text-grey-lighten-1">No tags</span>
@@ -74,37 +74,43 @@
 
       <v-card-actions class="px-6 pb-5 pt-5">
         <v-btn
+          class="rounded-xl px-6"
           color="primary"
+          prepend-icon="mdi-open-in-new"
+          size="large"
+          target="_blank"
           variant="flat"
           @click="openLinkAndClose"
-          target="_blank"
-          prepend-icon="mdi-open-in-new"
-          class="rounded-xl px-6"
-          size="large"
         >
-          Open Link 
+          Open Link
           <v-tooltip activator="parent" location="bottom">
             Press L to open this link
           </v-tooltip>
-          <v-chip pill="true" ripple="false" size="small" variant="tonal" class="ml-3">
+          <v-chip
+            class="ml-3"
+            pill="true"
+            ripple="false"
+            size="small"
+            variant="tonal"
+          >
             L
           </v-chip>
         </v-btn>
         <v-spacer />
         <v-btn
-          variant="text"
-          @click="$emit('update:modelValue', false)"
           class="ml-2 px-4 py-2"
           size="large"
+          variant="text"
+          @click="$emit('update:modelValue', false)"
         >
-          <v-icon icon="mdi-close" size="22" class="mr-2" /> 
+          <v-icon class="mr-2" icon="mdi-close" size="22" />
           <span class="">Close</span>
           <v-chip
+            class="ml-3"
             pill="true"
             ripple="false"
             size="small"
             variant="tonal"
-            class="ml-3"
           >
             ESC
           </v-chip>
@@ -115,33 +121,32 @@
 </template>
 
 <script setup>
-import { toRefs } from 'vue'
-import { useHotkey } from 'vuetify'
+  import { toRefs } from 'vue'
+  import { useHotkey } from 'vuetify'
 
-const props = defineProps({
-  modelValue: Boolean,
-  bookmark: Object
-})
-const emit = defineEmits(['update:modelValue'])
-const { bookmark } = toRefs(props)
+  const props = defineProps({
+    modelValue: Boolean,
+    bookmark: Object,
+  })
+  const emit = defineEmits(['update:modelValue'])
+  const { bookmark } = toRefs(props)
 
-function openLinkAndClose() {
-  if (bookmark.value && bookmark.value.url) {
-    window.open(bookmark.value.url, '_blank')
-    emit('update:modelValue', false)
+  function openLinkAndClose () {
+    if (bookmark.value && bookmark.value.url) {
+      window.open(bookmark.value.url, '_blank')
+      emit('update:modelValue', false)
+    }
   }
-}
 
-// Hotkey L for "Open and close"
-useHotkey('l', openLinkAndClose, { inputs: false })
+  // Hotkey L for "Open and close"
+  useHotkey('l', openLinkAndClose, { inputs: false })
 
-function formatDate(dateString) {
-  const d = new Date(dateString)
-  const pad = n => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().substring(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+  function formatDate (dateString) {
+    const d = new Date(dateString)
+    const pad = n => String(n).padStart(2, '0')
+    return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
 </script>
-
 
 <style scoped>
 .rounded-2xl { border-radius: 1.4rem !important; }
