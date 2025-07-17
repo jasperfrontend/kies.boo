@@ -10,6 +10,7 @@ export function useBookmarkTableKeyboard (
   handleViewDetails,
 ) {
   const focusedRowIndex = ref(-1)
+  const rememberedFocusIndex = ref(-1)
 
   // Function to get the currently focused row element
   function getFocusedRowElement() {
@@ -23,6 +24,7 @@ export function useBookmarkTableKeyboard (
   function focusRow(index) {
     if (index >= 0 && index < bookmarks.value.length) {
       focusedRowIndex.value = index
+      rememberedFocusIndex.value = index // Remember this focus position
       
       // Use nextTick equivalent to ensure DOM is updated
       setTimeout(() => {
@@ -40,6 +42,21 @@ export function useBookmarkTableKeyboard (
         }
       }, 0)
     }
+  }
+
+  // Function to restore focus after dialogs close
+  function restoreFocus() {
+    if (rememberedFocusIndex.value >= 0 && rememberedFocusIndex.value < bookmarks.value.length) {
+      // Use a longer delay to ensure dialog has fully closed and DOM is updated
+      setTimeout(() => {
+        focusRow(rememberedFocusIndex.value)
+      }, 100)
+    }
+  }
+
+  // Function to clear remembered focus
+  function clearRememberedFocus() {
+    rememberedFocusIndex.value = -1
   }
 
   const handleKeydown = event => {
@@ -171,6 +188,8 @@ export function useBookmarkTableKeyboard (
     if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
       const item = bookmarks.value[focusedRowIndex.value]
       if (item) {
+        // Remember the focus before opening dialog
+        rememberedFocusIndex.value = focusedRowIndex.value
         handleEdit(item)
       }
     }
@@ -180,6 +199,8 @@ export function useBookmarkTableKeyboard (
     if (!hasOpenDialogs() && focusedRowIndex.value >= 0) {
       const item = bookmarks.value[focusedRowIndex.value]
       if (item) {
+        // Remember the focus before opening dialog
+        rememberedFocusIndex.value = focusedRowIndex.value
         handleViewDetails(item)
       }
     }
@@ -238,5 +259,8 @@ export function useBookmarkTableKeyboard (
   return {
     focusedRowIndex,
     focusRow,
+    restoreFocus,
+    clearRememberedFocus,
+    rememberedFocusIndex,
   }
 }

@@ -213,11 +213,19 @@
 
   function handleViewDetails () {
     actionsMenu.value = false
+    // Ensure this row remembers it was focused before opening dialog
+    if (isFocusedByKeyboard.value) {
+      emit('focus-changed', props.index, true)
+    }
     emit('view-details', props.item)
   }
 
   function handleEdit () {
     actionsMenu.value = false
+    // Ensure this row remembers it was focused before opening dialog
+    if (isFocusedByKeyboard.value) {
+      emit('focus-changed', props.index, true)
+    }
     emit('edit', props.item)
   }
 </script>

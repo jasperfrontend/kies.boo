@@ -28,6 +28,18 @@ export function useBookmarkTableDialogs (emit, loadBookmarks) {
     loadBookmarks()
   }
 
+  // Function to close details dialog
+  function closeDetailsDialog() {
+    detailsDialog.value = false
+    detailsBookmark.value = null
+  }
+
+  // Function to close edit dialog
+  function closeEditDialog() {
+    editDialog.value = false
+    editBookmark.value = null
+  }
+
   return {
     detailsDialog,
     editDialog,
@@ -37,5 +49,7 @@ export function useBookmarkTableDialogs (emit, loadBookmarks) {
     handleViewDetails,
     handleEdit,
     handleBookmarkUpdated,
+    closeDetailsDialog,
+    closeEditDialog,
   }
 }

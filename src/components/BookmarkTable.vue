@@ -275,7 +275,12 @@
   } = useBookmarkTableDialogs(emit, loadBookmarks)
 
   // Keyboard navigation - now with auto-scrolling support
-  const { focusedRowIndex, focusRow } = useBookmarkTableKeyboard(
+  const { 
+    focusedRowIndex, 
+    focusRow, 
+    restoreFocus, 
+    clearRememberedFocus 
+  } = useBookmarkTableKeyboard(
     displayBookmarks,
     toRef(props, 'selectedItems'),
     toggleItemSelection,
@@ -284,6 +289,39 @@
     handleEdit,
     handleViewDetails,
   )
+
+  // Watch for dialog state changes to restore focus when dialogs close
+  watch(dialogsOpen, (newDialogsOpen, oldDialogsOpen) => {
+    // Check if any dialog just closed (was true, now false)
+    const dialogJustClosed = Object.keys(newDialogsOpen).some(key => 
+      oldDialogsOpen?.[key] === true && newDialogsOpen[key] === false
+    )
+    
+    if (dialogJustClosed) {
+      // Dialog closed, restore focus after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        restoreFocus()
+      }, 150)
+    }
+  }, { deep: true })
+
+  // Watch for edit/details dialogs specifically for additional safety
+  watch([() => editDialog.value, () => detailsDialog.value], ([newEdit, newDetails], [oldEdit, oldDetails]) => {
+    // If either dialog just closed, restore focus
+    if ((oldEdit && !newEdit) || (oldDetails && !newDetails)) {
+      setTimeout(() => {
+        restoreFocus()
+      }, 150)
+    }
+  })
+
+  // Watch for bookmark data changes and clear remembered focus if bookmarks change significantly
+  watch(() => displayBookmarks.value.length, (newLength, oldLength) => {
+    // If the number of bookmarks changed significantly, clear remembered focus
+    if (oldLength !== undefined && Math.abs(newLength - oldLength) > 1) {
+      clearRememberedFocus()
+    }
+  })
 
   // Handle row focus changes from keyboard navigation
   function handleRowFocusChanged(index, isFocused) {
