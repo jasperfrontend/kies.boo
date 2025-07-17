@@ -57,13 +57,10 @@
       :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
       :items-per-page="localServerOptions.itemsPerPage"
       :page="localServerOptions.page"
-      v-model:options="localServerOptions"
       @update:options="handleOptionsUpdate"
-      class="elevation-1 bg-surface-darken position-relative"
       :style="{
         backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
       }"
-      @update:options="handleOptionsUpdate"
     >
       <!-- Select all checkbox in header -->
       <template #header.select="">
@@ -329,38 +326,26 @@
         return
       }
 
-      console.log(`📊 Keyboard navigation: Going to page ${pageNumber}`)
-      console.log(`📊 Current localServerOptions.page: ${localServerOptions.value.page}`)
-      console.log(`📊 Current localServerOptions:`, JSON.stringify(localServerOptions.value, null, 2))
-
       // Update the local server options directly
       const newOptions = {
         ...localServerOptions.value,
         page: pageNumber,
       }
 
-      console.log(`📊 New options to apply:`, JSON.stringify(newOptions, null, 2))
-
       // Apply the update
       localServerOptions.value = newOptions
 
-      console.log(`📊 Updated localServerOptions.page to: ${localServerOptions.value.page}`)
-
       // Try to force the table to recognize the change
       nextTick(() => {
-        console.log('📊 NextTick: Trying to force table update')
-        console.log('📊 Current localServerOptions after nextTick:', JSON.stringify(localServerOptions.value, null, 2))
 
         // Method 1: Try to trigger the table's update:options event manually
         if (dataTableRef.value) {
-          console.log('📊 Found table ref, trying to update manually')
           // This might trigger the table's internal update mechanism
           handleOptionsUpdate(localServerOptions.value)
         }
 
         // Method 2: Force a complete re-sync by triggering the watchers
         nextTick(() => {
-          console.log('📊 Second NextTick: Forcing complete re-sync')
           // Create a deep clone to ensure Vue detects the change
           const clonedOptions = JSON.parse(JSON.stringify(localServerOptions.value))
 
@@ -370,14 +355,12 @@
 
           nextTick(() => {
             isUpdatingFromComposable.value = false
-            console.log('📊 Re-sync complete')
           })
         })
       })
     },
     () => {
       const totalPages = Math.ceil(totalItems.value / localServerOptions.value.itemsPerPage)
-      console.log(`📊 Total pages: ${totalPages}`)
       return totalPages
     },
     () => {
