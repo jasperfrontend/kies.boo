@@ -16,6 +16,7 @@ declare module 'vue' {
     AppTips: typeof import('./src/components/AppTips.vue')['default']
     AppTopBar: typeof import('./src/components/AppTopBar.vue')['default']
     BackgroundSelectionDialog: typeof import('./src/components/BackgroundSelectionDialog.vue')['default']
+    BookmarkColorPicker: typeof import('./src/components/BookmarkColorPicker.vue')['default']
     BookmarkDeleteButton: typeof import('./src/components/BookmarkDeleteButton.vue')['default']
     BookmarkDetailsDialog: typeof import('./src/components/BookmarkDetailsDialog.vue')['default']
     BookmarkEditDialog: typeof import('./src/components/BookmarkEditDialog.vue')['default']

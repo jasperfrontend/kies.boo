@@ -48,6 +48,12 @@
         prepend-icon="mdi-tag"
       />
 
+      <!-- Color Selector Component -->
+      <BookmarkColorPicker
+        v-model="selectedColor"
+        :auto-detected-color="harvestedVibrantColor"
+      />
+
       <v-alert v-if="error" class="mt-4" type="error">
         {{ error }}
       </v-alert>
@@ -74,12 +80,24 @@
 </template>
 
 <script setup>
-  import { onMounted, onUnmounted, ref } from 'vue'
+  import { onMounted, onUnmounted, ref, watch } from 'vue'
+  import BookmarkColorPicker from '@/components/BookmarkColorPicker.vue'
   import supabase from '@/lib/supabaseClient'
 
   const clipboardNotice = ref(false)
   const previousUrl = ref('')
   const formRef = ref(null)
+
+  // Color selector state
+  const selectedColor = ref(null)
+  const harvestedVibrantColor = ref(null)
+
+  // Watch for harvested color changes
+  watch(harvestedVibrantColor, (newColor) => {
+    if (newColor && !selectedColor.value) {
+      selectedColor.value = newColor
+    }
+  })
 
   // Handle save action hotkey event
   function handleSaveAction (event) {
@@ -119,6 +137,8 @@
     form.value.url = previousUrl.value
     clipboardNotice.value = false
     harvestedData.value = null
+    harvestedVibrantColor.value = null
+    selectedColor.value = null
   }
 
   async function handleUrlBlur () {
@@ -193,6 +213,15 @@
           form.value.tags = keywords.join(', ')
         }
       }
+
+      // Set harvested vibrant color
+      if (data.vibrant_color_hex) {
+        harvestedVibrantColor.value = data.vibrant_color_hex
+        // Auto-select the harvested color if no color is currently selected
+        if (!selectedColor.value) {
+          selectedColor.value = data.vibrant_color_hex
+        }
+      }
     } catch (error_) {
       console.error('Failed to harvest metadata:', error_)
     } finally {
@@ -209,11 +238,24 @@
   }
 
   function getMetadata () {
-    if (!harvestedData.value) {
-      return null
+    const baseMetadata = {
+      selected_color: selectedColor.value || null,
+      selected_color_source: getSelectedColorSource(),
     }
 
-    // Create metadata object with average color info
+    if (!harvestedData.value) {
+      // If user selected a color but no harvested data, use selected color for avg and vibrant
+      if (selectedColor.value) {
+        const selectedColorRgb = hexToRgb(selectedColor.value)
+        if (selectedColorRgb) {
+          baseMetadata.avg_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+          baseMetadata.vibrant_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+        }
+      }
+      return baseMetadata
+    }
+
+    // Create metadata object with harvested data
     const metadata = {
       title: harvestedData.value.title || null,
       description: harvestedData.value.description || null,
@@ -223,6 +265,16 @@
       avg_color_hex: harvestedData.value.avg_color_hex || null,
       vibrant_color: harvestedData.value.vibrant_color || null,
       vibrant_color_hex: harvestedData.value.vibrant_color_hex || null,
+      ...baseMetadata,
+    }
+
+    // If user selected a color, override avg_color and vibrant_color with selected color RGB
+    if (selectedColor.value) {
+      const selectedColorRgb = hexToRgb(selectedColor.value)
+      if (selectedColorRgb) {
+        metadata.avg_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+        metadata.vibrant_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+      }
     }
 
     // Include any other metadata that might be useful
@@ -231,6 +283,36 @@
     }
 
     return metadata
+  }
+
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
+  }
+
+  function getSelectedColorSource() {
+    if (!selectedColor.value) return null
+    
+    if (selectedColor.value === harvestedVibrantColor.value) {
+      return 'auto-detected'
+    }
+    
+    // Check if it's a preset color (from the component's preset list)
+    const presetColors = [
+      '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3',
+      '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
+      '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B'
+    ]
+    
+    if (presetColors.includes(selectedColor.value)) {
+      return 'preset'
+    }
+    
+    return 'custom'
   }
 
   function normalizeUrl (url) {
@@ -327,14 +409,14 @@
         }
       }
 
-      // Step 2: Insert the bookmark with metadata
+      // Step 2: Insert the bookmark with metadata (including selected color)
       const { data: insertData, error: insertError } = await supabase
         .from('bookmarks')
         .insert([{
           title: form.value.title,
           url: normalizedUrl,
           favicon: faviconUrl,
-          metadata: metadata, // Add the metadata including avg_color
+          metadata: metadata, // Add the metadata including selected color
           user_id: user.value.id,
         }])
         .select()
@@ -366,6 +448,8 @@
       form.value = { title: '', url: '', tags: '' }
       clipboardNotice.value = false
       harvestedData.value = null
+      harvestedVibrantColor.value = null
+      selectedColor.value = null
       emit('bookmark-added')
     } catch (error_) {
       console.error('Error in onSubmit:', error_)

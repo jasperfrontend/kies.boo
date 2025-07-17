@@ -34,21 +34,56 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
     }, ERROR_DISPLAY_TIMEOUT)
   }
 
+  function isInFormInput() {
+    const activeElement = document.activeElement
+    if (!activeElement) return false
+
+    // Check if focused on any input element
+    const inputTags = ['INPUT', 'TEXTAREA', 'SELECT']
+    if (inputTags.includes(activeElement.tagName)) {
+      return true
+    }
+
+    // Check for contenteditable elements
+    if (activeElement.contentEditable === 'true') {
+      return true
+    }
+
+    // Check for Vuetify input components (they often use nested input elements)
+    if (activeElement.closest('.v-field__input') || 
+        activeElement.closest('.v-text-field') ||
+        activeElement.closest('.v-textarea') ||
+        activeElement.closest('.v-select') ||
+        activeElement.closest('.v-autocomplete') ||
+        activeElement.closest('.v-combobox') ||
+        activeElement.closest('.v-color-picker') ||
+        activeElement.closest('[role="textbox"]') ||
+        activeElement.closest('[role="combobox"]') ||
+        activeElement.closest('[role="searchbox"]')) {
+      return true
+    }
+
+    // Check if we're in a dialog with form inputs
+    const dialog = activeElement.closest('.v-dialog')
+    if (dialog) {
+      // If we're in a dialog and there are any input fields, be more cautious
+      const hasInputs = dialog.querySelector('input, textarea, select, [contenteditable="true"], .v-field__input')
+      if (hasInputs) {
+        return true
+      }
+    }
+
+    return false
+  }
+
   function handleNumberInput (digit) {
     // Don't handle if any dialogs are open
     if (isDialogOpen && isDialogOpen()) {
       return
     }
 
-    // Don't handle if focused on an input element
-    const activeElement = document.activeElement
-    if (activeElement && (
-      activeElement.tagName === 'INPUT'
-      || activeElement.tagName === 'TEXTAREA'
-      || activeElement.contentEditable === 'true'
-      || activeElement.closest('.v-field__input')
-      || activeElement.closest('.v-text-field')
-    )) {
+    // Don't handle if focused on any form input
+    if (isInFormInput()) {
       return
     }
 
@@ -85,6 +120,11 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
   function handleKeydown (event) {
     // Only handle single digit keys 1-9 (not numpad)
     if (event.key >= '1' && event.key <= '9' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+      // Additional check: don't interfere with form inputs
+      if (isInFormInput()) {
+        return // Let the input handle the number normally
+      }
+
       event.preventDefault()
       handleNumberInput(event.key)
     }

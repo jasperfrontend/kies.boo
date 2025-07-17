@@ -30,6 +30,12 @@
             prepend-icon="mdi-tag"
           />
 
+          <!-- Color Selector Component -->
+          <BookmarkColorPicker
+            v-model="selectedColor"
+            :auto-detected-color="autoDetectedColor"
+          />
+
           <v-alert v-if="error" class="mt-4" type="error">
             {{ error }}
           </v-alert>
@@ -63,8 +69,9 @@
 </template>
 
 <script setup>
-  import { onMounted, onUnmounted, ref, watch } from 'vue'
+  import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
   import { useHotkey } from 'vuetify'
+  import BookmarkColorPicker from '@/components/BookmarkColorPicker.vue'
   import supabase from '@/lib/supabaseClient'
 
   const props = defineProps({
@@ -84,6 +91,12 @@
   const loading = ref(false)
   const error = ref('')
   const formRef = ref(null)
+  const selectedColor = ref(null)
+
+  // Get auto-detected color from bookmark metadata
+  const autoDetectedColor = computed(() => {
+    return props.bookmark?.metadata?.vibrant_color_hex || null
+  })
 
   useHotkey('esc', () => {
     handleCancel()
@@ -109,6 +122,9 @@
         url: newBookmark.url,
         tags: formatTags(newBookmark.tags),
       }
+      
+      // Set the selected color from metadata
+      selectedColor.value = newBookmark.metadata?.selected_color || null
       error.value = ''
     }
   }, { immediate: true })
@@ -145,6 +161,36 @@
     }
   }
 
+  function getSelectedColorSource() {
+    if (!selectedColor.value) return null
+    
+    if (selectedColor.value === autoDetectedColor.value) {
+      return 'auto-detected'
+    }
+    
+    // Check if it's a preset color (from the component's preset list)
+    const presetColors = [
+      '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3',
+      '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
+      '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B'
+    ]
+    
+    if (presetColors.includes(selectedColor.value)) {
+      return 'preset'
+    }
+    
+    return 'custom'
+  }
+
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
+  }
+
   async function handleSave () {
     error.value = ''
 
@@ -176,12 +222,29 @@
       // Parse tags from comma-separated string
       const tagsArray = form.value.tags.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag.length > 0)
 
-      // Step 1: Update the bookmark itself
+      // Step 1: Update the bookmark itself (including metadata with selected color)
+      const existingMetadata = props.bookmark.metadata || {}
+      const updatedMetadata = {
+        ...existingMetadata,
+        selected_color: selectedColor.value || null,
+        selected_color_source: getSelectedColorSource(),
+      }
+
+      // If user selected a color, override avg_color and vibrant_color with selected color RGB
+      if (selectedColor.value) {
+        const selectedColorRgb = hexToRgb(selectedColor.value)
+        if (selectedColorRgb) {
+          updatedMetadata.avg_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+          updatedMetadata.vibrant_color = [selectedColorRgb.r, selectedColorRgb.g, selectedColorRgb.b]
+        }
+      }
+
       const { error: bookmarkUpdateError } = await supabase
         .from('bookmarks')
         .update({
           title: form.value.title.trim(),
           url: normalizedUrl,
+          metadata: updatedMetadata,
         })
         .eq('id', form.value.id)
 
