@@ -17,7 +17,7 @@
         density="compact"
         style="position: fixed; top: 80px; right: 20px; z-index: 1000; min-width: 200px;"
         type="info"
-        variant="tonal"
+        variant="elevated"
       >
         <div class="d-flex align-center justify-center">
           <v-icon class="mr-2" icon="mdi-keyboard" size="16" />
