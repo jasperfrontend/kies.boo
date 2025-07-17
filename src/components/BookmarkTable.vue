@@ -53,11 +53,13 @@
       :headers="BOOKMARK_TABLE_HEADERS"
       :items="displayBookmarks"
       :items-length="totalItems"
-      :items-per-page="userItemsPerPage"
-      :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
       :loading="loading"
-      :mobile-breakpoint="600"
-      show-current-page
+      :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
+      :items-per-page="localServerOptions.itemsPerPage"
+      :page="localServerOptions.page"
+      v-model:options="localServerOptions"
+      @update:options="handleOptionsUpdate"
+      class="elevation-1 bg-surface-darken position-relative"
       :style="{
         backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
       }"
