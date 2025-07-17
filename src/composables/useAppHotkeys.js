@@ -57,8 +57,7 @@ export function useAppHotkeys(router, appStore) {
 
     // Ctrl+A - Select all in bookmark table
     useHotkey('ctrl+a', (e) => {
-      // Only trigger if we're on a page with a bookmark table
-      const isBookmarkPage = ['/', '/search', '/tag'].some(path => 
+      const isBookmarkPage = ['/'].some(path => 
         router.currentRoute.value.path.startsWith(path)
       )
       
