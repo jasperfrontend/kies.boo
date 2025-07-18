@@ -30,6 +30,7 @@ declare module 'vue' {
     KeyboardShortcutsDialog: typeof import('./src/components/KeyboardShortcutsDialog.vue')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     MdiDiscord: typeof import('./src/components/icons/MdiDiscord.vue')['default']
+    MobileFAB: typeof import('./src/components/MobileFAB.vue')['default']
     NotificationComponent: typeof import('./src/components/NotificationComponent.vue')['default']
     PageNavigationIndicator: typeof import('./src/components/PageNavigationIndicator.vue')['default']
     RecentBookmarks: typeof import('./src/components/RecentBookmarks.vue')['default']

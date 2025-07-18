@@ -1,100 +1,55 @@
 <template>
-  <v-app-bar app color="surface" elevation="1" height="64">
+  <!-- Hide entire app bar on mobile -->
+  <v-app-bar v-if="!mobile" app color="surface" elevation="1" height="64">
     <v-container class="d-flex align-center pa-0 px-4" fluid>
-      <!-- MOBILE NAV -->
-      <template v-if="mobile">
-        <!-- Hamburger menu -->
-        <v-menu
-          v-model="mobileNavOpen"
-          location="bottom start"
-          offset="8"
+      <!-- DESKTOP NAV ONLY (mobile handled by FAB) -->
+      <div class="d-flex align-center">
+        <v-btn
+          class="mr-4 text-body-1"
+          :class="[$route.path === '/' ? 'text-primary' : '']"
+          to="/"
+          variant="text"
         >
-          <template #activator="{ props }">
-            <v-btn icon v-bind="props" class="mr-1">
-              <v-icon icon="mdi-menu" />
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item to="/" @click="mobileNavOpen = false">
-              <v-list-item-title>Bookmarks</v-list-item-title>
-            </v-list-item>
-            <v-list-item to="/tags" @click="mobileNavOpen = false">
-              <v-list-item-title>Tags</v-list-item-title>
-            </v-list-item>
-            <v-list-item to="/paths" @click="mobileNavOpen = false">
-              <v-list-item-title>Paths</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-
-        <!-- Zoek (vergrootglas) knop die dialog opent -->
-        <v-btn icon @click="showMobileSearch = true">
-          <v-icon icon="mdi-magnify" />
+          Bookmarks
+          <v-tooltip activator="parent" location="bottom">G then B</v-tooltip>
         </v-btn>
-        <!-- Zoek dialog -->
-        <v-dialog v-model="showMobileSearch" width="95%">
-          <v-card class="pa-2">
-            <SearchBookmarks />
-          </v-card>
-        </v-dialog>
-      </template>
-
-      <!-- DESKTOP NAV -->
-      <template v-else>
-        <div class="d-flex align-center">
-          <v-btn
-            class="mr-4 text-body-1"
-            :class="[$route.path === '/' ? 'text-primary' : '']"
-            to="/"
-            variant="text"
-          >
-            Bookmarks
-            <v-tooltip activator="parent" location="bottom">G then B</v-tooltip>
-          </v-btn>
-          <v-btn
-            class="mr-4 text-body-1"
-            :class="[$route.path === '/tags' ? 'text-primary' : '']"
-            to="/tags"
-            variant="text"
-          >
-            Tags
-            <v-tooltip activator="parent" location="bottom">G then T</v-tooltip>
-          </v-btn>
-          <v-btn
-            class="text-body-1"
-            :class="[$route.path === '/paths' ? 'text-primary' : '']"
-            to="/paths"
-            variant="text"
-          >
-            Paths
-            <v-tooltip activator="parent" location="bottom">G then P</v-tooltip>
-          </v-btn>
-        </div>
-        <v-spacer />
-        <div class="search-container mx-8" style="width: 30%;">
-          <SearchBookmarks />
-        </div>
-      </template>
+        <v-btn
+          class="mr-4 text-body-1"
+          :class="[$route.path === '/tags' ? 'text-primary' : '']"
+          to="/tags"
+          variant="text"
+        >
+          Tags
+          <v-tooltip activator="parent" location="bottom">G then T</v-tooltip>
+        </v-btn>
+        <v-btn
+          class="text-body-1"
+          :class="[$route.path === '/paths' ? 'text-primary' : '']"
+          to="/paths"
+          variant="text"
+        >
+          Paths
+          <v-tooltip activator="parent" location="bottom">G then P</v-tooltip>
+        </v-btn>
+      </div>
+      <v-spacer />
+      <div class="search-container mx-8" style="width: 30%;">
+        <SearchBookmarks />
+      </div>
 
       <v-spacer />
 
-      <!-- Add bookmark (mobile: icon, desktop: label) -->
+      <!-- Add bookmark (desktop only) -->
       <v-btn
         color="primary-darken-1"
         variant="elevated"
         @click="appStore.openAddBookmarkDialog()"
       >
-        <template v-if="mobile">
-          <v-icon icon="mdi-plus" />
-          <v-tooltip activator="parent" location="bottom">Ctrl+i</v-tooltip>
-        </template>
-        <template v-else>
-          New bookmark
-          <v-tooltip activator="parent" location="bottom">Ctrl+i</v-tooltip>
-        </template>
+        New bookmark
+        <v-tooltip activator="parent" location="bottom">Ctrl+i</v-tooltip>
       </v-btn>
 
-      <!-- Profile menu, altijd zichtbaar -->
+      <!-- Profile menu -->
       <v-menu
         v-model="profileMenu"
         :close-on-content-click="false"
@@ -374,6 +329,8 @@
       @bookmark-added="onBookmarkAdded"
     />
 
+
+
     <NotificationComponent
       :message="notification.message"
       position="bottom-right"
@@ -389,6 +346,7 @@
   import { useTheme, useDisplay } from 'vuetify'
   import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue'
   import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
+  import MobileFAB from '@/components/MobileFAB.vue'
   import NotificationComponent from '@/components/NotificationComponent.vue'
   import SearchBookmarks from '@/components/SearchBookmarks.vue'
   import { useUserPreferences } from '@/composables/useUserPreferences'
@@ -429,7 +387,6 @@
   const selectedTheme = ref('system')
   const showBackgroundDialog = ref(false)
   const mobileNavOpen = ref(false)
-  const showMobileSearch = ref(false)
 
   const memberSince = computed(() => {
     if (!user.value?.created_at) return 'Unknown'
@@ -574,7 +531,6 @@
   }
 
   onMounted(() => {
-    
     console.log("is mobile?", mobile.value)
 
     loadUserData()

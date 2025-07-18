@@ -4,6 +4,9 @@
 
     <!-- Global Keyboard Shortcuts Dialog -->
     <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
+
+    <!-- Mobile FAB Component - positioned relative to entire viewport -->
+    <MobileFAB v-if="isAuthenticated" @open-profile-menu="handleOpenProfileMenu" />
   </v-app>
 </template>
 
@@ -12,6 +15,7 @@
   import { useRouter } from 'vue-router'
   import KeyboardShortcutsDialog from './components/KeyboardShortcutsDialog.vue'
   import Login from './components/Login.vue'
+  import MobileFAB from './components/MobileFAB.vue'
   import { useAppHotkeys, useGlobalHotkeys } from './composables/useAppHotkeys'
   import supabase from './lib/supabaseClient'
   import { useAppStore } from './stores/app'
@@ -23,6 +27,12 @@
   // Initialize hotkeys system
   const { showShortcutsDialog } = useGlobalHotkeys()
   const { setupHotkeys } = useAppHotkeys(router, appStore)
+
+  // Handle profile menu opening from FAB
+  function handleOpenProfileMenu() {
+    // Emit a custom event that AppTopBar can listen for
+    document.dispatchEvent(new CustomEvent('open-profile-menu'))
+  }
 
   onMounted(async () => {
     // Clean up URL after OAuth redirect
