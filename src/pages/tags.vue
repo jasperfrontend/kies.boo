@@ -1,9 +1,9 @@
 <template>
   <div>
-    <v-card class="pa-6 mb-6 bg-transparent" flat>
+    <v-card class="pa-2 pa-lg-6 mb-6 bg-transparent" flat>
       <v-card-title class="text-h4 mb-4 d-flex align-center">
         <v-icon class="mr-3" icon="mdi-tag-multiple" />
-        Your saved tags
+        Tags
         <v-spacer />
         <v-chip
           color="primary"

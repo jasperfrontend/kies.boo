@@ -165,6 +165,27 @@ export const keyboardShortcuts = [
       },
     ],
   },
+  {
+    category: 'Search Hacks',
+    shortcuts: [
+      {
+        key: '/gb',
+        description: 'Search for /gb to go to your Bookmarks page',
+      },
+      {
+        key: '/gt',
+        description: 'Search for /gt to go to your Tags page',
+      },
+      {
+        key: '/gp',
+        description: 'Search for /gp to go to your Saved Paths page',
+      },
+      {
+        key: '/gu',
+        description: 'Search for /gu to go to your User Profile page',
+      },
+    ],
+  },
 ]
 
 export default keyboardShortcuts
