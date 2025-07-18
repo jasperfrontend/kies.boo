@@ -1,5 +1,5 @@
-<script setup>
-  import { onMounted, onUnmounted, ref, watch } from 'vue'
+// Handle escape key<script setup>
+  import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
   import { useRouter } from 'vue-router'
   import { useHotkey, useDisplay } from 'vuetify'
   import commandPaletteService from '@/lib/commandPaletteService'
@@ -11,24 +11,37 @@
   const showCommandSuggestions = ref(false)
   const commandSuggestions = ref([])
   const isMenuOpen = ref(false)
+  const isMouseDown = ref(false)
+  const focusTimeoutId = ref(null)
+  const blurTimeoutId = ref(null)
 
   // Handle search submission
   async function handleSearch() {
-    if (!searchQuery.value.trim()) return
+    console.log('🚀 HANDLE SEARCH CALLED')
+    console.log('  - Search query:', searchQuery.value)
+    
+    if (!searchQuery.value.trim()) {
+      console.log('  - Empty query, returning')
+      return
+    }
 
     // Check if it's a command
     if (commandPaletteService.isCommand(searchQuery.value)) {
+      console.log('  - Is a command, executing...')
       const executed = await commandPaletteService.executeCommand(searchQuery.value, router)
       if (executed) {
+        console.log('  - Command executed successfully, clearing search')
         // Command executed successfully, clear search and blur
         handleBlurSearch()
         return
       }
+      console.log('  - Command failed, falling through to normal search')
       // Command failed, fall through to normal search
     }
 
     // Normal search behavior
     if (searchQuery.value.trim()) {
+      console.log('  - Performing normal search, navigating to:', `/search/${encodeURIComponent(searchQuery.value.trim())}`)
       router.push(`/search/${encodeURIComponent(searchQuery.value.trim())}`)
       handleBlurSearch()
     }
@@ -40,39 +53,132 @@
   }
 
   function handleBlurSearch() {
+    console.log('🚫 HANDLE BLUR SEARCH CALLED')
+    console.log('  - Clearing search query and hiding menu')
+    
+    // Clear any pending timeouts
+    if (focusTimeoutId.value) {
+      clearTimeout(focusTimeoutId.value)
+      focusTimeoutId.value = null
+    }
+    if (blurTimeoutId.value) {
+      clearTimeout(blurTimeoutId.value)
+      blurTimeoutId.value = null
+    }
+    
     searchQuery.value = ''
     searchInputRef.value?.blur()
     showCommandSuggestions.value = false
     isMenuOpen.value = false
+    console.log('  - Final state: showCommandSuggestions =', showCommandSuggestions.value)
   }
 
   // Watch for command input to filter suggestions
-  watch(searchQuery, (newValue) => {
+  watch(searchQuery, (newValue, oldValue) => {
+    console.log('🔍 SEARCH QUERY CHANGED')
+    console.log('  - Old value:', oldValue)
+    console.log('  - New value:', newValue)
+    
     if (commandPaletteService.isCommand(newValue)) {
       const commandPart = newValue.slice(1) // Remove prefix
+      console.log('  - Is command, filtering for:', commandPart)
       commandSuggestions.value = commandPaletteService.getCommandSuggestions(commandPart)
     } else {
+      console.log('  - Not a command, showing all commands')
       // Show all commands when not typing a command
       commandSuggestions.value = commandPaletteService.getAllCommands()
     }
+    console.log('  - Updated suggestions count:', commandSuggestions.value.length)
   })
 
-  // Handle input focus - show all commands
-  function handleFocus() {
-    console.log('Search input focused')
-    commandSuggestions.value = commandPaletteService.getAllCommands()
-    showCommandSuggestions.value = true
-    isMenuOpen.value = true
+  // Handle mouse events to prevent blur during click
+  function handleMouseDown() {
+    console.log('🖱️ MOUSE DOWN EVENT')
+    isMouseDown.value = true
+    
+    // Clear any pending blur timeout
+    if (blurTimeoutId.value) {
+      console.log('  - Clearing existing blur timeout')
+      clearTimeout(blurTimeoutId.value)
+      blurTimeoutId.value = null
+    }
   }
 
-  // Handle input blur - hide suggestions with delay
-  function handleBlur() {
-    console.log('Search input blurred')
-    // Longer delay to allow click on suggestions
-    setTimeout(() => {
-      if (!isMenuOpen.value) {
-        showCommandSuggestions.value = false
+  function handleMouseUp() {
+    console.log('🖱️ MOUSE UP EVENT')
+    isMouseDown.value = false
+  }
+
+  // Handle input focus - show all commands
+  function handleFocus(event) {
+    console.log('🎯 FOCUS EVENT TRIGGERED')
+    console.log('  - Event type:', event.type)
+    console.log('  - Target:', event.target)
+    console.log('  - Related target:', event.relatedTarget)
+    console.log('  - Current showCommandSuggestions:', showCommandSuggestions.value)
+    console.log('  - Current isMenuOpen:', isMenuOpen.value)
+    console.log('  - Mouse is down:', isMouseDown.value)
+    
+    // Clear any pending focus timeout
+    if (focusTimeoutId.value) {
+      clearTimeout(focusTimeoutId.value)
+      focusTimeoutId.value = null
+    }
+    
+    commandSuggestions.value = commandPaletteService.getAllCommands()
+    console.log('  - Command suggestions loaded:', commandSuggestions.value.length)
+    
+    // Show menu immediately, don't wait for timeout
+    console.log('  - Setting showCommandSuggestions to true immediately')
+    showCommandSuggestions.value = true
+    console.log('  - showCommandSuggestions is now:', showCommandSuggestions.value)
+  }
+
+  // Handle input blur - hide suggestions with proper delay
+  function handleBlur(event) {
+    console.log('❌ BLUR EVENT TRIGGERED')
+    console.log('  - Event type:', event.type)
+    console.log('  - Target:', event.target)
+    console.log('  - Related target:', event.relatedTarget)
+    console.log('  - Current showCommandSuggestions:', showCommandSuggestions.value)
+    console.log('  - Current isMenuOpen:', isMenuOpen.value)
+    console.log('  - Mouse is down:', isMouseDown.value)
+    
+    // If mouse is down, ignore this blur event (it's from clicking)
+    if (isMouseDown.value) {
+      console.log('  - BLUR IGNORED: Mouse is currently down')
+      return
+    }
+    
+    // Clear any pending focus timeout
+    if (focusTimeoutId.value) {
+      console.log('  - Clearing pending focus timeout')
+      clearTimeout(focusTimeoutId.value)
+      focusTimeoutId.value = null
+    }
+    
+    // Don't hide if the blur is caused by clicking on the menu or its contents
+    const relatedTarget = event.relatedTarget
+    if (relatedTarget) {
+      console.log('  - Related target element:', relatedTarget)
+      console.log('  - Closest .v-menu:', relatedTarget.closest('.v-menu'))
+      console.log('  - Closest .v-overlay:', relatedTarget.closest('.v-overlay'))
+      console.log('  - Closest [role="menu"]:', relatedTarget.closest('[role="menu"]'))
+      
+      if (relatedTarget.closest('.v-menu') || 
+          relatedTarget.closest('.v-overlay') ||
+          relatedTarget.closest('[role="menu"]')) {
+        console.log('  - BLUR IGNORED: Click was on menu element')
+        return
       }
+    }
+    
+    console.log('  - Setting timeout to hide menu in 200ms')
+    // Shorter delay but more reliable hiding
+    blurTimeoutId.value = setTimeout(() => {
+      console.log('  - TIMEOUT EXECUTED: Hiding menu unconditionally')
+      showCommandSuggestions.value = false
+      isMenuOpen.value = false
     }, 200)
   }
 
@@ -94,7 +200,22 @@
     }
   }
 
-  // Handle escape key
+  // Add window blur handler to hide menu when switching tabs
+  function handleWindowBlur() {
+    console.log('🪟 WINDOW BLUR - hiding command palette')
+    showCommandSuggestions.value = false
+    isMenuOpen.value = false
+    
+    // Clear any pending timeouts
+    if (focusTimeoutId.value) {
+      clearTimeout(focusTimeoutId.value)
+      focusTimeoutId.value = null
+    }
+    if (blurTimeoutId.value) {
+      clearTimeout(blurTimeoutId.value)
+      blurTimeoutId.value = null
+    }
+  }
   useHotkey('esc', () => {
     handleBlurSearch()
   }, {
@@ -108,10 +229,22 @@
     
     // Listen for focus search hotkey event
     document.addEventListener('focus-search', handleFocusSearch)
+    
+    // Listen for window blur to hide menu when switching tabs
+    window.addEventListener('blur', handleWindowBlur)
   })
 
   onUnmounted(() => {
     document.removeEventListener('focus-search', handleFocusSearch)
+    window.removeEventListener('blur', handleWindowBlur)
+    
+    // Clean up any pending timeouts
+    if (focusTimeoutId.value) {
+      clearTimeout(focusTimeoutId.value)
+    }
+    if (blurTimeoutId.value) {
+      clearTimeout(blurTimeoutId.value)
+    }
   })
 </script>
 
@@ -130,6 +263,8 @@
       variant="outlined"
       @focus="handleFocus"
       @blur="handleBlur"
+      @mousedown="handleMouseDown"
+      @mouseup="handleMouseUp"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     >
@@ -153,6 +288,8 @@
       variant="outlined"
       @focus="handleFocus"
       @blur="handleBlur"
+      @mousedown="handleMouseDown"
+      @mouseup="handleMouseUp"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     />
@@ -163,12 +300,14 @@
       :activator="searchInputRef"
       location="bottom start"
       :close-on-content-click="false"
+      :close-on-back="false"
       max-width="400"
       offset="4"
       :persistent="true"
+      :no-click-animation="true"
       @update:model-value="handleMenuUpdate"
     >
-      <v-card>
+      <v-card @mousedown.stop @click.stop>
         <v-card-title class="pa-3 pb-1">
           <v-icon class="mr-2" icon="mdi-flash" size="16" />
           Commands
@@ -178,8 +317,8 @@
             v-for="command in commandSuggestions.slice(0, 8)"
             :key="command.key"
             class="px-3"
-            @click="selectCommandSuggestion(command)"
-            @mousedown.prevent
+            @click.stop="selectCommandSuggestion(command)"
+            @mousedown.stop.prevent
           >
             <template #prepend>
               <v-chip
