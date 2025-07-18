@@ -121,6 +121,36 @@ export const keyboardShortcuts = [
     ],
   },
   {
+    category: 'Mobile Gestures',
+    shortcuts: [
+      {
+        key: 'Swipe ←',
+        description: 'Go to previous page (mobile)',
+        action: 'swipePrevPage',
+      },
+      {
+        key: 'Swipe →',
+        description: 'Go to next page (mobile)',
+        action: 'swipeNextPage',
+      },
+      {
+        key: 'Tap Card',
+        description: 'Open bookmark in new tab (mobile)',
+        action: 'openBookmark',
+      },
+      {
+        key: 'Tap Checkbox',
+        description: 'Select bookmark for bulk actions (mobile)',
+        action: 'selectBookmark',
+      },
+      {
+        key: 'FAB Menu',
+        description: 'Access all main actions (mobile)',
+        action: 'openFAB',
+      },
+    ],
+  },
+  {
     category: 'Help',
     shortcuts: [
       {
