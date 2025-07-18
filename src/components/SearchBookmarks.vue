@@ -44,14 +44,17 @@
     showCommandSuggestions.value = false
   }
 
-  // Watch for command input to show suggestions
+  // Watch for command input to show suggestions - FIXED VERSION
   watch(searchQuery, (newValue) => {
+    // Only show suggestions if the input starts with /
     if (commandPaletteService.isCommand(newValue)) {
       const commandPart = newValue.slice(1) // Remove prefix
       commandSuggestions.value = commandPaletteService.getCommandSuggestions(commandPart)
       showCommandSuggestions.value = commandSuggestions.value.length > 0
     } else {
+      // Hide suggestions if not a command
       showCommandSuggestions.value = false
+      commandSuggestions.value = []
     }
   })
 
