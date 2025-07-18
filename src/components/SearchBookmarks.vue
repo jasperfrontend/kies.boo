@@ -1,11 +1,12 @@
 <script setup>
   import { onMounted, onUnmounted, ref } from 'vue'
   import { useRouter } from 'vue-router'
-  import { useHotkey } from 'vuetify'
+  import { useHotkey, useDisplay } from 'vuetify'
 
   const router = useRouter()
   const searchInputRef = ref(null)
   const searchQuery = ref('')
+  const mobile = useDisplay()
 
   // Handle search submission
   function handleSearch () {
@@ -43,12 +44,13 @@
 </script>
 
 <template>
-  <v-text-field
+  <v-text-field v-if="mobile === true"
     ref="searchInputRef"
     v-model="searchQuery"
     clearable
     density="compact"
     hide-details
+    :autofocus
     label="Find bookmarks"
     prepend-inner-icon="mdi-magnify"
     variant="outlined"
@@ -60,6 +62,18 @@
     >
       F to focus here, Enter to search
     </v-tooltip>
+  </v-text-field>
+  <v-text-field v-else
+    ref="searchInputRef"
+    v-model="searchQuery"
+    clearable
+    density="compact"
+    hide-details
+    label="Find bookmarks"
+    prepend-inner-icon="mdi-magnify"
+    variant="outlined"
+    @keydown.enter="handleSearch"
+  >
   </v-text-field>
 
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <v-card class="pa-6" max-width="500" outlined>
+  <v-card class="pa-0 pa-lg-6" max-width="500" outlined>
     <v-card-title>Add Bookmark</v-card-title>
 
     <v-form ref="formRef" @submit.prevent="onSubmit">
