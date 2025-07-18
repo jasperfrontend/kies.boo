@@ -14,18 +14,39 @@
       :error-message="errorMessage"
     />
 
-    <!-- MOBILE VIEW: Card Layout -->
+    <!-- View Toggle for Desktop (positioned above the content) -->
+    <div v-if="!mobile" class="d-flex justify-end mb-4">
+      <v-btn-toggle
+        v-model="currentViewMode"
+        class="view-toggle"
+        density="compact"
+        divided
+        variant="outlined"
+        @update:model-value="handleViewModeChange"
+      >
+        <v-btn value="table" size="small">
+          <v-icon icon="mdi-table" class="mr-1" size="16" />
+          Table
+        </v-btn>
+        <v-btn value="card" size="small">
+          <v-icon icon="mdi-view-grid" class="mr-1" size="16" />
+          Cards
+        </v-btn>
+      </v-btn-toggle>
+    </div>
+
+    <!-- CARD VIEW: Mobile (always) or Desktop (when selected) -->
     <div 
-      v-if="mobile" 
+      v-if="mobile || currentViewMode === 'card'" 
       v-touch="{
         left: () => swipeToNextPage(),
         right: () => swipeToPrevPage()
       }"
-      class="mobile-bookmark-view"
+      class="bookmark-card-view"
     >
-      <!-- Mobile Header with Select All -->
+      <!-- Card Header with Select All -->
       <v-card 
-        class="mb-4 mobile-surface-card" 
+        class="mb-4 surface-card" 
         variant="outlined"
         :style="{
           backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
@@ -52,12 +73,12 @@
         </v-card-text>
       </v-card>
 
-      <!-- Mobile Bookmark Cards -->
-      <div v-if="!loading && displayBookmarks.length > 0" class="mobile-cards-container">
+      <!-- Bookmark Cards -->
+      <div v-if="!loading && displayBookmarks.length > 0" class="cards-container">
         <v-card
           v-for="(item, index) in displayBookmarks"
           :key="item.id"
-          class="mobile-bookmark-card mobile-surface-card mb-3"
+          class="bookmark-card surface-card mb-3"
           :class="{ 'selected': selectedItems.includes(item.id) }"
           variant="outlined"
           :style="{
@@ -79,10 +100,10 @@
               </v-avatar>
               
               <div class="flex-grow-1 min-width-0">
-                <div class="mobile-bookmark-title text-body-1 font-weight-medium mb-1">
+                <div class="bookmark-title text-body-1 font-weight-medium mb-1">
                   {{ item.title }}
                 </div>
-                <div class="mobile-bookmark-url text-caption text-medium-emphasis mb-2">
+                <div class="bookmark-url text-caption text-medium-emphasis mb-2">
                   {{ displayUrl(item.url) }}
                 </div>
               </div>
@@ -184,22 +205,22 @@
         </v-card>
       </div>
 
-      <!-- Mobile Loading State -->
+      <!-- Card View Loading State -->
       <div v-else-if="loading" class="text-center py-8">
         <v-progress-circular color="primary" indeterminate size="64" />
         <div class="mt-4 text-body-2">Loading bookmarks...</div>
       </div>
 
-      <!-- Mobile No Data -->
+      <!-- Card View No Data -->
       <div v-else class="text-center py-8">
         <v-icon class="mb-3" color="grey-darken-1" icon="mdi-bookmark-outline" size="64" />
         <div class="text-h6 text-grey-darken-1 mb-2">{{ getNoDataMessage() }}</div>
       </div>
 
-      <!-- Mobile Pagination -->
+      <!-- Card View Pagination -->
       <v-card 
         v-if="Math.ceil(totalItems / localServerOptions.itemsPerPage) > 1" 
-        class="mt-4 mobile-surface-card" 
+        class="mt-4 surface-card" 
         variant="outlined"
         :style="{
           backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
@@ -239,7 +260,7 @@
         </v-card-text>
       </v-card>
 
-      <!-- Domain Collapse Indicators (Mobile) -->
+      <!-- Domain Collapse Indicators (Card View) -->
       <BookmarkTableCollapseIndicators
         v-if="collapsedDomainsWithCounts.length > 0"
         class="mt-4"
@@ -248,7 +269,7 @@
         @expand-domain="handleExpandDomain"
       />
 
-      <!-- Swipe Feedback (Mobile) -->
+      <!-- Swipe Feedback (Card View) -->
       <v-snackbar
         v-model="swipeFeedback"
         color="info"
@@ -262,9 +283,9 @@
       </v-snackbar>
     </div>
 
-    <!-- DESKTOP VIEW: Original Table -->
+    <!-- TABLE VIEW: Desktop only when selected -->
     <v-data-table-server
-      v-else
+      v-else-if="!mobile && currentViewMode === 'table'"
       :key="tableKey"
       ref="dataTableRef"
       v-model:options="localServerOptions"
@@ -395,6 +416,33 @@
   const { mobile } = useDisplay()
   const { domainCollapsing, itemsPerPage: userItemsPerPage } = useUserPreferences()
 
+  // View mode state - mobile always uses card, desktop can choose
+  const currentViewMode = ref(mobile.value ? 'card' : 'table')
+
+  // Handle view mode changes (desktop only)
+  function handleViewModeChange(newMode) {
+    if (!mobile.value) {
+      currentViewMode.value = newMode
+      // You could save this preference to localStorage or user preferences
+      localStorage.setItem('bookmark-view-mode', newMode)
+    }
+  }
+
+  // Load saved view mode preference on mount (desktop only)
+  if (!mobile.value) {
+    const savedViewMode = localStorage.getItem('bookmark-view-mode')
+    if (savedViewMode && ['table', 'card'].includes(savedViewMode)) {
+      currentViewMode.value = savedViewMode
+    }
+  }
+
+  // Watch for mobile changes and force card view
+  watch(() => mobile.value, (isMobile) => {
+    if (isMobile) {
+      currentViewMode.value = 'card'
+    }
+  })
+
   // Create reactive refs from props
   const reactiveSearchType = toRef(props, 'searchType')
   const reactiveSearchTerm = toRef(props, 'searchTerm')
@@ -524,7 +572,7 @@
     handleBookmarkUpdated,
   } = useBookmarkTableDialogs(emit, loadBookmarks)
 
-  // Keyboard navigation - only for desktop
+  // Keyboard navigation - only for desktop table view
   const { 
     focusedRowIndex, 
     focusRow, 
@@ -540,9 +588,9 @@
     handleViewDetails,
   )
 
-  // Watch for dialog state changes to restore focus when dialogs close (desktop only)
+  // Watch for dialog state changes to restore focus when dialogs close (table view only)
   watch(dialogsOpen, (newDialogsOpen, oldDialogsOpen) => {
-    if (mobile.value) return // Skip on mobile
+    if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
     
     // Check if any dialog just closed (was true, now false)
     const dialogJustClosed = Object.keys(newDialogsOpen).some(key => 
@@ -557,9 +605,9 @@
     }
   }, { deep: true })
 
-  // Watch for edit/details dialogs specifically for additional safety (desktop only)
+  // Watch for edit/details dialogs specifically for additional safety (table view only)
   watch([() => editDialog.value, () => detailsDialog.value], ([newEdit, newDetails], [oldEdit, oldDetails]) => {
-    if (mobile.value) return // Skip on mobile
+    if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
     
     // If either dialog just closed, restore focus
     if ((oldEdit && !newEdit) || (oldDetails && !newDetails)) {
@@ -569,9 +617,9 @@
     }
   })
 
-  // Watch for bookmark data changes and clear remembered focus if bookmarks change significantly (desktop only)
+  // Watch for bookmark data changes and clear remembered focus if bookmarks change significantly (table view only)
   watch(() => displayBookmarks.value.length, (newLength, oldLength) => {
-    if (mobile.value) return // Skip on mobile
+    if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
     
     // If the number of bookmarks changed significantly, clear remembered focus
     if (oldLength !== undefined && Math.abs(newLength - oldLength) > 1) {
@@ -579,9 +627,9 @@
     }
   })
 
-  // Handle row focus changes from keyboard navigation (desktop only)
+  // Handle row focus changes from keyboard navigation (table view only)
   function handleRowFocusChanged(index, isFocused) {
-    if (mobile.value) return // Skip on mobile
+    if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
     
     if (isFocused) {
       focusedRowIndex.value = index
@@ -590,11 +638,11 @@
     }
   }
 
-  // Numeric pagination - now updates localServerOptions directly (desktop only)
+  // Numeric pagination - now updates localServerOptions directly
   const { numberBuffer, errorMessage } = useNumericPagination(
     pageNumber => {
-      // Don't allow keyboard navigation until user preferences are stable or on mobile
-      if (!userPreferencesStable.value || mobile.value) {
+      // Don't allow keyboard navigation until user preferences are stable
+      if (!userPreferencesStable.value) {
         return
       }
 
@@ -655,7 +703,7 @@
     }
   }, { immediate: false })
 
-  // Mobile-specific methods
+  // Card view specific methods (shared between mobile and desktop card view)
   function displayUrl (url) {
     const cleanedUrl = url
       .replace(/^https?:\/\/(www\.)?/, '')
@@ -689,7 +737,7 @@
     window.open(url, '_blank')
   }
 
-  // Swipe navigation for mobile
+  // Swipe navigation for card view (mobile and desktop)
   function swipeToNextPage() {
     const currentPage = localServerOptions.value.page
     const totalPages = Math.ceil(totalItems.value / localServerOptions.value.itemsPerPage)
@@ -758,43 +806,49 @@
 </script>
 
 <style scoped>
-/* Mobile-specific styles */
-.mobile-bookmark-view {
+/* View Toggle Styling */
+.view-toggle {
+  position: relative;
+  z-index: 2;
+}
+
+/* Card View Styles (shared between mobile and desktop) */
+.bookmark-card-view {
   padding: 0;
 }
 
-.mobile-cards-container {
+.cards-container {
   padding: 0;
 }
 
-.mobile-bookmark-card {
+.bookmark-card {
   position: relative;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
-.mobile-bookmark-card:hover {
+.bookmark-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.mobile-bookmark-card.selected {
+.bookmark-card.selected {
   border-color: rgb(var(--v-theme-primary));
   background-color: rgba(var(--v-theme-primary), 0.1) !important;
 }
 
-.mobile-surface-card {
+.surface-card {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
-.mobile-bookmark-title {
+.bookmark-title {
   line-height: 1.3;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
 
-.mobile-bookmark-url {
+.bookmark-url {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   word-break: break-all;
   line-height: 1.2;
@@ -813,13 +867,26 @@
   min-width: 0;
 }
 
-/* Ensure proper spacing on mobile */
-@media (max-width: 600px) {
-  .mobile-bookmark-card {
+/* Desktop card view adjustments */
+@media (min-width: 960px) {
+  .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+  
+  .bookmark-card {
+    margin-bottom: 0;
+  }
+}
+
+/* Mobile card view (original styles) */
+@media (max-width: 959px) {
+  .bookmark-card {
     margin-bottom: 12px;
   }
   
-  .mobile-bookmark-card .v-card-text {
+  .bookmark-card .v-card-text {
     padding: 12px !important;
   }
 }
