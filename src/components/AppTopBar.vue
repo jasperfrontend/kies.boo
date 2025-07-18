@@ -531,7 +531,6 @@
   }
 
   onMounted(() => {
-    console.log("is mobile?", mobile.value)
 
     loadUserData()
     initializeTheme()
