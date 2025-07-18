@@ -15,7 +15,14 @@
     />
 
     <!-- MOBILE VIEW: Card Layout -->
-    <div v-if="mobile" class="mobile-bookmark-view">
+    <div 
+      v-if="mobile" 
+      v-touch="{
+        left: () => swipeToNextPage(),
+        right: () => swipeToPrevPage()
+      }"
+      class="mobile-bookmark-view"
+    >
       <!-- Mobile Header with Select All -->
       <v-card 
         class="mb-4 mobile-surface-card" 
@@ -240,6 +247,19 @@
         :expanding-domain="expandingDomain"
         @expand-domain="handleExpandDomain"
       />
+
+      <!-- Swipe Feedback (Mobile) -->
+      <v-snackbar
+        v-model="swipeFeedback"
+        color="info"
+        location="bottom"
+        :timeout="1000"
+      >
+        <div class="d-flex align-center">
+          <v-icon class="mr-2" icon="mdi-gesture-swipe-horizontal" />
+          {{ swipeFeedback }}
+        </div>
+      </v-snackbar>
     </div>
 
     <!-- DESKTOP VIEW: Original Table -->
@@ -667,6 +687,48 @@
 
   function openBookmark(url) {
     window.open(url, '_blank')
+  }
+
+  // Swipe navigation for mobile
+  function swipeToNextPage() {
+    const currentPage = localServerOptions.value.page
+    const totalPages = Math.ceil(totalItems.value / localServerOptions.value.itemsPerPage)
+    
+    if (currentPage < totalPages) {
+      changePage(currentPage + 1)
+      
+      // Optional: Show feedback that swipe worked
+      showSwipeFeedback('Next page')
+    }
+  }
+
+  function swipeToPrevPage() {
+    const currentPage = localServerOptions.value.page
+    
+    if (currentPage > 1) {
+      changePage(currentPage - 1)
+      
+      // Optional: Show feedback that swipe worked
+      showSwipeFeedback('Previous page')
+    }
+  }
+
+  // Optional: Visual feedback for swipe actions
+  const swipeFeedback = ref('')
+  const swipeFeedbackTimeout = ref(null)
+
+  function showSwipeFeedback(message) {
+    swipeFeedback.value = message
+    
+    // Clear any existing timeout
+    if (swipeFeedbackTimeout.value) {
+      clearTimeout(swipeFeedbackTimeout.value)
+    }
+    
+    // Hide feedback after 1 second
+    swipeFeedbackTimeout.value = setTimeout(() => {
+      swipeFeedback.value = ''
+    }, 1000)
   }
 
   // Event handlers
