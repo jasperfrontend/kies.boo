@@ -15,7 +15,7 @@
             clearable
             density="comfortable"
             hide-details
-            label="Search your bookmarks..."
+            label="Search bookmarks or use /commands"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
             @keydown.enter="handleSearch"
@@ -33,7 +33,7 @@
           
           <div class="d-flex justify-space-between align-center mt-3">
             <div class="text-caption text-medium-emphasis">
-              Press Enter to search, Esc to close
+              Enter to search, or try /gb, /gt, /gp commands
             </div>
             <v-btn
               color="primary"
@@ -143,6 +143,7 @@
   import { useDisplay } from 'vuetify'
   import { useRouter } from 'vue-router'
   import { useAppStore } from '@/stores/app'
+  import commandPaletteService from '@/lib/commandPaletteService'
 
   const { mobile } = useDisplay()
   const router = useRouter()
@@ -190,7 +191,21 @@
     searchQuery.value = ''
   }
 
-  function handleSearch() {
+  async function handleSearch() {
+    if (!searchQuery.value.trim()) return
+
+    // Check if it's a command
+    if (commandPaletteService.isCommand(searchQuery.value)) {
+      const executed = await commandPaletteService.executeCommand(searchQuery.value, router)
+      if (executed) {
+        // Command executed successfully, close search
+        closeSearch()
+        return
+      }
+      // Command failed, fall through to normal search
+    }
+
+    // Normal search behavior
     if (searchQuery.value.trim()) {
       router.push(`/search/${encodeURIComponent(searchQuery.value.trim())}`)
       closeSearch()
