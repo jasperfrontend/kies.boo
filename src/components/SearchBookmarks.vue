@@ -44,19 +44,30 @@
     showCommandSuggestions.value = false
   }
 
-  // Watch for command input to show suggestions - FIXED VERSION
+  // Watch for command input to filter suggestions
   watch(searchQuery, (newValue) => {
-    // Only show suggestions if the input starts with /
     if (commandPaletteService.isCommand(newValue)) {
       const commandPart = newValue.slice(1) // Remove prefix
       commandSuggestions.value = commandPaletteService.getCommandSuggestions(commandPart)
-      showCommandSuggestions.value = commandSuggestions.value.length > 0
     } else {
-      // Hide suggestions if not a command
-      showCommandSuggestions.value = false
-      commandSuggestions.value = []
+      // Show all commands when not typing a command
+      commandSuggestions.value = commandPaletteService.getAllCommands()
     }
   })
+
+  // Handle input focus - show all commands
+  function handleFocus() {
+    commandSuggestions.value = commandPaletteService.getAllCommands()
+    showCommandSuggestions.value = true
+  }
+
+  // Handle input blur - hide suggestions
+  function handleBlur() {
+    // Small delay to allow click on suggestions
+    setTimeout(() => {
+      showCommandSuggestions.value = false
+    }, 150)
+  }
 
   // Handle command suggestion selection
   function selectCommandSuggestion(command) {
@@ -99,6 +110,8 @@
       label="Find bookmarks or use /commands"
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
+      @focus="handleFocus"
+      @blur="handleBlur"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     >
@@ -120,6 +133,8 @@
       label="Find bookmarks or use /commands"
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
+      @focus="handleFocus"
+      @blur="handleBlur"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     />
