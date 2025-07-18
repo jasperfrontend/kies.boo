@@ -82,6 +82,12 @@ class CommandPaletteService {
         }
         break
 
+      case 'view_mode':
+        if (actionTarget.mode) {
+          this.handleViewModeChange(actionTarget.mode)
+        }
+        break
+
       case 'global_action':
         // Future: Handle global actions like opening dialogs
         console.log('Global action:', actionTarget.action)
@@ -98,10 +104,32 @@ class CommandPaletteService {
   }
 
   /**
+   * Handle view mode changes (desktop only)
+   */
+  handleViewModeChange(mode) {
+    // Check if we're on mobile (simple check)
+    const isMobile = window.innerWidth < 960
+    
+    if (isMobile) {
+      console.log('View mode commands are not available on mobile')
+      return
+    }
+
+    // Dispatch a custom event that BookmarkTable can listen for
+    document.dispatchEvent(new CustomEvent('change-view-mode', {
+      detail: { mode }
+    }))
+
+    // Also save to localStorage directly for immediate effect
+    localStorage.setItem('bookmark-view-mode', mode)
+  }
+
+  /**
    * Load system default commands
    */
   async loadSystemDefaults() {
     const systemCommands = [
+      // Navigation commands
       {
         command_key: 'gb',
         action_type: 'navigation',
@@ -125,6 +153,19 @@ class CommandPaletteService {
         action_type: 'navigation',
         action_target: { route: '/profile' },
         description: 'Go to Profile page'
+      },
+      // View mode commands
+      {
+        command_key: 'table',
+        action_type: 'view_mode',
+        action_target: { mode: 'table' },
+        description: 'Switch to table view (desktop only)'
+      },
+      {
+        command_key: 'cards',
+        action_type: 'view_mode',
+        action_target: { mode: 'card' },
+        description: 'Switch to cards view'
       }
     ]
 

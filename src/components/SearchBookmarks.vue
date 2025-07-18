@@ -10,6 +10,7 @@
   const mobile = useDisplay()
   const showCommandSuggestions = ref(false)
   const commandSuggestions = ref([])
+  const isMenuOpen = ref(false)
 
   // Handle search submission
   async function handleSearch() {
@@ -42,6 +43,7 @@
     searchQuery.value = ''
     searchInputRef.value?.blur()
     showCommandSuggestions.value = false
+    isMenuOpen.value = false
   }
 
   // Watch for command input to filter suggestions
@@ -57,23 +59,39 @@
 
   // Handle input focus - show all commands
   function handleFocus() {
+    console.log('Search input focused')
     commandSuggestions.value = commandPaletteService.getAllCommands()
     showCommandSuggestions.value = true
+    isMenuOpen.value = true
   }
 
-  // Handle input blur - hide suggestions
+  // Handle input blur - hide suggestions with delay
   function handleBlur() {
-    // Small delay to allow click on suggestions
+    console.log('Search input blurred')
+    // Longer delay to allow click on suggestions
     setTimeout(() => {
-      showCommandSuggestions.value = false
-    }, 150)
+      if (!isMenuOpen.value) {
+        showCommandSuggestions.value = false
+      }
+    }, 200)
   }
 
   // Handle command suggestion selection
   function selectCommandSuggestion(command) {
+    console.log('Command suggestion selected:', command.key)
     searchQuery.value = `/${command.key}`
     showCommandSuggestions.value = false
+    isMenuOpen.value = false
     handleSearch()
+  }
+
+  // Handle menu state changes
+  function handleMenuUpdate(isOpen) {
+    console.log('Menu state changed:', isOpen)
+    isMenuOpen.value = isOpen
+    if (!isOpen) {
+      showCommandSuggestions.value = false
+    }
   }
 
   // Handle escape key
@@ -147,6 +165,8 @@
       :close-on-content-click="false"
       max-width="400"
       offset="4"
+      :persistent="true"
+      @update:model-value="handleMenuUpdate"
     >
       <v-card>
         <v-card-title class="pa-3 pb-1">
@@ -155,10 +175,11 @@
         </v-card-title>
         <v-list density="compact">
           <v-list-item
-            v-for="command in commandSuggestions.slice(0, 6)"
+            v-for="command in commandSuggestions.slice(0, 8)"
             :key="command.key"
             class="px-3"
             @click="selectCommandSuggestion(command)"
+            @mousedown.prevent
           >
             <template #prepend>
               <v-chip

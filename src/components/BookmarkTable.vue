@@ -376,7 +376,7 @@
 </template>
 
 <script setup>
-  import { computed, nextTick, ref, toRef, watch } from 'vue'
+  import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
   import { useRouter } from 'vue-router'
   import { useDisplay } from 'vuetify'
   import AppTips from '@/components/AppTips.vue'
@@ -442,6 +442,16 @@
       currentViewMode.value = 'card'
     }
   })
+
+  // Listen for view mode change events from command palette
+  function handleViewModeCommand(event) {
+    const { mode } = event.detail
+    if (!mobile.value && ['table', 'card'].includes(mode)) {
+      currentViewMode.value = mode
+      // Also update localStorage
+      localStorage.setItem('bookmark-view-mode', mode)
+    }
+  }
 
   // Create reactive refs from props
   const reactiveSearchType = toRef(props, 'searchType')
@@ -702,6 +712,17 @@
       page: 1,
     }
   }, { immediate: false })
+
+  // Mount and unmount handlers
+  onMounted(() => {
+    // Listen for view mode change events from command palette
+    document.addEventListener('change-view-mode', handleViewModeCommand)
+  })
+
+  onUnmounted(() => {
+    // Clean up event listener
+    document.removeEventListener('change-view-mode', handleViewModeCommand)
+  })
 
   // Card view specific methods (shared between mobile and desktop card view)
   function displayUrl (url) {
