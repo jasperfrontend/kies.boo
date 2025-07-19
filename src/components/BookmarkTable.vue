@@ -60,11 +60,9 @@
                 hide-details
                 :indeterminate="isIndeterminate"
                 :model-value="isAllSelected"
+                :label="selectedItems.length > 0 ? selectedItems.length + ' selected' : ' Select all'"
                 @update:model-value="toggleSelectAll"
               />
-              <span class="ml-2 text-body-2">
-                {{ selectedItems.length > 0 ? `${selectedItems.length} selected` : 'Select all' }}
-              </span>
             </div>
             <div class="text-caption text-medium-emphasis">
               {{ displayBookmarks.length }} of {{ totalItems }} bookmarks
@@ -78,7 +76,7 @@
         <v-card
           v-for="(item, index) in displayBookmarks"
           :key="item.id"
-          class="bookmark-card surface-card mb-3"
+          class="bookmark-card surface-card mb-0"
           :class="{ 'selected': selectedItems.includes(item.id) }"
           variant="outlined"
           :style="{
@@ -89,21 +87,54 @@
           <v-card-text class="pa-3">
             <!-- Header Row: Favicon, Title, Checkbox -->
             <div class="d-flex align-start mb-2">
-              <v-avatar class="mr-3 mt-1" rounded="0" size="24">
-                <img
-                  alt="favicon"
-                  height="24"
-                  :src="item.favicon"
-                  width="24"
-                  @error="e => e.target.src = '/favicon.png'"
-                >
-              </v-avatar>
+              <v-menu location="bottom start" offset="8">
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    icon
+                    size="small"
+                    :title="`Actions for ${item.title}`"
+                    variant="text"
+                    @click.stop
+                  >
+                    <v-icon icon="mdi-dots-vertical" size="16" />
+                  </v-btn>
+                </template>
+
+                <v-list density="compact" min-width="160">
+                  <v-list-item
+                    :prepend-avatar="item.favicon"
+                    @click="openBookmark(item.url)"
+                  >
+                    <v-list-item-title class="ml-2">
+                      Open Link
+                    </v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    prepend-icon="mdi-eye"
+                    title="View Details"
+                    @click="handleViewDetails(item)"
+                  />
+                  <v-list-item
+                    prepend-icon="mdi-note-edit"
+                    title="Edit Bookmark"
+                    @click="handleEdit(item)"
+                  />
+                  <v-divider />
+                  <v-list-item
+                    class="text-error"
+                    prepend-icon="mdi-delete"
+                    title="Delete"
+                    @click="handleSingleDelete(item)"
+                  />
+                </v-list>
+              </v-menu>
               
-              <div class="flex-grow-1 min-width-0">
-                <div class="bookmark-title text-body-1 font-weight-medium mb-1">
+              <div class="flex-grow-1 min-width-0 pl-3">
+                <div class="bookmark-title text-caption font-weight-medium mb-1">
                   {{ item.title }}
                 </div>
-                <div class="bookmark-url text-caption text-medium-emphasis mb-2">
+                <div class="bookmark-url text-caption text-medium-emphasis mb-1">
                   {{ displayUrl(item.url) }}
                 </div>
               </div>
@@ -118,77 +149,38 @@
             </div>
 
             <!-- Tags Row -->
-            <div v-if="item.tags && item.tags.length > 0" class="mb-2">
-              <v-chip
-                v-for="tag in item.tags.slice(0, 3)"
-                :key="tag"
-                class="mr-1 mb-1"
-                color="primary"
-                density="compact"
-                size="x-small"
-                variant="tonal"
-                @click.stop="handleSearchTag(tag)"
-              >
-                {{ tag }}
-              </v-chip>
-              <v-chip
-                v-if="item.tags.length > 3"
-                class="mr-1 mb-1"
-                density="compact"
-                size="x-small"
-                variant="outlined"
-              >
-                +{{ item.tags.length - 3 }}
-              </v-chip>
-            </div>
-
-            <!-- Action Row -->
-            <div class="d-flex align-center justify-space-between">
+            <div class="d-flex justify-space-between align-center">
+              <div v-if="item.tags && item.tags.length > 0" class="mb-0">
+                <v-chip
+                  v-for="tag in item.tags.slice(0, 3)"
+                  :key="tag"
+                  class="mr-1 mb-1"
+                  color="text-surface-variant"
+                  density="compact"
+                  size="x-small"
+                  @click.stop="handleSearchTag(tag)"
+                >
+                  {{ tag }}
+                </v-chip>
+                <v-chip
+                  v-if="item.tags.length > 3"
+                  class="mr-1 mb-1"
+                  density="compact"
+                  size="x-small"
+                  variant="outlined"
+                >
+                  +{{ item.tags.length - 3 }}
+                </v-chip>
+              </div>
               <div class="text-caption text-medium-emphasis">
                 {{ formatDate(item.created_at) }}
               </div>
-              
+            </div>
+            <!-- Action Row -->
+            <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
                 <!-- Actions Menu -->
-                <v-menu location="bottom end" offset="8">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      icon
-                      size="small"
-                      :title="`Actions for ${item.title}`"
-                      variant="text"
-                      @click.stop
-                    >
-                      <v-icon icon="mdi-dots-vertical" size="16" />
-                    </v-btn>
-                  </template>
 
-                  <v-list density="compact" min-width="160">
-                    <v-list-item
-                      prepend-icon="mdi-open-in-new"
-                      title="Open Link"
-                      @click="openBookmark(item.url)"
-                    />
-                    <v-list-item
-                      prepend-icon="mdi-eye"
-                      title="View Details"
-                      @click="handleViewDetails(item)"
-                    />
-                    <v-list-item
-                      prepend-icon="mdi-note-edit"
-                      title="Edit Bookmark"
-                      @click="handleEdit(item)"
-                    />
-                    <v-divider />
-                    <v-list-item
-                      class="text-error"
-                      prepend-icon="mdi-delete"
-                      title="Delete"
-                      @click="handleSingleDelete(item)"
-                    />
-                  </v-list>
-                </v-menu>
               </div>
             </div>
           </v-card-text>
@@ -199,7 +191,7 @@
             class="color-accent-bar"
             :style="{ 
               backgroundColor: `rgb(${item.metadata.vibrant_color.join(',')})`,
-              opacity: selectedItems.includes(item.id) ? 0.8 : 0.3
+              opacity: selectedItems.includes(item.id) ? 1 : 0.5
             }"
           />
         </v-card>
@@ -893,7 +885,7 @@
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 16px;
+    gap: 8px;
   }
   
   .bookmark-card {

@@ -124,9 +124,9 @@
             <!-- Visual Color Picker -->
             <v-color-picker
               v-model="customColor"
-              hide-inputs
               mode="hex"
-              :show-swatches="false"
+              :modes="['hex']"
+              show-swatches
               width="280"
             />
             

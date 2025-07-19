@@ -14,6 +14,7 @@
   const isMouseDown = ref(false)
   const focusTimeoutId = ref(null)
   const blurTimeoutId = ref(null)
+  const clickInProgress = ref(false)
 
   // Handle search submission
   async function handleSearch() {
@@ -95,6 +96,7 @@
   function handleMouseDown() {
     console.log('🖱️ MOUSE DOWN EVENT')
     isMouseDown.value = true
+    clickInProgress.value = true
     
     // Clear any pending blur timeout
     if (blurTimeoutId.value) {
@@ -107,6 +109,29 @@
   function handleMouseUp() {
     console.log('🖱️ MOUSE UP EVENT')
     isMouseDown.value = false
+    
+    // Keep click in progress for a bit longer to prevent immediate blur
+    setTimeout(() => {
+      clickInProgress.value = false
+      console.log('  - Click sequence completed')
+    }, 100)
+  }
+
+  // Handle actual click event (this fires after focus/blur)
+  function handleClick(event) {
+    console.log('👆 CLICK EVENT TRIGGERED')
+    console.log('  - Current showCommandSuggestions:', showCommandSuggestions.value)
+    
+    // If menu is already showing, don't interfere
+    if (showCommandSuggestions.value) {
+      console.log('  - Menu already showing, ignoring click')
+      return
+    }
+    
+    // Force show the menu on click
+    commandSuggestions.value = commandPaletteService.getAllCommands()
+    showCommandSuggestions.value = true
+    console.log('  - Forced menu to show via click handler')
   }
 
   // Handle input focus - show all commands
@@ -143,10 +168,11 @@
     console.log('  - Current showCommandSuggestions:', showCommandSuggestions.value)
     console.log('  - Current isMenuOpen:', isMenuOpen.value)
     console.log('  - Mouse is down:', isMouseDown.value)
+    console.log('  - Click in progress:', clickInProgress.value)
     
-    // If mouse is down, ignore this blur event (it's from clicking)
-    if (isMouseDown.value) {
-      console.log('  - BLUR IGNORED: Mouse is currently down')
+    // If mouse is down or click is in progress, ignore this blur event
+    if (isMouseDown.value || clickInProgress.value) {
+      console.log('  - BLUR IGNORED: Mouse/click activity detected')
       return
     }
     
@@ -265,6 +291,7 @@
       @blur="handleBlur"
       @mousedown="handleMouseDown"
       @mouseup="handleMouseUp"
+      @click="handleClick"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     >
@@ -290,6 +317,7 @@
       @blur="handleBlur"
       @mousedown="handleMouseDown"
       @mouseup="handleMouseUp"
+      @click="handleClick"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     />
