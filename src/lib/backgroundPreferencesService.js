@@ -104,6 +104,7 @@ class BackgroundPreferencesService {
       }
 
       let result
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (fetchError && fetchError.code === 'PGRST116') {
         // No existing preferences, create new record
         result = await supabase
@@ -158,6 +159,7 @@ class BackgroundPreferencesService {
       }
 
       let result
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (fetchError && fetchError.code === 'PGRST116') {
         // No existing preferences, create new record
         result = await supabase

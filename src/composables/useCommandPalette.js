@@ -3,10 +3,10 @@ import { onMounted, onUnmounted } from 'vue'
 import commandPaletteService from '@/lib/commandPaletteService'
 import supabase from '@/lib/supabaseClient'
 
-export function useCommandPalette() {
+export function useCommandPalette () {
   let authListener = null
 
-  async function initializeCommandPalette() {
+  async function initializeCommandPalette () {
     try {
       await commandPaletteService.initialize()
     } catch (error) {
@@ -14,7 +14,7 @@ export function useCommandPalette() {
     }
   }
 
-  function handleAuthChange(event, session) {
+  function handleAuthChange (event, session) {
     if (session?.user) {
       // User logged in, initialize command palette
       initializeCommandPalette()
@@ -45,6 +45,6 @@ export function useCommandPalette() {
 
   return {
     commandPaletteService,
-    initializeCommandPalette
+    initializeCommandPalette,
   }
 }

@@ -66,7 +66,6 @@
 
   // Saved searches functionality
   const {
-    isCurrentPathSaved,
     buttonText,
     buttonDisabled,
     saving,
@@ -96,7 +95,7 @@
     showNotification('success', 'Bookmark updated successfully!')
   }
 
-  function onBookmarkDeleted (bookmarkIds) {
+  function onBookmarkDeleted () {
     // Clear selected items
     selectedItems.value = []
   }

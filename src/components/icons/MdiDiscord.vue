@@ -6,22 +6,22 @@
   defineProps({
     width: {
       type: [String, Number],
-      required: true,
+      required: false,
       default: '1em',
     },
     height: {
       type: [String, Number],
-      required: true,
+      required: false,
       default: '1em',
     },
     viewBox: {
       type: [String, Number],
-      required: true,
+      required: false,
       default: '0 0 24 24',
     },
     fillColor: {
       type: [String, null],
-      required: true,
+      required: false,
       default: 'currentColor',
     },
   })

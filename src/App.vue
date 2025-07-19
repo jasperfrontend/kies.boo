@@ -28,12 +28,12 @@
   // Initialize hotkeys system
   const { showShortcutsDialog } = useGlobalHotkeys()
   const { setupHotkeys } = useAppHotkeys(router, appStore)
-  
+
   // Initialize command palette system
   useCommandPalette()
 
   // Handle profile menu opening from FAB
-  function handleOpenProfileMenu() {
+  function handleOpenProfileMenu () {
     // Emit a custom event that AppTopBar can listen for
     document.dispatchEvent(new CustomEvent('open-profile-menu'))
   }

@@ -1,5 +1,5 @@
 // src/composables/useUserPreferences.js
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import supabase from '@/lib/supabaseClient'
 
 // Global reactive state - shared across all component instances
@@ -82,6 +82,7 @@ export function useUserPreferences () {
       }
 
       let result
+      // eslint-disable-next-line unicorn/prefer-ternary
       if (fetchError && fetchError.code === 'PGRST116') {
         // No existing preferences, create new record
         result = await supabase

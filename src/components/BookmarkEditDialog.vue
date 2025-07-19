@@ -122,7 +122,7 @@
         url: newBookmark.url,
         tags: formatTags(newBookmark.tags),
       }
-      
+
       // Set the selected color from metadata
       selectedColor.value = newBookmark.metadata?.selected_color || null
       error.value = ''
@@ -161,34 +161,36 @@
     }
   }
 
-  function getSelectedColorSource() {
+  function getSelectedColorSource () {
     if (!selectedColor.value) return null
-    
+
     if (selectedColor.value === autoDetectedColor.value) {
       return 'auto-detected'
     }
-    
+
     // Check if it's a preset color (from the component's preset list)
     const presetColors = [
       '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3',
       '#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
-      '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B'
+      '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B',
     ]
-    
+
     if (presetColors.includes(selectedColor.value)) {
       return 'preset'
     }
-    
+
     return 'custom'
   }
 
-  function hexToRgb(hex) {
+  function hexToRgb (hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null
+    return result
+      ? {
+        r: Number.parseInt(result[1], 16),
+        g: Number.parseInt(result[2], 16),
+        b: Number.parseInt(result[3], 16),
+      }
+      : null
   }
 
   async function handleSave () {

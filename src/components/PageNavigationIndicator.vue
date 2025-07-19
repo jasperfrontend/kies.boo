@@ -9,10 +9,10 @@
       variant="elevated"
     >
       <div class="d-flex align-center justify-center">
-        <v-icon 
-          class="mr-2" 
-          :icon="isError ? 'mdi-alert-circle' : 'mdi-keyboard'" 
-          size="16" 
+        <v-icon
+          class="mr-2"
+          :icon="isError ? 'mdi-alert-circle' : 'mdi-keyboard'"
+          size="16"
         />
         <span v-if="isError">{{ errorMessage }}</span>
         <span v-else>Going to page: <strong>{{ numberBuffer }}</strong></span>
@@ -29,18 +29,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+  import { computed } from 'vue'
 
-const props = defineProps({
-  numberBuffer: {
-    type: String,
-    default: '',
-  },
-  errorMessage: {
-    type: String,
-    default: '',
-  },
-})
+  const props = defineProps({
+    numberBuffer: {
+      type: String,
+      default: '',
+    },
+    errorMessage: {
+      type: String,
+      default: '',
+    },
+  })
 
-const isError = computed(() => !!props.errorMessage)
+  const isError = computed(() => !!props.errorMessage)
 </script>

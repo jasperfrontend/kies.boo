@@ -351,7 +351,6 @@
           unsplashUrl: 'https://unsplash.com',
         },
       }
-      console.log('BackgroundSelectionDialog.vue:339 - backgroundData', backgroundData)
 
       const success = await backgroundPreferencesService.saveBackgroundPreference(backgroundData)
       if (success) {

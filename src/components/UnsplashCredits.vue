@@ -40,7 +40,7 @@
   }
 
   // Watch for changes in userPreferences to update attribution reactively
-  watch(() => userPreferences.value?.background, newBackground => {
+  watch(() => userPreferences.value?.background, () => {
     updateAttribution()
   }, { deep: true })
 

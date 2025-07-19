@@ -29,13 +29,13 @@ export function useBookmarkTableDialogs (emit, loadBookmarks) {
   }
 
   // Function to close details dialog
-  function closeDetailsDialog() {
+  function closeDetailsDialog () {
     detailsDialog.value = false
     detailsBookmark.value = null
   }
 
   // Function to close edit dialog
-  function closeEditDialog() {
+  function closeEditDialog () {
     editDialog.value = false
     editBookmark.value = null
   }

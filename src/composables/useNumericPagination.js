@@ -28,15 +28,17 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
   function showError (message) {
     clearErrorMessage()
     errorMessage.value = message
-    
+
     errorTimeout.value = setTimeout(() => {
       clearErrorMessage()
     }, ERROR_DISPLAY_TIMEOUT)
   }
 
-  function isInFormInput() {
+  function isInFormInput () {
     const activeElement = document.activeElement
-    if (!activeElement) return false
+    if (!activeElement) {
+      return false
+    }
 
     // Check if focused on any input element
     const inputTags = ['INPUT', 'TEXTAREA', 'SELECT']
@@ -50,16 +52,16 @@ export function useNumericPagination (updatePage, getTotalPages, isDialogOpen) {
     }
 
     // Check for Vuetify input components (they often use nested input elements)
-    if (activeElement.closest('.v-field__input') || 
-        activeElement.closest('.v-text-field') ||
-        activeElement.closest('.v-textarea') ||
-        activeElement.closest('.v-select') ||
-        activeElement.closest('.v-autocomplete') ||
-        activeElement.closest('.v-combobox') ||
-        activeElement.closest('.v-color-picker') ||
-        activeElement.closest('[role="textbox"]') ||
-        activeElement.closest('[role="combobox"]') ||
-        activeElement.closest('[role="searchbox"]')) {
+    if (activeElement.closest('.v-field__input')
+      || activeElement.closest('.v-text-field')
+      || activeElement.closest('.v-textarea')
+      || activeElement.closest('.v-select')
+      || activeElement.closest('.v-autocomplete')
+      || activeElement.closest('.v-combobox')
+      || activeElement.closest('.v-color-picker')
+      || activeElement.closest('[role="textbox"]')
+      || activeElement.closest('[role="combobox"]')
+      || activeElement.closest('[role="searchbox"]')) {
       return true
     }
 

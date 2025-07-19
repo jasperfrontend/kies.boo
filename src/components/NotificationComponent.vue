@@ -49,14 +49,14 @@
   }
 
   // Compute position classes
-  const positionClasses = {
-    'top-left': 'top-0 left-0',
-    'top-right': 'top-0 right-0',
-    'top-center': 'top-0 left-1/2 transform -translate-x-1/2',
-    'bottom-left': 'bottom-0 left-0',
-    'bottom-right': 'bottom-0 right-0',
-    'bottom-center': 'bottom-0 left-1/2 transform -translate-x-1/2',
-  }
+  // const positionClasses = {
+  //   'top-left': 'top-0 left-0',
+  //   'top-right': 'top-0 right-0',
+  //   'top-center': 'top-0 left-1/2 transform -translate-x-1/2',
+  //   'bottom-left': 'bottom-0 left-0',
+  //   'bottom-right': 'bottom-0 right-0',
+  //   'bottom-center': 'bottom-0 left-1/2 transform -translate-x-1/2',
+  // }
 
   // Compute color based on type
   const colorMap = {

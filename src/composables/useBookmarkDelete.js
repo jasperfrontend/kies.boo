@@ -178,7 +178,7 @@ export function useBookmarkDelete () {
       // Step 1: Restore bookmarks first
       // Prepare items for insertion (clean up the data structure)
       const itemsForInsertion = itemsToRestore.map(item => {
-        const { bookmark_tags, ...bookmarkData } = item
+        const { ...bookmarkData } = item
         return bookmarkData
       })
 

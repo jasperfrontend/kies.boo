@@ -1,6 +1,12 @@
 <template>
   <!-- Hide entire app bar on mobile -->
-  <v-app-bar v-if="!mobile" app color="surface" elevation="1" height="64">
+  <v-app-bar
+    v-if="!mobile"
+    app
+    color="surface"
+    elevation="1"
+    height="64"
+  >
     <v-container class="d-flex align-center pa-0 px-4" fluid>
       <!-- DESKTOP NAV ONLY (mobile handled by FAB) -->
       <div class="d-flex align-center">
@@ -329,8 +335,6 @@
       @bookmark-added="onBookmarkAdded"
     />
 
-
-
     <NotificationComponent
       :message="notification.message"
       position="bottom-right"
@@ -343,10 +347,9 @@
 
 <script setup>
   import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-  import { useTheme, useDisplay } from 'vuetify'
+  import { useDisplay, useTheme } from 'vuetify'
   import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue'
   import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
-  import MobileFAB from '@/components/MobileFAB.vue'
   import NotificationComponent from '@/components/NotificationComponent.vue'
   import SearchBookmarks from '@/components/SearchBookmarks.vue'
   import { useUserPreferences } from '@/composables/useUserPreferences'
@@ -386,7 +389,6 @@
   const profileMenuButton = ref(null)
   const selectedTheme = ref('system')
   const showBackgroundDialog = ref(false)
-  const mobileNavOpen = ref(false)
 
   const memberSince = computed(() => {
     if (!user.value?.created_at) return 'Unknown'
@@ -412,7 +414,7 @@
 
   // Background change handler
   function onBackgroundChanged (backgroundData) {
-    if(!backgroundData) {
+    if (!backgroundData) {
       console.log(backgroundData)
     }
     return
@@ -531,7 +533,6 @@
   }
 
   onMounted(() => {
-
     loadUserData()
     initializeTheme()
     setupSystemThemeListener()

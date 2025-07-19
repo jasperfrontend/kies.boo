@@ -25,7 +25,6 @@
   import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
   const {
-    deleting,
     undoState,
     notification,
     deleteBookmarks,

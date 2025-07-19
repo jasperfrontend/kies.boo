@@ -6,6 +6,7 @@
 
 import { setupLayouts } from 'virtual:generated-layouts'
 // Composables
+// eslint-disable-next-line import/no-duplicates
 import { createRouter, createWebHistory } from 'vue-router/auto'
 import { routes } from 'vue-router/auto-routes'
 

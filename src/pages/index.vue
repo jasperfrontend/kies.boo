@@ -31,10 +31,7 @@
   import NotificationComponent from '@/components/NotificationComponent.vue'
   import { useAppStore } from '@/stores/app'
 
-  const loading = ref(true)
   const appStore = useAppStore()
-  const helloWelcomeText = ref(true)
-
   // Notification state
   const notification = ref({
     show: false,

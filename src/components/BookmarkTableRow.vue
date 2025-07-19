@@ -6,9 +6,9 @@
     style="background-image: none; transition: background-image 200ms ease"
     :style="rowStyles"
     tabindex="0"
+    @blur="handleBlur"
     @dblclick="handleDoubleClick"
     @focus="handleFocus"
-    @blur="handleBlur"
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"
   >
@@ -61,24 +61,23 @@
       {{ formatDate(item.created_at) }}
     </td>
     <td>
+
+      <v-btn
+        size="small"
+        :id="`menu-activator-${item.id}`"
+        :title="`Actions for ${item.title}`"
+        variant="flat"
+        @click="actionsMenu = true"
+      >
+        <v-icon icon="mdi-dots-vertical" />
+      </v-btn>
+
       <v-menu
-        v-model="actionsMenu"
+        :activator="`#menu-activator-${item.id}`"
         :close-on-content-click="true"
         location="bottom end"
         offset="8"
       >
-        <template #activator="{ props }">
-          <v-btn
-            size="small"
-            v-bind="props"
-            :title="`Actions for ${item.title}`"
-            variant="flat"
-            @click="actionsMenu = true"
-          >
-            <v-icon icon="mdi-dots-vertical" />
-          </v-btn>
-        </template>
-
         <v-list density="compact" min-width="160">
           <v-list-item
             prepend-icon="mdi-eye"
@@ -97,7 +96,7 @@
 </template>
 
 <script setup>
-  import { computed, onMounted, ref } from 'vue'
+  import { computed, ref } from 'vue'
   import { useUserPreferences } from '@/composables/useUserPreferences'
 
   const props = defineProps({
@@ -130,7 +129,7 @@
 
   const rowClasses = computed(() => {
     const classes = []
-    
+
     // Use isFocusedByKeyboard instead of props.isFocused for better control
     if (isFocusedByKeyboard.value && props.isSelected) {
       classes.push('bg-red-darken-3')
@@ -149,7 +148,7 @@
     // Always set a background image for smooth transitions
     if (props.item.metadata?.vibrant_color) {
       const [r, g, b] = props.item.metadata.vibrant_color
-      
+
       if (isHovered.value) {
         // Hover state - visible gradient
         const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
@@ -160,7 +159,7 @@
       } else {
         // Default state - transparent gradient (same structure, but invisible)
         const transparentColor = `rgba(${r}, ${g}, ${b}, 0)`
-        
+
         styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 5%, ${transparentColor} 15%, ${transparentColor} 20%, ${transparentColor} 70%, ${transparentColor} 85%, ${transparentColor} 100%)`
       }
     } else {
@@ -191,12 +190,12 @@
     return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
-  function handleFocus() {
+  function handleFocus () {
     isFocusedByKeyboard.value = true
     emit('focus-changed', props.index, true)
   }
 
-  function handleBlur() {
+  function handleBlur () {
     isFocusedByKeyboard.value = false
     emit('focus-changed', props.index, false)
   }

@@ -1,5 +1,5 @@
 <script setup>
-  import { computed, onMounted, ref, watch } from 'vue'
+  import { onMounted, ref, watch } from 'vue'
   import supabase from '@/lib/supabaseClient'
   import { useAppStore } from '@/stores/app'
 
@@ -61,7 +61,7 @@
 
   <!-- Bookmarks list -->
   <v-list-item
-    v-for="(bookmark, i) in recentBookmarks"
+    v-for="(bookmark) in recentBookmarks"
     v-else
     :key="bookmark.id"
     :href="bookmark.url"

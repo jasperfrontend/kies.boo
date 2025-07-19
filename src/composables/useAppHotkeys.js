@@ -56,7 +56,7 @@ export function useAppHotkeys (router, appStore) {
     })
 
     // Ctrl+A - Select all in bookmark table
-    useHotkey('ctrl+a', e => {
+    useHotkey('ctrl+a', () => {
       const isBookmarkPage = ['/'].some(path =>
         router.currentRoute.value.path.startsWith(path),
       )
@@ -85,7 +85,7 @@ export function useAppHotkeys (router, appStore) {
     })
 
     // Ctrl+S - Save current action
-    useHotkey('ctrl+s', e => {
+    useHotkey('ctrl+s', () => {
       document.dispatchEvent(new CustomEvent('save-current-action'))
     }, {
       inputs: true, // Allow in inputs for form saving
@@ -93,7 +93,7 @@ export function useAppHotkeys (router, appStore) {
     })
 
     // Ctrl+/ - Show shortcuts dialog
-    useHotkey('ctrl+/', e => {
+    useHotkey('ctrl+/', () => {
       // Prevent double firing by checking if already open
       if (!showShortcutsDialog.value) {
         showShortcutsDialog.value = true

@@ -9,9 +9,9 @@
     />
 
     <!-- Page Navigation Indicator -->
-    <PageNavigationIndicator 
-      :number-buffer="numberBuffer" 
+    <PageNavigationIndicator
       :error-message="errorMessage"
+      :number-buffer="numberBuffer"
     />
 
     <!-- View Toggle for Desktop (positioned above the content) -->
@@ -24,20 +24,20 @@
         variant="outlined"
         @update:model-value="handleViewModeChange"
       >
-        <v-btn value="table" size="small">
-          <v-icon icon="mdi-table" class="mr-1" size="16" />
+        <v-btn size="small" value="table">
+          <v-icon class="mr-1" icon="mdi-table" size="16" />
           Table
         </v-btn>
-        <v-btn value="card" size="small">
-          <v-icon icon="mdi-view-grid" class="mr-1" size="16" />
+        <v-btn size="small" value="card">
+          <v-icon class="mr-1" icon="mdi-view-grid" size="16" />
           Cards
         </v-btn>
       </v-btn-toggle>
     </div>
 
     <!-- CARD VIEW: Mobile (always) or Desktop (when selected) -->
-    <div 
-      v-if="mobile || currentViewMode === 'card'" 
+    <div
+      v-if="mobile || currentViewMode === 'card'"
       v-touch="{
         left: () => swipeToNextPage(),
         right: () => swipeToPrevPage()
@@ -45,12 +45,12 @@
       class="bookmark-card-view"
     >
       <!-- Card Header with Select All -->
-      <v-card 
-        class="mb-4 surface-card" 
-        variant="outlined"
+      <v-card
+        class="mb-4 surface-card"
         :style="{
           backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
         }"
+        variant="outlined"
       >
         <v-card-text class="pa-3">
           <div class="d-flex align-center justify-space-between">
@@ -59,8 +59,8 @@
                 density="compact"
                 hide-details
                 :indeterminate="isIndeterminate"
-                :model-value="isAllSelected"
                 :label="selectedItems.length > 0 ? selectedItems.length + ' selected' : ' Select all'"
+                :model-value="isAllSelected"
                 @update:model-value="toggleSelectAll"
               />
             </div>
@@ -74,34 +74,50 @@
       <!-- Bookmark Cards -->
       <div v-if="!loading && displayBookmarks.length > 0" class="cards-container">
         <v-card
-          v-for="(item, index) in displayBookmarks"
+          v-for="(item) in displayBookmarks"
           :key="item.id"
-          class="bookmark-card surface-card mb-0"
+          class="bookmark-card surface-card mb-2 mb-md-0"
           :class="{ 'selected': selectedItems.includes(item.id) }"
-          variant="outlined"
           :style="{
             backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
           }"
+          variant="outlined"
           @click="openBookmark(item.url)"
         >
           <v-card-text class="pa-3">
             <!-- Header Row: Favicon, Title, Checkbox -->
             <div class="d-flex align-start mb-2">
-              <v-menu location="bottom start" offset="8">
-                <template #activator="{ props }">
-                  <v-btn
-                    v-bind="props"
-                    icon
-                    size="small"
-                    :title="`Actions for ${item.title}`"
-                    variant="text"
-                    @click.stop
-                  >
-                    <v-icon icon="mdi-dots-vertical" size="16" />
-                  </v-btn>
-                </template>
 
-                <v-list density="compact" min-width="160">
+              <v-checkbox
+                density="compact"
+                hide-details
+                :model-value="selectedItems.includes(item.id)"
+                width="40"
+                @click.stop="toggleItemSelection(item.id)"
+                @update:model-value="toggleItemSelection(item.id)"
+              />
+
+              <div class="flex-grow-1 min-width-0">
+                <div class="bookmark-title text-caption font-weight-medium mb-1">
+                  {{ item.title }}
+                </div>
+                <div class="bookmark-url text-caption text-medium-emphasis mb-1">
+                  {{ displayUrl(item.url) }}
+                </div>
+              </div>
+
+              <v-btn
+                icon
+                size="small"
+                :title="`Actions for ${item.title}`"
+                variant="text"
+              >
+                <v-icon icon="mdi-dots-vertical" size="16" />
+              </v-btn>
+
+              <v-menu location="bottom start" offset="8" activator="parent">
+    
+                <v-list density="compact" min-width="160" max-width="100%">
                   <v-list-item
                     :prepend-avatar="item.favicon"
                     @click="openBookmark(item.url)"
@@ -129,23 +145,6 @@
                   />
                 </v-list>
               </v-menu>
-              
-              <div class="flex-grow-1 min-width-0 pl-3">
-                <div class="bookmark-title text-caption font-weight-medium mb-1">
-                  {{ item.title }}
-                </div>
-                <div class="bookmark-url text-caption text-medium-emphasis mb-1">
-                  {{ displayUrl(item.url) }}
-                </div>
-              </div>
-
-              <v-checkbox
-                density="compact"
-                hide-details
-                :model-value="selectedItems.includes(item.id)"
-                @click.stop="toggleItemSelection(item.id)"
-                @update:model-value="toggleItemSelection(item.id)"
-              />
             </div>
 
             <!-- Tags Row -->
@@ -189,7 +188,7 @@
           <div
             v-if="item.metadata?.vibrant_color"
             class="color-accent-bar"
-            :style="{ 
+            :style="{
               backgroundColor: `rgb(${item.metadata.vibrant_color.join(',')})`,
               opacity: selectedItems.includes(item.id) ? 1 : 0.5
             }"
@@ -210,13 +209,13 @@
       </div>
 
       <!-- Card View Pagination -->
-      <v-card 
-        v-if="Math.ceil(totalItems / localServerOptions.itemsPerPage) > 1" 
-        class="mt-4 surface-card" 
-        variant="outlined"
+      <v-card
+        v-if="Math.ceil(totalItems / localServerOptions.itemsPerPage) > 1"
+        class="mt-4 surface-card"
         :style="{
           backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
         }"
+        variant="outlined"
       >
         <v-card-text class="pa-3">
           <div class="d-flex align-center justify-space-between mb-3">
@@ -227,7 +226,7 @@
               {{ totalItems }} total items
             </div>
           </div>
-          
+
           <div class="d-flex align-center justify-center">
             <v-btn
               :disabled="localServerOptions.page <= 1"
@@ -236,11 +235,11 @@
               variant="text"
               @click="changePage(localServerOptions.page - 1)"
             />
-            
+
             <div class="mx-4 text-body-2">
               {{ localServerOptions.page }}
             </div>
-            
+
             <v-btn
               :disabled="localServerOptions.page >= Math.ceil(totalItems / localServerOptions.itemsPerPage)"
               icon="mdi-chevron-right"
@@ -286,14 +285,14 @@
       :headers="BOOKMARK_TABLE_HEADERS"
       :items="displayBookmarks"
       :items-length="totalItems"
-      :loading="loading"
-      :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
       :items-per-page="localServerOptions.itemsPerPage"
+      :items-per-page-options="ITEMS_PER_PAGE_OPTIONS"
+      :loading="loading"
       :page="localServerOptions.page"
-      @update:options="handleOptionsUpdate"
       :style="{
         backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
       }"
+      @update:options="handleOptionsUpdate"
     >
       <!-- Select all checkbox in header -->
       <template #header.select="">
@@ -377,6 +376,7 @@
   import BookmarkEditDialog from '@/components/BookmarkEditDialog.vue'
   import BookmarkTableCollapseIndicators from '@/components/BookmarkTableCollapseIndicators.vue'
   import BookmarkTableRow from '@/components/BookmarkTableRow.vue'
+  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import { useBookmarkData } from '@/composables/useBookmarkData'
   import { useBookmarkTableDialogs } from '@/composables/useBookmarkTableDialogs'
   import { useBookmarkTableKeyboard } from '@/composables/useBookmarkTableKeyboard'
@@ -384,7 +384,6 @@
   import { useNumericPagination } from '@/composables/useNumericPagination'
   import { useTableSelection } from '@/composables/useTableSelection'
   import { useUserPreferences } from '@/composables/useUserPreferences'
-  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import { BOOKMARK_TABLE_HEADERS, ITEMS_PER_PAGE_OPTIONS } from '@/lib/tableConstants'
   import { useAppStore } from '@/stores/app'
 
@@ -412,7 +411,7 @@
   const currentViewMode = ref(mobile.value ? 'card' : 'table')
 
   // Handle view mode changes (desktop only)
-  function handleViewModeChange(newMode) {
+  function handleViewModeChange (newMode) {
     if (!mobile.value) {
       currentViewMode.value = newMode
       // You could save this preference to localStorage or user preferences
@@ -429,14 +428,14 @@
   }
 
   // Watch for mobile changes and force card view
-  watch(() => mobile.value, (isMobile) => {
+  watch(() => mobile.value, isMobile => {
     if (isMobile) {
       currentViewMode.value = 'card'
     }
   })
 
   // Listen for view mode change events from command palette
-  function handleViewModeCommand(event) {
+  function handleViewModeCommand (event) {
     const { mode } = event.detail
     if (!mobile.value && ['table', 'card'].includes(mode)) {
       currentViewMode.value = mode
@@ -481,7 +480,7 @@
   const preferencesLoadCount = ref(0)
 
   // Better stability detection - wait for actual user preference loading
-  watch(userItemsPerPage, (newValue, oldValue) => {
+  watch(userItemsPerPage, newValue => {
     preferencesLoadCount.value++
 
     // Only mark as stable after the second change (first is default, second is real user pref)
@@ -575,11 +574,10 @@
   } = useBookmarkTableDialogs(emit, loadBookmarks)
 
   // Keyboard navigation - only for desktop table view
-  const { 
-    focusedRowIndex, 
-    focusRow, 
-    restoreFocus, 
-    clearRememberedFocus 
+  const {
+    focusedRowIndex,
+    restoreFocus,
+    clearRememberedFocus,
   } = useBookmarkTableKeyboard(
     displayBookmarks,
     toRef(props, 'selectedItems'),
@@ -593,12 +591,12 @@
   // Watch for dialog state changes to restore focus when dialogs close (table view only)
   watch(dialogsOpen, (newDialogsOpen, oldDialogsOpen) => {
     if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
-    
+
     // Check if any dialog just closed (was true, now false)
-    const dialogJustClosed = Object.keys(newDialogsOpen).some(key => 
-      oldDialogsOpen?.[key] === true && newDialogsOpen[key] === false
+    const dialogJustClosed = Object.keys(newDialogsOpen).some(key =>
+      oldDialogsOpen?.[key] === true && newDialogsOpen[key] === false,
     )
-    
+
     if (dialogJustClosed) {
       // Dialog closed, restore focus after a short delay to ensure DOM is ready
       setTimeout(() => {
@@ -610,7 +608,7 @@
   // Watch for edit/details dialogs specifically for additional safety (table view only)
   watch([() => editDialog.value, () => detailsDialog.value], ([newEdit, newDetails], [oldEdit, oldDetails]) => {
     if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
-    
+
     // If either dialog just closed, restore focus
     if ((oldEdit && !newEdit) || (oldDetails && !newDetails)) {
       setTimeout(() => {
@@ -622,7 +620,7 @@
   // Watch for bookmark data changes and clear remembered focus if bookmarks change significantly (table view only)
   watch(() => displayBookmarks.value.length, (newLength, oldLength) => {
     if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
-    
+
     // If the number of bookmarks changed significantly, clear remembered focus
     if (oldLength !== undefined && Math.abs(newLength - oldLength) > 1) {
       clearRememberedFocus()
@@ -630,9 +628,9 @@
   })
 
   // Handle row focus changes from keyboard navigation (table view only)
-  function handleRowFocusChanged(index, isFocused) {
+  function handleRowFocusChanged (index, isFocused) {
     if (mobile.value || currentViewMode.value !== 'table') return // Skip on mobile or card view
-    
+
     if (isFocused) {
       focusedRowIndex.value = index
     } else if (focusedRowIndex.value === index) {
@@ -733,42 +731,42 @@
     return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)}`
   }
 
-  function changePage(newPage) {
+  function changePage (newPage) {
     localServerOptions.value = {
       ...localServerOptions.value,
       page: newPage,
     }
   }
 
-  function handleSingleDelete(item) {
+  function handleSingleDelete (item) {
     // Add single item to selection and trigger delete
     emit('update:selected-items', [item.id])
     // The delete will be handled by the BookmarkDeleteButton component
   }
 
-  function openBookmark(url) {
+  function openBookmark (url) {
     window.open(url, '_blank')
   }
 
   // Swipe navigation for card view (mobile and desktop)
-  function swipeToNextPage() {
+  function swipeToNextPage () {
     const currentPage = localServerOptions.value.page
     const totalPages = Math.ceil(totalItems.value / localServerOptions.value.itemsPerPage)
-    
+
     if (currentPage < totalPages) {
       changePage(currentPage + 1)
-      
+
       // Optional: Show feedback that swipe worked
       showSwipeFeedback('Next page')
     }
   }
 
-  function swipeToPrevPage() {
+  function swipeToPrevPage () {
     const currentPage = localServerOptions.value.page
-    
+
     if (currentPage > 1) {
       changePage(currentPage - 1)
-      
+
       // Optional: Show feedback that swipe worked
       showSwipeFeedback('Previous page')
     }
@@ -778,14 +776,14 @@
   const swipeFeedback = ref('')
   const swipeFeedbackTimeout = ref(null)
 
-  function showSwipeFeedback(message) {
+  function showSwipeFeedback (message) {
     swipeFeedback.value = message
-    
+
     // Clear any existing timeout
     if (swipeFeedbackTimeout.value) {
       clearTimeout(swipeFeedbackTimeout.value)
     }
-    
+
     // Hide feedback after 1 second
     swipeFeedbackTimeout.value = setTimeout(() => {
       swipeFeedback.value = ''
@@ -887,7 +885,7 @@
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 8px;
   }
-  
+
   .bookmark-card {
     margin-bottom: 0;
   }
@@ -898,7 +896,7 @@
   .bookmark-card {
     margin-bottom: 12px;
   }
-  
+
   .bookmark-card .v-card-text {
     padding: 12px !important;
   }

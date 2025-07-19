@@ -139,7 +139,7 @@
     v => !v || v.size < 10_000_000 || 'File size should be less than 10MB',
   ]
 
-  function onFileChange (event) {
+  function onFileChange () {
     error.value = ''
     success.value = ''
     parsedBookmarks.value = []
@@ -393,7 +393,7 @@
       const reader = new FileReader()
       reader.addEventListener('load', e => resolve(e.target.result))
       reader.onerror = e => reject(e)
-      reader.readAsText(file)
+      reader.text(file)
     })
   }
 </script>

@@ -1,6 +1,6 @@
 // src/composables/useAverageColor.js
 export async function averageColor (srcOrImgElement) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     let img
     if (typeof srcOrImgElement === 'string') {
       img = new window.Image()

@@ -7,16 +7,20 @@
   >
     <v-card v-if="bookmark" class="rounded-2xl pa-0" elevation="16">
       <v-card-title class="d-flex align-center gap-4 pa-6 pb-1">
-        <v-avatar class="elevation-1 mr-2" rounded="0" size="52">
+        <v-avatar 
+          v-if="!mobile"
+          class="elevation-1 mr-2" 
+          rounded="0" 
+        >
           <img
             alt="favicon"
-            height="52"
+            :height="mobile ? 26 : 52"
             :src="bookmark.favicon"
             width="52"
             @error="e => e.target.src = '/favicon.png'"
           >
         </v-avatar>
-        <div class="flex-1">
+        <div :class="mobile ? `w-100` : `flex-1 w-100`">
           <div class="bookmark-title">
             {{ bookmark.title }}
           </div>
@@ -29,9 +33,9 @@
         <div class="mb-5">
           <div class="text-caption text-medium-emphasis mb-1">URL</div>
           <v-tooltip location="top" text="Open link in new tab">
-            <template #activator="{ props }">
+            <template #activator="{ urlprops }">
               <a
-                v-bind="props"
+                v-bind="urlprops"
                 class="bookmark-url d-inline-flex align-center"
                 :href="bookmark.url"
                 style="word-break:break-all;"
@@ -50,9 +54,9 @@
             <v-chip
               v-for="tag in bookmark.tags"
               :key="tag"
-              class="mr-2 mb-2 px-4 py-2 font-weight-medium"
+              class="mr-2 mb-2 px-2 py-1 px-lg-4 py-lg-2 font-weight-medium"
               color="primary"
-              density="comfortable"
+              :density="mobile ? compact : comfortable"
               label
               size="medium"
               :to="`/tag/${tag}`"
@@ -76,17 +80,17 @@
         <v-btn
           class="rounded-xl px-6"
           color="primary"
-          prepend-icon="mdi-open-in-new"
-          size="large"
           target="_blank"
           variant="flat"
           @click="openLinkAndClose"
         >
-          Open Link
-          <v-tooltip activator="parent" location="bottom">
+          <v-icon v-if="!mobile" class="mr-2" icon="mdi-open-in-new" size="22" />
+          Open
+          <v-tooltip v-if="!mobile" activator="parent" location="bottom">
             Press L to open this link
           </v-tooltip>
           <v-chip
+            v-if="!mobile"
             class="ml-3"
             pill="true"
             ripple="false"
@@ -98,14 +102,14 @@
         </v-btn>
         <v-spacer />
         <v-btn
-          class="ml-2 px-4 py-2"
-          size="large"
+          class="ml-2"
           variant="text"
           @click="$emit('update:modelValue', false)"
         >
-          <v-icon class="mr-2" icon="mdi-close" size="22" />
+          <v-icon v-if="!mobile" class="mr-2" icon="mdi-close" size="22" />
           <span class="">Close</span>
           <v-chip
+            v-if="!mobile"
             class="ml-3"
             pill="true"
             ripple="false"
@@ -121,9 +125,13 @@
 </template>
 
 <script setup>
-  import { toRefs, onUnmounted } from 'vue'
-  import { useHotkey } from 'vuetify'
+  import { onUnmounted, toRefs } from 'vue'
+  import { useHotkey, useDisplay } from 'vuetify'
 
+  const { mobile } = useDisplay()
+  
+  console.log("mobile:", mobile.value);
+  
   const props = defineProps({
     modelValue: Boolean,
     bookmark: Object,
@@ -132,7 +140,7 @@
   const { modelValue, bookmark } = toRefs(props)
   let removeHotkey = null
 
-  watch(modelValue, (isOpen) => {
+  watch(modelValue, isOpen => {
     // Remove previous hotkey handler if any
     if (removeHotkey) {
       removeHotkey()
@@ -179,7 +187,7 @@
   overflow-wrap: anywhere;
   white-space: pre-line;
   margin-bottom: 0.2em;
-  max-width: 34vw;
+  /* max-width: 34vw; */
 }
 .bookmark-url {
   font-family: "Fira Mono", "Consolas", "Monaco", monospace;
@@ -194,4 +202,17 @@
 }
 .bg-grey-darken-4 { background-color: #232323 !important; }
 .flex-1 { flex: 1 1 0%; }
+
+@media (max-width: 768px) {
+  .bookmark-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.2;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+    margin-bottom: 0.2em;
+    /* max-width: 34vw; */
+  }
+}
 </style>

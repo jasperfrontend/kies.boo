@@ -30,7 +30,7 @@
               />
             </template>
           </v-text-field>
-          
+
           <div class="d-flex justify-space-between align-center mt-3">
             <div class="text-caption text-medium-emphasis">
               Enter to search, or try /gb, /gt, /gp commands
@@ -139,11 +139,11 @@
 </template>
 
 <script setup>
-  import { computed, nextTick, ref, watch } from 'vue'
-  import { useDisplay } from 'vuetify'
+  import { nextTick, ref, watch } from 'vue'
   import { useRouter } from 'vue-router'
-  import { useAppStore } from '@/stores/app'
+  import { useDisplay } from 'vuetify'
   import commandPaletteService from '@/lib/commandPaletteService'
+  import { useAppStore } from '@/stores/app'
 
   const { mobile } = useDisplay()
   const router = useRouter()
@@ -156,28 +156,28 @@
   const mobileSearchRef = ref(null)
 
   // Future expansion flags
-  const showQuickActions = ref(false) // Can be enabled later
+  // const showQuickActions = ref(false)
 
   // Emit event to trigger profile menu from AppTopBar
   const emit = defineEmits(['open-profile-menu'])
 
   // Dynamic FAB classes based on current route
-  const fabClasses = computed(() => {
-    const classes = ['mobile-fab']
-    
-    // Adjust position based on current page to avoid conflicts
-    if (router.currentRoute.value.path.includes('/profile')) {
-      classes.push('fab-offset-profile')
-    }
-    
-    return classes.join(' ')
-  })
+  // const fabClasses = computed(() => {
+  //   const classes = ['mobile-fab']
+
+  //   // Adjust position based on current page to avoid conflicts
+  //   if (router.currentRoute.value.path.includes('/profile')) {
+  //     classes.push('fab-offset-profile')
+  //   }
+
+  //   return classes.join(' ')
+  // })
 
   // Methods
-  function openSearch() {
+  function openSearch () {
     fabOpen.value = false
     showSearchSheet.value = true
-    
+
     // Focus the search input after the sheet opens
     nextTick(() => {
       if (mobileSearchRef.value) {
@@ -186,12 +186,12 @@
     })
   }
 
-  function closeSearch() {
+  function closeSearch () {
     showSearchSheet.value = false
     searchQuery.value = ''
   }
 
-  async function handleSearch() {
+  async function handleSearch () {
     if (!searchQuery.value.trim()) return
 
     // Check if it's a command
@@ -212,27 +212,27 @@
     }
   }
 
-  function openAddBookmark() {
+  function openAddBookmark () {
     fabOpen.value = false
     appStore.openAddBookmarkDialog()
   }
 
-  function navigateTo(path) {
+  function navigateTo (path) {
     fabOpen.value = false
     router.push(path)
   }
 
-  function openProfile() {
+  function openProfile () {
     fabOpen.value = false
     // Emit event to trigger profile menu in AppTopBar
     emit('open-profile-menu')
   }
 
-  function openQuickActions() {
-    fabOpen.value = false
-    // Future: Open quick actions menu
-    console.log('Quick actions - to be implemented')
-  }
+  // function openQuickActions () {
+  //   fabOpen.value = false
+  //   // Future: Open quick actions menu
+  //   console.log('Quick actions - to be implemented')
+  // }
 
   // Auto-close search sheet when navigating
   watch(() => router.currentRoute.value.path, () => {
@@ -242,7 +242,7 @@
   })
 
   // Close FAB when search sheet opens
-  watch(showSearchSheet, (newValue) => {
+  watch(showSearchSheet, newValue => {
     if (newValue) {
       fabOpen.value = false
     }
@@ -282,7 +282,7 @@
     bottom: 12px;
     right: 12px;
   }
-  
+
   :deep(.v-speed-dial) {
     transform: scale(0.9);
   }

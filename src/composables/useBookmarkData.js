@@ -166,7 +166,8 @@ export function useBookmarkData (appStore, searchType = 'all', searchTerm = '', 
       console.error('Failed to load bookmarks:', error)
       bookmarks.value = []
       totalItems.value = 0
-      return Promise.reject(error)
+
+      throw error
     } finally {
       loading.value = false
     }

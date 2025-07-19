@@ -13,31 +13,31 @@ export function useBookmarkTableKeyboard (
   const rememberedFocusIndex = ref(-1)
 
   // Function to get the currently focused row element
-  function getFocusedRowElement() {
-    if (focusedRowIndex.value >= 0) {
-      return document.querySelector(`[data-bookmark-row-index="${focusedRowIndex.value}"]`)
-    }
-    return null
-  }
+  // function getFocusedRowElement () {
+  //   if (focusedRowIndex.value >= 0) {
+  //     return document.querySelector(`[data-bookmark-row-index="${focusedRowIndex.value}"]`)
+  //   }
+  //   return null
+  // }
 
   // Function to focus a specific row and scroll it into view
-  function focusRow(index) {
+  function focusRow (index) {
     if (index >= 0 && index < bookmarks.value.length) {
       focusedRowIndex.value = index
       rememberedFocusIndex.value = index // Remember this focus position
-      
+
       // Use nextTick equivalent to ensure DOM is updated
       setTimeout(() => {
         const rowElement = document.querySelector(`[data-bookmark-row-index="${index}"]`)
         if (rowElement) {
           // Focus the row element and scroll it into view
           rowElement.focus({ preventScroll: false })
-          
+
           // Additional scroll into view with smooth behavior
-          rowElement.scrollIntoView({ 
-            behavior: 'smooth', 
+          rowElement.scrollIntoView({
+            behavior: 'smooth',
             block: 'nearest',
-            inline: 'nearest'
+            inline: 'nearest',
           })
         }
       }, 0)
@@ -45,7 +45,7 @@ export function useBookmarkTableKeyboard (
   }
 
   // Function to restore focus after dialogs close
-  function restoreFocus() {
+  function restoreFocus () {
     if (rememberedFocusIndex.value >= 0 && rememberedFocusIndex.value < bookmarks.value.length) {
       // Use a longer delay to ensure dialog has fully closed and DOM is updated
       setTimeout(() => {
@@ -55,73 +55,73 @@ export function useBookmarkTableKeyboard (
   }
 
   // Function to clear remembered focus
-  function clearRememberedFocus() {
+  function clearRememberedFocus () {
     rememberedFocusIndex.value = -1
   }
 
-  const handleKeydown = event => {
-    // Only handle keyboard navigation when no dialogs are open
-    const anyDialogOpen = Object.values(dialogsOpen.value).some(Boolean)
-    if (anyDialogOpen) {
-      return
-    }
+  // const handleKeydown = event => {
+  //   // Only handle keyboard navigation when no dialogs are open
+  //   const anyDialogOpen = Object.values(dialogsOpen.value).some(Boolean)
+  //   if (anyDialogOpen) {
+  //     return
+  //   }
 
-    const bookmarkCount = bookmarks.value.length
+  //   const bookmarkCount = bookmarks.value.length
 
-    // Tab to focus on table rows
-    if (event.key === 'Tab' && !event.shiftKey && bookmarkCount > 0) {
-      event.preventDefault()
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
-        : 0
-      focusRow(newIndex)
-    }
+  //   // Tab to focus on table rows
+  //   if (event.key === 'Tab' && !event.shiftKey && bookmarkCount > 0) {
+  //     event.preventDefault()
+  //     const newIndex = focusedRowIndex.value < bookmarkCount - 1
+  //       ? focusedRowIndex.value + 1
+  //       : 0
+  //     focusRow(newIndex)
+  //   }
 
-    // Shift+Tab to go backwards through table rows
-    if (event.key === 'Tab' && event.shiftKey && bookmarkCount > 0) {
-      event.preventDefault()
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
-        : bookmarkCount - 1
-      focusRow(newIndex)
-    }
+  //   // Shift+Tab to go backwards through table rows
+  //   if (event.key === 'Tab' && event.shiftKey && bookmarkCount > 0) {
+  //     event.preventDefault()
+  //     const newIndex = focusedRowIndex.value > 0
+  //       ? focusedRowIndex.value - 1
+  //       : bookmarkCount - 1
+  //     focusRow(newIndex)
+  //   }
 
-    // Spacebar to select/deselect focused row
-    if (event.key === ' ' && focusedRowIndex.value >= 0) {
-      event.preventDefault()
-      const item = bookmarks.value[focusedRowIndex.value]
-      if (item) {
-        toggleItemSelection(item.id)
-      }
-    }
+  //   // Spacebar to select/deselect focused row
+  //   if (event.key === ' ' && focusedRowIndex.value >= 0) {
+  //     event.preventDefault()
+  //     const item = bookmarks.value[focusedRowIndex.value]
+  //     if (item) {
+  //       toggleItemSelection(item.id)
+  //     }
+  //   }
 
-    // Arrow keys for navigation
-    if (event.key === 'ArrowDown' && bookmarkCount > 0) {
-      event.preventDefault()
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
-        : 0
-      focusRow(newIndex)
-    }
+  //   // Arrow keys for navigation
+  //   if (event.key === 'ArrowDown' && bookmarkCount > 0) {
+  //     event.preventDefault()
+  //     const newIndex = focusedRowIndex.value < bookmarkCount - 1
+  //       ? focusedRowIndex.value + 1
+  //       : 0
+  //     focusRow(newIndex)
+  //   }
 
-    if (event.key === 'ArrowUp' && bookmarkCount > 0) {
-      event.preventDefault()
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
-        : bookmarkCount - 1
-      focusRow(newIndex)
-    }
+  //   if (event.key === 'ArrowUp' && bookmarkCount > 0) {
+  //     event.preventDefault()
+  //     const newIndex = focusedRowIndex.value > 0
+  //       ? focusedRowIndex.value - 1
+  //       : bookmarkCount - 1
+  //     focusRow(newIndex)
+  //   }
 
-    if (event.key === 'ArrowLeft' && bookmarkCount > 0) {
-      event.preventDefault()
-      focusedRowIndex.value = -1
-      // Remove focus from any row element
-      const focusedElement = document.activeElement
-      if (focusedElement && focusedElement.hasAttribute('data-bookmark-row-index')) {
-        focusedElement.blur()
-      }
-    }
-  }
+  //   if (event.key === 'ArrowLeft' && bookmarkCount > 0) {
+  //     event.preventDefault()
+  //     focusedRowIndex.value = -1
+  //     // Remove focus from any row element
+  //     const focusedElement = document.activeElement
+  //     if (focusedElement && Object.hasOwn(focusedElement.dataset, 'bookmarkRowIndex')) {
+  //       focusedElement.blur()
+  //     }
+  //   }
+  // }
 
   // Keyboard navigation functions
   function handleTableNavigateNext () {
@@ -178,7 +178,7 @@ export function useBookmarkTableKeyboard (
       focusedRowIndex.value = -1
       // Remove focus from any row element
       const focusedElement = document.activeElement
-      if (focusedElement && focusedElement.hasAttribute('data-bookmark-row-index')) {
+      if (focusedElement && Object.hasOwn(focusedElement.dataset, 'bookmarkRowIndex')) {
         focusedElement.blur()
       }
     }

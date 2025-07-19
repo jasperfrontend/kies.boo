@@ -272,14 +272,6 @@
     }
   }
 
-  async function logout () {
-    try {
-      await supabase.auth.signOut()
-    } catch (error_) {
-      console.error('Error logging out:', error_)
-      error.value = 'Failed to log out'
-    }
-  }
 
   function formatDate (dateString) {
     const date = new Date(dateString)
@@ -396,10 +388,9 @@
               Most Used Tags
             </v-card-title>
             <v-card-text class="pa-0">
-              <div v-if="!stats.tags.loading">
+              <div v-if="!stats.tags.loading && stats.tags.mostUsed.length > 0">
                 <div
-                  v-for="(tag, index) in stats.tags.mostUsed"
-                  v-if="stats.tags.mostUsed.length > 0"
+                  v-for="(tag) in stats.tags.mostUsed"
                   :key="tag.id"
                   class="d-flex justify-space-between align-center pa-2 rounded cursor-pointer hover-bg"
                   @click="$router.push(`/tag/${encodeURIComponent(tag.title)}`)"
@@ -409,11 +400,11 @@
                     {{ tag.usage_count }}
                   </v-chip>
                 </div>
-                <div v-else class="text-caption text-grey-darken-1">
-                  No tags created yet
-                </div>
               </div>
-              <v-skeleton-loader v-else type="list-item-two-line" />
+              <div v-else class="text-caption text-grey-darken-1">
+                No tags created yet
+              </div>
+
             </v-card-text>
           </v-card>
         </v-col>
@@ -426,10 +417,9 @@
               Recent Saved Paths
             </v-card-title>
             <v-card-text class="pa-0">
-              <div v-if="!stats.savedSearches.loading">
+              <div v-if="!stats.savedSearches.loading && stats.savedSearches.recent.length > 0">
                 <div
                   v-for="(search, index) in stats.savedSearches.recent"
-                  v-if="stats.savedSearches.recent.length > 0"
                   :key="index"
                   class="mb-2"
                 >
@@ -443,11 +433,10 @@
                     {{ formatDate(search.created_at) }}
                   </div>
                 </div>
-                <div v-else class="text-caption text-grey-darken-1">
-                  No saved searches yet
-                </div>
               </div>
-              <v-skeleton-loader v-else type="list-item-two-line" />
+              <div v-else class="text-caption text-grey-darken-1">
+                No saved searches yet
+              </div>
             </v-card-text>
           </v-card>
         </v-col>

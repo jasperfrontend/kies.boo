@@ -67,9 +67,9 @@
       </v-card-text>
 
       <!-- Page Navigation Indicator -->
-      <PageNavigationIndicator 
-        :number-buffer="numberBuffer" 
+      <PageNavigationIndicator
         :error-message="errorMessage"
+        :number-buffer="numberBuffer"
       />
 
       <!-- Tags Display -->
@@ -244,9 +244,9 @@
 <script setup>
   import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
   import { useRouter } from 'vue-router'
+  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import { useNumericPagination } from '@/composables/useNumericPagination'
   import { useUserPreferences } from '@/composables/useUserPreferences'
-  import PageNavigationIndicator from '@/components/PageNavigationIndicator.vue'
   import supabase from '@/lib/supabaseClient'
 
   const router = useRouter()
