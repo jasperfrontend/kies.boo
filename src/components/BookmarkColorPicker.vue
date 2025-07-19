@@ -76,14 +76,14 @@
           location="bottom"
           offset="8"
         >
-          <template #activator="{ colorpickermenuprops }">
+          <template #activator="{ props }">
             <div
-              v-bind="colorpickermenuprops"
+              v-bind="props"
               class="color-option custom-picker"
               :class="{ active: isCustomColor }"
             >
               <v-icon
-                color="grey-darken-1"
+                color="primary"
                 icon="mdi-eyedropper"
                 size="16"
               />
@@ -93,7 +93,7 @@
             </div>
           </template>
 
-          <v-card class="pa-4" min-width="320">
+          <v-card class="pa-4 bg-surface-variant" elevation="20" :min-width="mobile ? 300 : 500">
             <v-card-title class="pa-0 mb-3">Custom Color</v-card-title>
 
             <!-- Color Input Field -->
@@ -126,8 +126,8 @@
               v-model="customColor"
               mode="hex"
               :modes="['hex']"
+              :width="mobile ? 300 : 500"
               show-swatches
-              width="280"
             />
 
             <v-card-actions class="pa-0 pt-3">
@@ -189,6 +189,8 @@
 
 <script setup>
   import { computed, ref } from 'vue'
+  import { useDisplay } from 'vuetify'
+  const { mobile } = useDisplay();
 
   const props = defineProps({
     modelValue: {
