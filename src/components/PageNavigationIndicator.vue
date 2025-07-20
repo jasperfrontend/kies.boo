@@ -9,11 +9,6 @@
       variant="elevated"
     >
       <div class="d-flex align-center justify-center">
-        <v-icon
-          class="mr-2"
-          :icon="isError ? 'mdi-alert-circle' : 'mdi-keyboard'"
-          size="16"
-        />
         <span v-if="isError">{{ errorMessage }}</span>
         <span v-else>Going to page: <strong>{{ numberBuffer }}</strong></span>
         <v-progress-circular

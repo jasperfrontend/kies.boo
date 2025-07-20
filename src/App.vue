@@ -1,11 +1,7 @@
 <template>
   <v-app>
     <component :is="isAuthenticated ? 'router-view' : Login" />
-
-    <!-- Global Keyboard Shortcuts Dialog -->
     <KeyboardShortcutsDialog v-model="showShortcutsDialog" />
-
-    <!-- Mobile FAB Component - positioned relative to entire viewport -->
     <MobileFAB v-if="isAuthenticated" @open-profile-menu="handleOpenProfileMenu" />
   </v-app>
 </template>
@@ -39,14 +35,6 @@
   }
 
   onMounted(async () => {
-    // Clean up URL after OAuth redirect
-    // const urlParams = new URLSearchParams(window.location.search)
-    // if (urlParams.has('code')) {
-    //   // Remove the code parameter from URL without page reload
-    //   const cleanUrl = window.location.origin + window.location.pathname
-    //   window.history.replaceState({}, document.title, cleanUrl)
-    // }
-
     const { data: { session } } = await supabase.auth.getSession()
     isAuthenticated.value = !!session
 
