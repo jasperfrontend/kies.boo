@@ -110,123 +110,6 @@
 
           <v-divider />
 
-          <!-- Theme Switcher Section -->
-          <v-card-text class="py-2">
-            <div class="text-caption text-medium-emphasis mb-2">Theme</div>
-            <v-btn-toggle
-              v-model="selectedTheme"
-              class="w-100"
-              density="compact"
-              divided
-              variant="outlined"
-              @update:model-value="changeTheme"
-            >
-              <v-btn class="flex-grow-1" size="small" value="light">
-                <v-icon class="mr-1" icon="mdi-white-balance-sunny" size="16" />
-                Light
-              </v-btn>
-              <v-btn class="flex-grow-1" size="small" value="dark">
-                <v-icon class="mr-1" icon="mdi-moon-waning-crescent" size="16" />
-                Dark
-              </v-btn>
-              <v-btn class="flex-grow-1" size="small" value="system">
-                <v-icon class="mr-1" icon="mdi-theme-light-dark" size="16" />
-                System
-              </v-btn>
-            </v-btn-toggle>
-          </v-card-text>
-
-          <v-divider />
-
-          <!-- Items Per Page Section -->
-          <v-card-text class="py-2">
-            <div class="text-caption text-medium-emphasis mb-2">Items per page</div>
-            <v-select
-              v-model="itemsPerPage"
-              density="compact"
-              hide-details
-              :items="itemsPerPageOptions"
-              variant="outlined"
-              @update:model-value="changeItemsPerPage"
-            >
-              <template #prepend-inner>
-                <v-icon icon="mdi-table-row" size="16" />
-              </template>
-            </v-select>
-            <div class="text-caption text-medium-emphasis mt-2">
-              Number of items to show per page in tables
-            </div>
-          </v-card-text>
-
-          <v-divider />
-
-          <!-- Domain Collapsing Section -->
-          <v-card-text class="py-2">
-            <div class="text-caption text-medium-emphasis mb-2">Table behavior</div>
-            <v-switch
-              v-model="domainCollapsing"
-              color="primary"
-              density="compact"
-              hide-details
-              @update:model-value="changeDomainCollapsing"
-            >
-              <template #label>
-                <div class="d-flex align-center">
-                  <v-icon class="mr-2" icon="mdi-view-collapse" size="16" />
-                  <span class="text-body-2">Collapse similar domains
-                    <v-tooltip
-                      location="bottom"
-                      text="This feature works best when Items per page it set to 30 or more"
-                    >
-                      <template #activator="{ props }">
-                        <v-chip
-                          v-bind="props"
-                          append-icon="mdi-alert-circle-outline"
-                          class="ml-2"
-                          color="warning"
-                          density="compact"
-                          variant="tonal"
-                        >Experimental</v-chip>
-                      </template>
-                    </v-tooltip>
-                  </span>
-                </div>
-              </template>
-            </v-switch>
-            <div class="text-caption text-medium-emphasis mt-1">
-              Groups bookmarks from the same domain when there are more than 5
-            </div>
-          </v-card-text>
-
-          <v-divider />
-
-          <!-- Double Click Behavior Section -->
-          <v-card-text class="py-2">
-            <div class="text-caption text-medium-emphasis mb-2">Double-click behavior</div>
-            <v-btn-toggle
-              v-model="doubleClickBehavior"
-              class="w-100"
-              density="compact"
-              divided
-              variant="outlined"
-              @update:model-value="changeDoubleClickBehavior"
-            >
-              <v-btn class="flex-grow-1" size="small" value="select">
-                <v-icon class="mr-1" icon="mdi-cursor-default-click" size="16" />
-                Select
-              </v-btn>
-              <v-btn class="flex-grow-1" size="small" value="open">
-                <v-icon class="mr-1" icon="mdi-open-in-new" size="16" />
-                Open
-              </v-btn>
-            </v-btn-toggle>
-            <div class="text-caption text-medium-emphasis mt-2">
-              Choose what happens when you double-click a bookmark row
-            </div>
-          </v-card-text>
-
-          <v-divider />
-
           <!-- Menu Items -->
           <v-list class="py-0" density="compact">
             <v-list-item
@@ -245,10 +128,11 @@
               </v-list-item-title>
             </v-list-item>
             <v-list-item
-              prepend-icon="mdi-image"
-              @click="showBackgroundDialog = true; profileMenu = false"
+              prepend-icon="mdi-cog"
+              to="/settings"
+              @click="profileMenu = false"
             >
-              <v-list-item-title>Change background</v-list-item-title>
+              <v-list-item-title>User Settings</v-list-item-title>
             </v-list-item>
 
             <v-list-item
@@ -324,12 +208,6 @@
       </v-menu>
     </v-container>
 
-    <!-- Background Selection Dialog -->
-    <BackgroundSelectionDialog
-      v-model="showBackgroundDialog"
-      @background-changed="onBackgroundChanged"
-    />
-
     <AddBookmarkDialog
       v-model="appStore.addBookmarkDialog"
       @bookmark-added="onBookmarkAdded"
@@ -349,33 +227,15 @@
   import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
   import { useDisplay, useTheme } from 'vuetify'
   import AddBookmarkDialog from '@/components/AddBookmarkDialog.vue'
-  import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
   import NotificationComponent from '@/components/NotificationComponent.vue'
   import SearchBookmarks from '@/components/SearchBookmarks.vue'
-  import { useUserPreferences } from '@/composables/useUserPreferences'
   import supabase from '@/lib/supabaseClient'
   import { useAppStore } from '@/stores/app'
 
   const { mobile } = useDisplay()
 
-  const {
-    doubleClickBehavior,
-    domainCollapsing,
-    itemsPerPage,
-    saveDoubleClickBehavior,
-    saveDomainCollapsing,
-    saveItemsPerPage,
-  } = useUserPreferences()
   const appStore = useAppStore()
   const theme = useTheme()
-
-  // Items per page options (excluding -1 for performance reasons)
-  const itemsPerPageOptions = [
-    { title: '15 items', value: 15 },
-    { title: '30 items', value: 30 },
-    { title: '45 items', value: 45 },
-    { title: '60 items', value: 60 },
-  ]
 
   // Notification state
   const notification = ref({
@@ -388,7 +248,6 @@
   const profileMenu = ref(false)
   const profileMenuButton = ref(null)
   const selectedTheme = ref('system')
-  const showBackgroundDialog = ref(false)
 
   const memberSince = computed(() => {
     if (!user.value?.created_at) return 'Unknown'
@@ -412,14 +271,6 @@
     }
   }
 
-  // Background change handler
-  function onBackgroundChanged (backgroundData) {
-    if (!backgroundData) {
-      console.log(backgroundData)
-    }
-    return
-  }
-
   // Theme management
   function changeTheme (newTheme) {
     selectedTheme.value = newTheme
@@ -434,31 +285,6 @@
     }
 
     localStorage.setItem('theme-preference', newTheme)
-  }
-
-  // User preferences
-  async function changeDoubleClickBehavior (newBehavior) {
-    const success = await saveDoubleClickBehavior(newBehavior)
-    if (!success) {
-      console.error('Failed to save double-click behavior preference')
-    }
-  }
-
-  async function changeDomainCollapsing (enabled) {
-    const success = await saveDomainCollapsing(enabled)
-    if (!success) {
-      console.error('Failed to save domain collapsing preference')
-    }
-  }
-
-  async function changeItemsPerPage (newItemsPerPage) {
-    const success = await saveItemsPerPage(newItemsPerPage)
-    if (success) {
-      showNotification('success', `Items per page updated to ${newItemsPerPage}`)
-    } else {
-      console.error('Failed to save items per page preference')
-      showNotification('error', 'Failed to save items per page preference')
-    }
   }
 
   // Initialize theme

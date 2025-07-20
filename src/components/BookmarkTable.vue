@@ -386,6 +386,7 @@
   import { useUserPreferences } from '@/composables/useUserPreferences'
   import { BOOKMARK_TABLE_HEADERS, ITEMS_PER_PAGE_OPTIONS } from '@/lib/tableConstants'
   import { useAppStore } from '@/stores/app'
+  import { useViewModeStore } from '@/stores/viewMode'
 
   const props = defineProps({
     dialogOpen: Boolean,
@@ -406,31 +407,31 @@
   const router = useRouter()
   const { mobile } = useDisplay()
   const { domainCollapsing, itemsPerPage: userItemsPerPage } = useUserPreferences()
+  const viewModeStore = useViewModeStore()
 
   // View mode state - mobile always uses card, desktop can choose
-  const currentViewMode = ref(mobile.value ? 'card' : 'table')
+  const currentViewMode = computed(() => viewModeStore.mode)
 
   // Handle view mode changes (desktop only)
   function handleViewModeChange (newMode) {
     if (!mobile.value) {
-      currentViewMode.value = newMode
-      // You could save this preference to localStorage or user preferences
-      localStorage.setItem('bookmark-view-mode', newMode)
+      viewModeStore.setMode(newMode)
     }
   }
 
-  // Load saved view mode preference on mount (desktop only)
-  if (!mobile.value) {
-    const savedViewMode = localStorage.getItem('bookmark-view-mode')
-    if (savedViewMode && ['table', 'card'].includes(savedViewMode)) {
-      currentViewMode.value = savedViewMode
+  // Initialize view mode from storage on mount
+  onMounted(() => {
+    if (mobile.value) {
+      viewModeStore.setMode('card')
+    } else {
+      viewModeStore.initialize()
     }
-  }
+  })
 
   // Watch for mobile changes and force card view
   watch(() => mobile.value, isMobile => {
     if (isMobile) {
-      currentViewMode.value = 'card'
+      viewModeStore.setMode('card')
     }
   })
 
@@ -438,9 +439,7 @@
   function handleViewModeCommand (event) {
     const { mode } = event.detail
     if (!mobile.value && ['table', 'card'].includes(mode)) {
-      currentViewMode.value = mode
-      // Also update localStorage
-      localStorage.setItem('bookmark-view-mode', mode)
+      viewModeStore.setMode(mode)
     }
   }
 

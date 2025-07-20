@@ -1,5 +1,6 @@
 // src/lib/commandPaletteService.js
 import supabase from '@/lib/supabaseClient'
+import { useViewModeStore } from '@/stores/viewMode'
 
 class CommandPaletteService {
   constructor () {
@@ -133,8 +134,9 @@ class CommandPaletteService {
       detail: { mode },
     }))
 
-    // Also save to localStorage directly for immediate effect
-    localStorage.setItem('bookmark-view-mode', mode)
+    // Update view mode store for persistence
+    const store = useViewModeStore()
+    store.setMode(mode)
   }
 
   /**
