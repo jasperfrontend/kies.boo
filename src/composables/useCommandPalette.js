@@ -14,7 +14,7 @@ export function useCommandPalette () {
     }
   }
 
-  function handleAuthChange (event, session) {
+  function handleAuthChange (session) {
     if (session?.user) {
       // User logged in, initialize command palette
       initializeCommandPalette()
