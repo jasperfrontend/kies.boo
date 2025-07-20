@@ -115,9 +115,9 @@
                 <v-icon icon="mdi-dots-vertical" size="16" />
               </v-btn>
 
-              <v-menu location="bottom start" offset="8" activator="parent">
-    
-                <v-list density="compact" min-width="160" max-width="100%">
+              <v-menu activator="parent" location="bottom start" offset="8">
+
+                <v-list density="compact" max-width="100%" min-width="160">
                   <v-list-item
                     :prepend-avatar="item.favicon"
                     @click="openBookmark(item.url)"
@@ -666,7 +666,7 @@
         // Method 2: Force a complete re-sync by triggering the watchers
         nextTick(() => {
           // Create a deep clone to ensure Vue detects the change
-          const clonedOptions = JSON.parse(JSON.stringify(localServerOptions.value))
+          const clonedOptions = structuredClone(localServerOptions.value)
 
           // Temporarily disable the watcher to prevent loops
           isUpdatingFromComposable.value = true

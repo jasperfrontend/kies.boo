@@ -392,7 +392,7 @@
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.addEventListener('load', e => resolve(e.target.result))
-      reader.onerror = e => reject(e)
+      reader.addEventListener('error', e => reject(e))
       reader.text(file)
     })
   }
