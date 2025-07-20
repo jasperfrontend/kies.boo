@@ -33,7 +33,7 @@
 
     <!-- Multiple collapsed domains: aggregated menu -->
     <template v-else>
-      <v-menu offset="8">
+      <v-menu offset="8" v-if="totalCollapsedCount && totalCollapsedCount > 0">
         <template #activator="{ props: menuProps }">
           <div
             class="collapse-indicator"
