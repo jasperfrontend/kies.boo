@@ -26,6 +26,7 @@ declare module 'vue-router/auto-routes' {
     '/paths': RouteRecordInfo<'/paths', '/paths', Record<never, never>, Record<never, never>>,
     '/profile': RouteRecordInfo<'/profile', '/profile', Record<never, never>, Record<never, never>>,
     '/search/[keyword]': RouteRecordInfo<'/search/[keyword]', '/search/:keyword', { keyword: ParamValue<true> }, { keyword: ParamValue<false> }>,
+    '/settings': RouteRecordInfo<'/settings', '/settings', Record<never, never>, Record<never, never>>,
     '/tag/[tagtitle]': RouteRecordInfo<'/tag/[tagtitle]', '/tag/:tagtitle', { tagtitle: ParamValue<true> }, { tagtitle: ParamValue<false> }>,
     '/tags': RouteRecordInfo<'/tags', '/tags', Record<never, never>, Record<never, never>>,
   }

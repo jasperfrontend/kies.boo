@@ -15,7 +15,7 @@
     />
 
     <!-- View Toggle for Desktop (positioned above the content) -->
-    <div v-if="!mobile" class="d-flex justify-end mb-4">
+    <!-- <div v-if="!mobile" class="d-flex justify-end mb-4">
       <v-btn-toggle
         v-model="currentViewMode"
         class="view-toggle"
@@ -33,7 +33,7 @@
           Cards
         </v-btn>
       </v-btn-toggle>
-    </div>
+    </div> -->
 
     <!-- CARD VIEW: Mobile (always) or Desktop (when selected) -->
     <div
