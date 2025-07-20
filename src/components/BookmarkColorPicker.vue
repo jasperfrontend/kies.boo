@@ -76,9 +76,9 @@
           location="bottom"
           offset="8"
         >
-          <template #activator="{ props }">
+          <template #activator="{ props: menuProps }">
             <div
-              v-bind="props"
+              v-bind="menuProps"
               class="color-option custom-picker"
               :class="{ active: isCustomColor }"
             >
@@ -126,8 +126,8 @@
               v-model="customColor"
               mode="hex"
               :modes="['hex']"
-              :width="mobile ? 300 : 500"
               show-swatches
+              :width="mobile ? 300 : 500"
             />
 
             <v-card-actions class="pa-0 pt-3">
@@ -190,7 +190,7 @@
 <script setup>
   import { computed, ref } from 'vue'
   import { useDisplay } from 'vuetify'
-  const { mobile } = useDisplay();
+  const { mobile } = useDisplay()
 
   const props = defineProps({
     modelValue: {

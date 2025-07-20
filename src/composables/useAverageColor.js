@@ -33,7 +33,7 @@ export async function averageColor (srcOrImgElement) {
         resolve([128, 128, 128]) // fallback grey
       }
     })
-    img.onerror = () => resolve([128, 128, 128]) // fallback grey
+    img.addEventListener('error', () => resolve([128, 128, 128])) // fallback grey
     if (typeof srcOrImgElement !== 'string' && img.complete) {
       img.onload() // trigger if already loaded
     }
