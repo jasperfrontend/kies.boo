@@ -136,7 +136,7 @@
             </v-list-item>
 
             <v-list-item
-              href="https://help.kies.boo/about/"
+              href="https://github.com/jasperfrontend/kies.boo/wiki"
               prepend-icon="mdi-information-outline"
               rel="noopener"
               target="_blank"
@@ -145,7 +145,7 @@
             </v-list-item>
 
             <v-list-item
-              href="https://help.kies.boo"
+              href="https://github.com/jasperfrontend/kies.boo/wiki/1-::-Welcome-to-Kies.boo"
               prepend-icon="mdi-help-circle-outline"
               rel="noopener"
               target="_blank"
@@ -173,8 +173,7 @@
           <v-card-actions class="justify-center pa-2">
             <v-btn
               class="text-caption"
-              href="https://help.kies.boo/privacy/"
-              rel="noopener"
+              to="/privacy"
               size="x-small"
               target="_blank"
               variant="text"
@@ -184,8 +183,7 @@
             <span class="text-caption mx-1">·</span>
             <v-btn
               class="text-caption"
-              href="https://help.kies.boo/terms/"
-              rel="noopener"
+              to="/terms"
               size="x-small"
               target="_blank"
               variant="text"
@@ -195,7 +193,7 @@
             <span class="text-caption mx-1">·</span>
             <v-btn
               class="text-caption"
-              href="https://help.kies.boo/cookies/"
+              to="/cookies"
               rel="noopener"
               size="x-small"
               target="_blank"
