@@ -134,25 +134,6 @@
             >
               <v-list-item-title>User Settings</v-list-item-title>
             </v-list-item>
-
-            <v-list-item
-              href="https://github.com/jasperfrontend/kies.boo/wiki"
-              prepend-icon="mdi-information-outline"
-              rel="noopener"
-              target="_blank"
-            >
-              <v-list-item-title>About</v-list-item-title>
-            </v-list-item>
-
-            <v-list-item
-              href="https://github.com/jasperfrontend/kies.boo/wiki/1-::-Welcome-to-Kies.boo"
-              prepend-icon="mdi-help-circle-outline"
-              rel="noopener"
-              target="_blank"
-              @click.stop="profileMenu = false"
-            >
-              <v-list-item-title>Help</v-list-item-title>
-            </v-list-item>
           </v-list>
 
           <v-divider />
@@ -173,33 +154,33 @@
           <v-card-actions class="justify-center pa-2">
             <v-btn
               class="text-caption"
-              to="/privacy"
+              to="/help"
               size="x-small"
               target="_blank"
               variant="text"
             >
-              Privacy
+              Help
             </v-btn>
             <span class="text-caption mx-1">·</span>
             <v-btn
               class="text-caption"
-              to="/terms"
+              to="/about"
               size="x-small"
               target="_blank"
               variant="text"
             >
-              Terms
+              About
             </v-btn>
             <span class="text-caption mx-1">·</span>
             <v-btn
               class="text-caption"
-              to="/cookies"
+              to="/legal"
               rel="noopener"
               size="x-small"
               target="_blank"
               variant="text"
             >
-              Cookie Policy
+              Legal
             </v-btn>
           </v-card-actions>
         </v-card>

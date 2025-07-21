@@ -4,11 +4,11 @@
   import BackgroundSelectionDialog from '@/components/BackgroundSelectionDialog.vue'
   import { useUserPreferences } from '@/composables/useUserPreferences'
   import { useViewModeStore } from '@/stores/viewMode'
+  import NotificationComponent from '@/components/NotificationComponent.vue'
 
   const { mobile } = useDisplay()
   const theme = useTheme()
   const viewModeStore = useViewModeStore()
-
   const selectedTheme = ref('system')
   const showBackgroundDialog = ref(false)
 
@@ -28,9 +28,30 @@
     { title: '60 items', value: 60 },
   ]
 
-  function changeTheme (newTheme) {
-    selectedTheme.value = newTheme
+  // Notification state
+  const notification = ref({
+    show: false,
+    type: 'success',
+    message: '',
+  })
+  
+  function showNotification (type, message) {
+    notification.value = {
+      show: true,
+      type,
+      message,
+    }
+  }
 
+  function closeNotification () {
+    notification.value.show = false
+  }
+  
+  
+  function changeTheme (newTheme) {
+    
+    selectedTheme.value = newTheme
+    
     if (newTheme === 'system') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       theme.global.name.value = isDark ? 'supabaseDarkTheme' : 'light'
@@ -41,23 +62,28 @@
     }
 
     localStorage.setItem('theme-preference', newTheme)
+
   }
 
   async function changeDoubleClickBehavior (newBehavior) {
     await saveDoubleClickBehavior(newBehavior)
+    showNotification('success', `Set double-click behaviour to ${newBehavior}`)
   }
 
   async function changeDomainCollapsing (enabled) {
     await saveDomainCollapsing(enabled)
+    showNotification('success', `Set domain collapsing to ${enabled}`)
   }
 
   async function changeItemsPerPage (value) {
     await saveItemsPerPage(value)
+    showNotification('success', `Set items per page to ${value}`)
   }
 
   function handleViewModeChange (mode) {
     if (!mobile.value) {
       viewModeStore.setMode(mode)
+      showNotification('success', `Set view mode to ${mode}`)
     }
   }
 
@@ -74,7 +100,7 @@
   })
 
   function onBackgroundChanged () {
-  // placeholder for future updates
+    showNotification('success', `Background changed`)
   }
 </script>
 
@@ -272,6 +298,16 @@
       v-model="showBackgroundDialog"
       @background-changed="onBackgroundChanged"
     />
+
+    
+    <NotificationComponent
+      :message="notification.message"
+      position="bottom-right"
+      :show="notification.show"
+      :type="notification.type"
+      @close="closeNotification"
+    />
+
   </div>
 </template>
 

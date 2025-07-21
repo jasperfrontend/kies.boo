@@ -2,7 +2,6 @@
   import { onMounted, onUnmounted, ref, watch } from 'vue'
   import { useRouter } from 'vue-router'
   import { useDisplay, useHotkey } from 'vuetify'
-  import commandPaletteService from '@/lib/commandPaletteService'
 
   const router = useRouter()
   const searchInputRef = ref(null)
@@ -17,18 +16,6 @@
       return
     }
 
-    // Check if it's a command
-    if (commandPaletteService.isCommand(searchQuery.value)) {
-      const executed = await commandPaletteService.executeCommand(searchQuery.value, router)
-      if (executed) {
-        // Command executed successfully, clear search and blur
-        handleBlurSearch()
-        return
-      }
-      // Command failed, fall through to normal search
-    }
-
-    // Normal search behavior
     if (searchQuery.value.trim()) {
       router.push(`/search/${encodeURIComponent(searchQuery.value.trim())}`)
       handleBlurSearch()
@@ -43,27 +30,6 @@
   function handleBlurSearch() {
     searchQuery.value = ''
     searchInputRef.value?.blur()
-    showCommandSuggestions.value = false
-    commandSuggestions.value = []
-  }
-
-  // Watch for command input to filter suggestions
-  watch(searchQuery, (newValue) => {
-    if (commandPaletteService.isCommand(newValue)) {
-      // Is a command, show suggestions
-      const commandPart = newValue.slice(1) // Remove prefix
-      commandSuggestions.value = commandPaletteService.getCommandSuggestions(commandPart)
-      showCommandSuggestions.value = true
-    } else {
-      // Not a command, hide suggestions and clear commands
-      showCommandSuggestions.value = false
-      commandSuggestions.value = []
-    }
-  })
-
-  // Handle input focus - just focus, don't show anything
-  function handleFocus() {
-    // Do nothing - only show commands when user types "/"
   }
 
   // Handle input blur - hide suggestions with delay for menu interactions
@@ -76,26 +42,6 @@
       relatedTarget.closest('[role="menu"]')
     )) {
       return
-    }
-    
-    // Hide menu with short delay to allow for menu interactions
-    setTimeout(() => {
-      showCommandSuggestions.value = false
-      commandSuggestions.value = []
-    }, 150)
-  }
-
-  // Handle command suggestion selection
-  function selectCommandSuggestion(command) {
-    searchQuery.value = `/${command.key}`
-    showCommandSuggestions.value = false
-    handleSearch()
-  }
-
-  // Handle menu state changes
-  function handleMenuUpdate(isOpen) {
-    if (!isOpen) {
-      showCommandSuggestions.value = false
     }
   }
 
@@ -114,8 +60,6 @@
   })
 
   onMounted(async () => {
-    // Initialize command palette
-    await commandPaletteService.initialize()
     
     // Listen for focus search hotkey event
     document.addEventListener('focus-search', handleFocusSearch)
@@ -144,7 +88,6 @@
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
       @blur="handleBlur"
-      @focus="handleFocus"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     >
@@ -167,69 +110,10 @@
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
       @blur="handleBlur"
-      @focus="handleFocus"
       @keydown.enter="handleSearch"
       @keydown.esc="handleBlurSearch"
     />
 
-    <!-- Command Suggestions Dropdown -->
-    <v-menu
-      v-if="showCommandSuggestions && commandSuggestions.length > 0"
-      v-model="showCommandSuggestions"
-      :activator="searchInputRef"
-      :close-on-back="false"
-      :close-on-content-click="false"
-      location="bottom start"
-      max-width="400"
-      :no-click-animation="true"
-      offset="4"
-      :persistent="true"
-      @update:model-value="handleMenuUpdate"
-    >
-      <v-card @click.stop @mousedown.stop>
-        <v-card-title class="pa-3 pb-1">
-          <v-icon class="mr-2" icon="mdi-flash" size="16" />
-          Commands
-        </v-card-title>
-        <v-list density="compact">
-          <v-list-item
-            v-for="command in commandSuggestions.slice(0, 8)"
-            :key="command.key"
-            class="px-3"
-            @click.stop="selectCommandSuggestion(command)"
-            @mousedown.stop.prevent
-          >
-            <template #prepend>
-              <v-chip
-                class="mr-3"
-                color="primary"
-                size="x-small"
-                variant="outlined"
-              >
-                /{{ command.key }}
-              </v-chip>
-            </template>
-            <v-list-item-title>{{ command.description }}</v-list-item-title>
-            <template #append>
-              <v-chip
-                v-if="command.isCustom"
-                color="secondary"
-                size="x-small"
-                variant="tonal"
-              >
-                Custom
-              </v-chip>
-            </template>
-          </v-list-item>
-        </v-list>
-        <v-card-actions class="pa-2">
-          <v-spacer />
-          <div class="text-caption text-medium-emphasis">
-            Press Enter to execute command
-          </div>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
   </div>
 </template>
 

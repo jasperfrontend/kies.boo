@@ -14,27 +14,6 @@
       :number-buffer="numberBuffer"
     />
 
-    <!-- View Toggle for Desktop (positioned above the content) -->
-    <!-- <div v-if="!mobile" class="d-flex justify-end mb-4">
-      <v-btn-toggle
-        v-model="currentViewMode"
-        class="view-toggle"
-        density="compact"
-        divided
-        variant="outlined"
-        @update:model-value="handleViewModeChange"
-      >
-        <v-btn size="small" value="table">
-          <v-icon class="mr-1" icon="mdi-table" size="16" />
-          Table
-        </v-btn>
-        <v-btn size="small" value="card">
-          <v-icon class="mr-1" icon="mdi-view-grid" size="16" />
-          Cards
-        </v-btn>
-      </v-btn-toggle>
-    </div> -->
-
     <!-- CARD VIEW: Mobile (always) or Desktop (when selected) -->
     <div
       v-if="mobile || currentViewMode === 'card'"
@@ -81,7 +60,7 @@
           :style="{
             backgroundColor: `rgba(var(--v-theme-surface), 0.95)`
           }"
-          variant="outlined"
+          variant="flat"
           @click="openBookmark(item.url)"
         >
           <v-card-text class="pa-3">
@@ -411,13 +390,6 @@
 
   // View mode state - mobile always uses card, desktop can choose
   const currentViewMode = computed(() => viewModeStore.mode)
-
-  // Handle view mode changes (desktop only)
-  function handleViewModeChange (newMode) {
-    if (!mobile.value) {
-      viewModeStore.setMode(newMode)
-    }
-  }
 
   // Initialize view mode from storage on mount
   onMounted(() => {
@@ -833,7 +805,7 @@
 
 .bookmark-card {
   position: relative;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
   cursor: pointer;
 }
 
@@ -843,13 +815,12 @@
 }
 
 .bookmark-card.selected {
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgba(var(--v-theme-primary), 0.1) !important;
+  border-color: rgb(var(--v-theme-surface));
+  background-color: rgba(var(--v-theme-surface), 0.7) !important;
 }
 
 .surface-card {
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
 
 .bookmark-title {
@@ -882,7 +853,7 @@
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 8px;
+    gap: 2px;
   }
 
   .bookmark-card {

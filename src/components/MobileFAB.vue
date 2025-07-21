@@ -142,7 +142,6 @@
   import { nextTick, ref, watch } from 'vue'
   import { useRouter } from 'vue-router'
   import { useDisplay } from 'vuetify'
-  import commandPaletteService from '@/lib/commandPaletteService'
   import { useAppStore } from '@/stores/app'
 
   const { mobile } = useDisplay()
@@ -160,18 +159,6 @@
 
   // Emit event to trigger profile menu from AppTopBar
   const emit = defineEmits(['open-profile-menu'])
-
-  // Dynamic FAB classes based on current route
-  // const fabClasses = computed(() => {
-  //   const classes = ['mobile-fab']
-
-  //   // Adjust position based on current page to avoid conflicts
-  //   if (router.currentRoute.value.path.includes('/profile')) {
-  //     classes.push('fab-offset-profile')
-  //   }
-
-  //   return classes.join(' ')
-  // })
 
   // Methods
   function openSearch () {
@@ -194,18 +181,6 @@
   async function handleSearch () {
     if (!searchQuery.value.trim()) return
 
-    // Check if it's a command
-    if (commandPaletteService.isCommand(searchQuery.value)) {
-      const executed = await commandPaletteService.executeCommand(searchQuery.value, router)
-      if (executed) {
-        // Command executed successfully, close search
-        closeSearch()
-        return
-      }
-      // Command failed, fall through to normal search
-    }
-
-    // Normal search behavior
     if (searchQuery.value.trim()) {
       router.push(`/search/${encodeURIComponent(searchQuery.value.trim())}`)
       closeSearch()
@@ -227,12 +202,6 @@
     // Emit event to trigger profile menu in AppTopBar
     emit('open-profile-menu')
   }
-
-  // function openQuickActions () {
-  //   fabOpen.value = false
-  //   // Future: Open quick actions menu
-  //   console.log('Quick actions - to be implemented')
-  // }
 
   // Auto-close search sheet when navigating
   watch(() => router.currentRoute.value.path, () => {

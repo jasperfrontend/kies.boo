@@ -1,24 +1,33 @@
 <template>
   <div class="bookmark-delete-wrapper">
-    <!-- Delete Button -->
-    <v-btn
-      v-if="hasSelectedItems"
-      :class="buttonClass"
-      :color="buttonColor"
-      :loading="deleting"
-      :prepend-icon="buttonIcon"
-      :size="buttonSize"
-      :variant="buttonVariant"
-      @click="handleDeleteSelected"
-    >
-      {{ buttonText }}
-      <v-badge
-        v-if="showKeyboardShortcut"
-        color="grey-darken-3"
-        content="Ctrl+Del"
-        inline
-      />
-    </v-btn>
+    <v-slide-y-reverse-transition>
+      <v-sheet
+        v-if="hasSelectedItems"
+        width="100%"
+        height="60"
+        color="red-darken-2"
+        class="position-fixed bottom-0 left-0 b-0 l-0 delete-button-sheet"
+      >
+        <!-- Delete Button -->
+        <v-btn
+          :class="buttonClass"
+          :color="buttonColor"
+          :loading="deleting"
+          :prepend-icon="buttonIcon"
+          :size="buttonSize"
+          :variant="buttonVariant"
+          @click="handleDeleteSelected"
+        >
+          {{ buttonText }}
+          <v-badge
+            v-if="showKeyboardShortcut"
+            color="grey-darken-3"
+            content="Ctrl+Del"
+            inline
+          />
+        </v-btn>
+      </v-sheet>
+    </v-slide-y-reverse-transition>
 
     <!-- Undo Snackbar -->
     <UndoSnackbar
@@ -57,7 +66,7 @@
     // Button appearance
     buttonColor: {
       type: String,
-      default: 'red-darken-4',
+      default: 'surface',
     },
     buttonVariant: {
       type: String,
@@ -65,7 +74,7 @@
     },
     buttonClass: {
       type: String,
-      default: 'mx-4 position-fixed z-10 mt-2 elevation-10',
+      default: 'mx-4 position-fixed bottom-0 left-0 global-delete-bookmark-button mb-3 elevation-10',
     },
     buttonIcon: {
       type: String,
@@ -172,7 +181,7 @@
   })
 </script>
 <style scoped>
-.z-10 {
+.delete-button-sheet {
   z-index: 10;
 }
 </style>
