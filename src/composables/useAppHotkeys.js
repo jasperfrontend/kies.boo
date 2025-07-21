@@ -17,32 +17,35 @@ export function useAppHotkeys (router, appStore) {
     useHotkey('g-b', () => {
       router.push('/')
     }, {
-      inputs: false,
-      sequenceTimeout: 1000,
+      inputs: false
     })
 
     // G then T - Go to tags
     useHotkey('g-t', () => {
       router.push('/tags')
     }, {
-      inputs: false,
-      sequenceTimeout: 1000,
+      inputs: false
     })
 
     // G then P - Go to saved paths
     useHotkey('g-p', () => {
       router.push('/paths')
     }, {
-      inputs: false,
-      sequenceTimeout: 1000,
+      inputs: false
     })
 
     // G then U - Open user profile menu
     useHotkey('g-u', () => {
       router.push('/profile')
     }, {
-      inputs: false,
-      sequenceTimeout: 1000,
+      inputs: false
+    })
+
+    // G then S - Open user settings
+    useHotkey('g-s', () => {
+      router.push('/settings')
+    }, {
+      inputs: false
     })
   }
 

@@ -130,13 +130,12 @@
   const rowClasses = computed(() => {
     const classes = []
 
-    // Use isFocusedByKeyboard instead of props.isFocused for better control
     if (isFocusedByKeyboard.value && props.isSelected) {
-      classes.push('bg-red-darken-3')
+      classes.push('bg-selected-row')
     } else if (isFocusedByKeyboard.value && !props.isSelected) {
       classes.push('bg-blue-grey-darken-3')
     } else if (props.isSelected && !isFocusedByKeyboard.value) {
-      classes.push('bg-red-darken-3')
+      classes.push('bg-selected-row')
     }
 
     return classes.join(' ')

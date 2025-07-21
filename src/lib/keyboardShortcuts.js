@@ -34,24 +34,29 @@ export const keyboardShortcuts = [
     category: 'Navigation',
     shortcuts: [
       {
-        key: 'G + B',
+        key: 'G then B',
         description: 'Go to Bookmarks page',
         action: 'goToBookmarks',
       },
       {
-        key: 'G + T',
+        key: 'G then T',
         description: 'Go to Tags page',
         action: 'goToTags',
       },
       {
-        key: 'G + P',
+        key: 'G then P',
         description: 'Go to Saved Paths page',
         action: 'goToPaths',
       },
       {
-        key: 'G + U',
-        description: 'Go to Profile page',
+        key: 'G then U',
+        description: 'Go to Profile',
         action: 'openProfile',
+      },
+      {
+        key: 'G then S',
+        description: 'Go to Settings',
+        action: 'openSettings',
       },
     ],
   },
@@ -162,27 +167,6 @@ export const keyboardShortcuts = [
         key: 'Esc',
         description: 'Close dialogs and modals',
         action: 'closeDialog',
-      },
-    ],
-  },
-  {
-    category: 'Search Hacks',
-    shortcuts: [
-      {
-        key: '/gb',
-        description: 'Search for /gb to go to your Bookmarks page',
-      },
-      {
-        key: '/gt',
-        description: 'Search for /gt to go to your Tags page',
-      },
-      {
-        key: '/gp',
-        description: 'Search for /gp to go to your Saved Paths page',
-      },
-      {
-        key: '/gu',
-        description: 'Search for /gu to go to your User Profile page',
       },
     ],
   },

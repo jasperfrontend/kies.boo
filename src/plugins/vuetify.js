@@ -13,8 +13,8 @@ import 'vuetify/styles'
 const supabaseDarkTheme = {
   dark: true,
   colors: {
-    'background': '#121212',
-    'surface': '#00040A',
+    'background': '#11161C',
+    'surface': '#000813',
     'surface-bright': '#030D1D',
     'surface-light': '#0B182B',
     'surface-variant': '#0B182B',
@@ -23,6 +23,7 @@ const supabaseDarkTheme = {
     'info': '#6682CF',
     'success': '#4BB56C',
     'warning': '#D37F2A',
+    'selected-row': '#674949',
   },
   variables: {
     'border-color': '#333333',
