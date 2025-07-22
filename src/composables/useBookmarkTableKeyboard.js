@@ -124,11 +124,20 @@ export function useBookmarkTableKeyboard (
   // }
 
   // Keyboard navigation functions
+  function getCurrentIndex () {
+    return focusedRowIndex.value >= 0
+      ? focusedRowIndex.value
+      : (rememberedFocusIndex.value >= 0
+          ? rememberedFocusIndex.value
+          : -1)
+  }
+
   function handleTableNavigateNext () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex < bookmarkCount - 1
+        ? startIndex + 1
         : 0
       focusRow(newIndex)
     }
@@ -137,8 +146,9 @@ export function useBookmarkTableKeyboard (
   function handleTableNavigatePrev () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex > 0
+        ? startIndex - 1
         : bookmarkCount - 1
       focusRow(newIndex)
     }
@@ -150,26 +160,6 @@ export function useBookmarkTableKeyboard (
       if (item) {
         toggleItemSelection(item.id)
       }
-    }
-  }
-
-  function handleTableArrowDown () {
-    const bookmarkCount = bookmarks.value.length
-    if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
-        : 0
-      focusRow(newIndex)
-    }
-  }
-
-  function handleTableArrowUp () {
-    const bookmarkCount = bookmarks.value.length
-    if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
-        : bookmarkCount - 1
-      focusRow(newIndex)
     }
   }
 
@@ -234,8 +224,6 @@ export function useBookmarkTableKeyboard (
     document.addEventListener('table-navigate-next', handleTableNavigateNext)
     document.addEventListener('table-navigate-prev', handleTableNavigatePrev)
     document.addEventListener('table-toggle-selection', handleTableToggleSelection)
-    document.addEventListener('table-arrow-down', handleTableArrowDown)
-    document.addEventListener('table-arrow-up', handleTableArrowUp)
     document.addEventListener('table-clear-focus', handleTableClearFocus)
     document.addEventListener('table-edit-focused', handleTableEditFocused)
     document.addEventListener('table-view-details-focused', handleTableViewDetailsFocused)
@@ -247,8 +235,6 @@ export function useBookmarkTableKeyboard (
     document.removeEventListener('table-navigate-next', handleTableNavigateNext)
     document.removeEventListener('table-navigate-prev', handleTableNavigatePrev)
     document.removeEventListener('table-toggle-selection', handleTableToggleSelection)
-    document.removeEventListener('table-arrow-down', handleTableArrowDown)
-    document.removeEventListener('table-arrow-up', handleTableArrowUp)
     document.removeEventListener('table-clear-focus', handleTableClearFocus)
     document.removeEventListener('table-edit-focused', handleTableEditFocused)
     document.removeEventListener('table-view-details-focused', handleTableViewDetailsFocused)
