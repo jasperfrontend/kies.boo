@@ -41,6 +41,7 @@
         @search-tag="$emit('search-tag', $event)"
         @toggle-selection="$emit('toggle-item-selection', $event)"
         @view-details="$emit('view-details', $event)"
+        @row-clicked="handleRowClicked"
       />
     </template>
 
@@ -98,11 +99,12 @@ const props = defineProps({
   totalItems: Number,
 })
 
-defineEmits([
+const emit = defineEmits([
   'edit',
   'expand-domain',
   'focus-changed',
   'options-update',
+  'row-clicked',
   'search-tag',
   'toggle-item-selection',
   'toggle-select-all',
@@ -125,5 +127,10 @@ watch(() => props.serverOptions, newOptions => {
 // Handle focus changes and relay to parent
 function handleFocusChanged(index, isFocused) {
   emit('focus-changed', index, isFocused)
+}
+
+// Handle row clicks and relay to parent
+function handleRowClicked(index) {
+  emit('row-clicked', index)
 }
 </script>

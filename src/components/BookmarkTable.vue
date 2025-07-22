@@ -61,6 +61,7 @@
       @expand-domain="handleExpandDomain"
       @focus-changed="handleRowFocusChanged"
       @options-update="handleOptionsUpdate"
+      @row-clicked="handleRowClicked"
       @search-tag="handleSearchTag"
       @toggle-item-selection="toggleItemSelection"
       @toggle-select-all="toggleSelectAll"
@@ -237,7 +238,44 @@ const { numberBuffer, errorMessage } = useNumericPagination(
   () => Object.values(dialogsOpen.value).some(Boolean),
 )
 
-// Initialize view mode from storage on mount
+// Custom keyboard navigation that uses remembered focus
+function handleTableNavigate(direction) {
+  if (mobile.value || currentViewMode.value !== 'table') return
+  
+  const bookmarkCount = displayBookmarks.value.length
+  if (bookmarkCount === 0) return
+
+  let newIndex
+  // Use remembered focus index if no current focus, otherwise use current focus
+  const startIndex = focusedRowIndex.value >= 0 ? focusedRowIndex.value : (rememberedFocusIndex.value >= 0 ? rememberedFocusIndex.value : -1)
+
+  if (direction === 'down') {
+    newIndex = startIndex < bookmarkCount - 1 ? startIndex + 1 : 0
+  } else if (direction === 'up') {
+    newIndex = startIndex > 0 ? startIndex - 1 : bookmarkCount - 1
+  } else {
+    return
+  }
+
+  // Update both focus indexes
+  focusedRowIndex.value = newIndex
+  rememberedFocusIndex.value = newIndex
+  
+  // Focus the DOM element
+  setTimeout(() => {
+    const rowElement = document.querySelector(`[data-bookmark-row-index="${newIndex}"]`)
+    if (rowElement) {
+      rowElement.focus({ preventScroll: false })
+      rowElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
+  }, 0)
+}
+
+// Override keyboard navigation events
 onMounted(() => {
   if (mobile.value) {
     viewModeStore.setMode('card')
@@ -247,10 +285,23 @@ onMounted(() => {
 
   // Listen for view mode change events from command palette
   document.addEventListener('change-view-mode', handleViewModeCommand)
+  
+  // Override the table navigation events to use our custom logic
+  document.addEventListener('table-arrow-down', (e) => {
+    e.preventDefault?.()
+    handleTableNavigate('down')
+  })
+  document.addEventListener('table-arrow-up', (e) => {
+    e.preventDefault?.()
+    handleTableNavigate('up')
+  })
 })
 
 onUnmounted(() => {
   document.removeEventListener('change-view-mode', handleViewModeCommand)
+  // Clean up our custom handlers
+  document.removeEventListener('table-arrow-down', handleTableNavigate)
+  document.removeEventListener('table-arrow-up', handleTableNavigate)
 })
 
 // Watch for mobile changes and force card view
@@ -318,11 +369,20 @@ function handleViewModeCommand(event) {
   }
 }
 
+function handleRowClicked(index) {
+  if (mobile.value || currentViewMode.value !== 'table') return
+  
+  // Update the remembered focus index when a row is manually clicked
+  rememberedFocusIndex.value = index
+}
+
 function handleRowFocusChanged(index, isFocused) {
   if (mobile.value || currentViewMode.value !== 'table') return
 
   if (isFocused) {
     focusedRowIndex.value = index
+    // Also update remembered focus when navigating with keyboard
+    rememberedFocusIndex.value = index
   } else if (focusedRowIndex.value === index) {
     focusedRowIndex.value = -1
   }

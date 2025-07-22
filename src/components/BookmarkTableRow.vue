@@ -7,6 +7,7 @@
     :style="rowStyles"
     tabindex="0"
     @blur="handleBlur"
+    @click="handleClick"
     @dblclick="handleDoubleClick"
     @focus="handleFocus"
     @mouseenter="isHovered = true"
@@ -130,7 +131,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit', 'focus-changed'])
+const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit', 'focus-changed', 'row-clicked'])
 
 const actionsMenu = ref(false)
 const isHovered = ref(false)
@@ -192,6 +193,11 @@ const rowStyles = computed(() => {
 
   return styles
 })
+
+function handleClick() {
+  // Emit row clicked event to update remembered focus index
+  emit('row-clicked', props.index)
+}
 
 function handleFocus () {
   isFocusedByKeyboard.value = true
