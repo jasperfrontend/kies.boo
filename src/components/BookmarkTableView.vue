@@ -33,10 +33,11 @@
         v-if="item.type !== 'collapse'"
         :index="index"
         :is-focused="focusedRowIndex === index"
+        :is-last-highlighted="rememberedFocusIndex === index"
         :is-selected="selectedItems.includes(item.id)"
         :item="item"
         @edit="$emit('edit', $event)"
-        @focus-changed="$emit('focus-changed', $event)"
+        @focus-changed="handleFocusChanged"
         @search-tag="$emit('search-tag', $event)"
         @toggle-selection="$emit('toggle-item-selection', $event)"
         @view-details="$emit('view-details', $event)"
@@ -86,6 +87,7 @@ const props = defineProps({
   collapsedDomains: Array,
   expandingDomain: String,
   focusedRowIndex: Number,
+  rememberedFocusIndex: Number,
   isAllSelected: Boolean,
   isIndeterminate: Boolean,
   loading: Boolean,
@@ -119,4 +121,9 @@ const localServerOptions = ref({
 watch(() => props.serverOptions, newOptions => {
   localServerOptions.value = { ...newOptions }
 }, { deep: true, immediate: true })
+
+// Handle focus changes and relay to parent
+function handleFocusChanged(index, isFocused) {
+  emit('focus-changed', index, isFocused)
+}
 </script>

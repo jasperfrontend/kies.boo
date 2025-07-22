@@ -61,7 +61,6 @@
       {{ formatDate(item.created_at) }}
     </td>
     <td>
-
       <v-btn
         size="small"
         :id="`menu-activator-${item.id}`"
@@ -92,140 +91,145 @@
         </v-list>
       </v-menu>
     </td>
+
+    <!-- Last Highlighted Indicator -->
+    <div
+      v-if="isLastHighlighted && !isFocusedByKeyboard"
+      class="last-highlighted-indicator"
+    >
+      <v-icon color="primary" icon="mdi-chevron-right" size="12" />
+    </div>
   </tr>
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue'
-  import { useUserPreferences } from '@/composables/useUserPreferences'
+import { computed, ref } from 'vue'
+import { useUserPreferences } from '@/composables/useUserPreferences'
+import { useBookmarkFormatting } from '@/composables/useBookmarkFormatting'
 
-  const props = defineProps({
-    item: {
-      type: Object,
-      required: true,
-    },
-    index: {
-      type: Number,
-      required: true,
-    },
-    isSelected: {
-      type: Boolean,
-      required: true,
-    },
-    isFocused: {
-      type: Boolean,
-      default: false,
-    },
-  })
+const props = defineProps({
+  item: {
+    type: Object,
+    required: true,
+  },
+  index: {
+    type: Number,
+    required: true,
+  },
+  isSelected: {
+    type: Boolean,
+    required: true,
+  },
+  isFocused: {
+    type: Boolean,
+    default: false,
+  },
+  isLastHighlighted: {
+    type: Boolean,
+    default: false,
+  },
+})
 
-  const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit', 'focus-changed'])
+const emit = defineEmits(['toggle-selection', 'search-tag', 'view-details', 'edit', 'focus-changed'])
 
-  const actionsMenu = ref(false)
-  const isHovered = ref(false)
-  const isFocusedByKeyboard = ref(false)
+const actionsMenu = ref(false)
+const isHovered = ref(false)
+const isFocusedByKeyboard = ref(false)
 
-  // Get user preferences for double-click behavior
-  const { doubleClickBehavior } = useUserPreferences()
+// Get user preferences for double-click behavior
+const { doubleClickBehavior } = useUserPreferences()
 
-  const rowClasses = computed(() => {
-    const classes = []
+// Get formatting functions
+const { displayUrl, formatDate } = useBookmarkFormatting()
 
-    if (isFocusedByKeyboard.value && props.isSelected) {
-      classes.push('bg-selected-row')
-    } else if (isFocusedByKeyboard.value && !props.isSelected) {
-      classes.push('bg-blue-grey-darken-3')
-    } else if (props.isSelected && !isFocusedByKeyboard.value) {
-      classes.push('bg-selected-row')
-    }
+const rowClasses = computed(() => {
+  const classes = []
 
-    return classes.join(' ')
-  })
+  if (isFocusedByKeyboard.value && props.isSelected) {
+    classes.push('bg-selected-row')
+  } else if (isFocusedByKeyboard.value && !props.isSelected) {
+    classes.push('bg-blue-grey-darken-3')
+  } else if (props.isSelected && !isFocusedByKeyboard.value) {
+    classes.push('bg-selected-row')
+  }
 
-  const rowStyles = computed(() => {
-    const styles = {}
+  // Add last highlighted class
+  if (props.isLastHighlighted && !isFocusedByKeyboard.value) {
+    classes.push('last-highlighted')
+  }
 
-    // Always set a background image for smooth transitions
-    if (props.item.metadata?.vibrant_color) {
-      const [r, g, b] = props.item.metadata.vibrant_color
+  return classes.join(' ')
+})
 
-      if (isHovered.value) {
-        // Hover state - visible gradient
-        const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
-        const startColorMinimal = `rgba(${r}, ${g}, ${b}, 0.05)`
-        const endColor = 'transparent'
+const rowStyles = computed(() => {
+  const styles = {}
 
-        styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
-      } else {
-        // Default state - transparent gradient (same structure, but invisible)
-        const transparentColor = `rgba(${r}, ${g}, ${b}, 0)`
+  // Always set a background image for smooth transitions
+  if (props.item.metadata?.vibrant_color) {
+    const [r, g, b] = props.item.metadata.vibrant_color
 
-        styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 5%, ${transparentColor} 15%, ${transparentColor} 20%, ${transparentColor} 70%, ${transparentColor} 85%, ${transparentColor} 100%)`
-      }
+    if (isHovered.value) {
+      // Hover state - visible gradient
+      const startColor = `rgba(${r}, ${g}, ${b}, 0.15)`
+      const startColorMinimal = `rgba(${r}, ${g}, ${b}, 0.05)`
+      const endColor = 'transparent'
+
+      styles.backgroundImage = `linear-gradient(to right, ${startColor} 0%, ${startColor} 5%, ${startColorMinimal} 15%, ${endColor} 20%, ${endColor} 70%, ${startColorMinimal} 85%, ${startColor} 100%)`
     } else {
-      // No vibrant color available - set transparent gradient for consistency
-      const transparentColor = `rgba(128, 128, 128, 0)`
-      styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 100%)`
+      // Default state - transparent gradient (same structure, but invisible)
+      const transparentColor = `rgba(${r}, ${g}, ${b}, 0)`
+
+      styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 5%, ${transparentColor} 15%, ${transparentColor} 20%, ${transparentColor} 70%, ${transparentColor} 85%, ${transparentColor} 100%)`
     }
-
-    // Always set transition since we always have a background image now
-    styles.transition = 'background-image 200ms ease-in-out'
-
-    return styles
-  })
-
-  function displayUrl (url) {
-    const cleanedUrl = url
-      .replace(/^https?:\/\/(www\.)?/, '')
-      .replace(/\/$/, '')
-
-    return cleanedUrl.length > 50
-      ? cleanedUrl.slice(0, 47) + '...'
-      : cleanedUrl
+  } else {
+    // No vibrant color available - set transparent gradient for consistency
+    const transparentColor = `rgba(128, 128, 128, 0)`
+    styles.backgroundImage = `linear-gradient(to right, ${transparentColor} 0%, ${transparentColor} 100%)`
   }
 
-  function formatDate (dateString) {
-    const d = new Date(dateString)
-    const pad = n => String(n).padStart(2, '0')
-    return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear().toString().slice(2)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
-  }
+  // Always set transition since we always have a background image now
+  styles.transition = 'background-image 200ms ease-in-out'
 
-  function handleFocus () {
-    isFocusedByKeyboard.value = true
+  return styles
+})
+
+function handleFocus () {
+  isFocusedByKeyboard.value = true
+  emit('focus-changed', props.index, true)
+}
+
+function handleBlur () {
+  isFocusedByKeyboard.value = false
+  emit('focus-changed', props.index, false)
+}
+
+function handleDoubleClick () {
+  if (doubleClickBehavior.value === 'open') {
+    // Open bookmark in new tab
+    window.open(props.item.url, '_blank')
+  } else {
+    // Default behavior: select/deselect the row
+    emit('toggle-selection', props.item.id)
+  }
+}
+
+function handleViewDetails () {
+  actionsMenu.value = false
+  // Ensure this row remembers it was focused before opening dialog
+  if (isFocusedByKeyboard.value) {
     emit('focus-changed', props.index, true)
   }
+  emit('view-details', props.item)
+}
 
-  function handleBlur () {
-    isFocusedByKeyboard.value = false
-    emit('focus-changed', props.index, false)
+function handleEdit () {
+  actionsMenu.value = false
+  // Ensure this row remembers it was focused before opening dialog
+  if (isFocusedByKeyboard.value) {
+    emit('focus-changed', props.index, true)
   }
-
-  function handleDoubleClick () {
-    if (doubleClickBehavior.value === 'open') {
-      // Open bookmark in new tab
-      window.open(props.item.url, '_blank')
-    } else {
-      // Default behavior: select/deselect the row
-      emit('toggle-selection', props.item.id)
-    }
-  }
-
-  function handleViewDetails () {
-    actionsMenu.value = false
-    // Ensure this row remembers it was focused before opening dialog
-    if (isFocusedByKeyboard.value) {
-      emit('focus-changed', props.index, true)
-    }
-    emit('view-details', props.item)
-  }
-
-  function handleEdit () {
-    actionsMenu.value = false
-    // Ensure this row remembers it was focused before opening dialog
-    if (isFocusedByKeyboard.value) {
-      emit('focus-changed', props.index, true)
-    }
-    emit('edit', props.item)
-  }
+  emit('edit', props.item)
+}
 </script>
 
 <style scoped>
@@ -244,5 +248,26 @@
 
 .bookmark-table-row:hover td {
   border-color: red;
+}
+
+/* Last highlighted row styling */
+.bookmark-table-row.last-highlighted {
+  border-left: 3px solid rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.05);
+}
+
+/* Last highlighted indicator */
+.last-highlighted-indicator {
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgb(var(--v-theme-primary));
+  border-radius: 0 4px 4px 0;
+  padding: 2px 4px 2px 2px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
 }
 </style>

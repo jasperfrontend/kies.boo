@@ -5,13 +5,13 @@ export const BOOKMARK_TABLE_HEADERS = [
     title: '',
     key: 'select',
     sortable: false,
-    width: '48px',
+    width: '50px',
   },
   {
     title: '',
     key: 'favicon',
     sortable: false,
-    width: '48px',
+    width: '50px',
   },
   {
     title: 'Title',
@@ -29,13 +29,13 @@ export const BOOKMARK_TABLE_HEADERS = [
     title: 'Tags',
     key: 'tags',
     sortable: false,
-    width: '600px',
+    width: '400px',
   },
-  {
-    title: 'Created',
-    key: 'created_at',
-    sortable: true,
-  },
+  // {
+  //   title: 'Created',
+  //   key: 'created_at',
+  //   sortable: true,
+  // },
   {
     title: 'Actions',
     key: 'actions',

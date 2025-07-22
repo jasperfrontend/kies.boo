@@ -84,7 +84,7 @@
       clearable
       density="compact"
       hide-details
-      label="Find bookmarks or use /commands"
+      label="Find bookmarks (F)"
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
       @blur="handleBlur"
@@ -106,7 +106,7 @@
       clearable
       density="compact"
       hide-details
-      label="Find bookmarks or use /commands"
+      label="Find bookmarks (F)"
       prepend-inner-icon="mdi-magnify"
       variant="outlined"
       @blur="handleBlur"

@@ -1,9 +1,5 @@
 <template>
-  <v-container
-    class="pa-1"
-    fluid
-  >
-
+  <div>
     <BookmarkTable
       v-model:selected-items="appStore.selectedItems"
       :dialog-open="appStore.addBookmarkDialog"
@@ -21,7 +17,7 @@
       :type="notification.type"
       @close="closeNotification"
     />
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -48,3 +44,8 @@
     appStore.clearSelectedItems()
   }
 </script>
+
+<route lang="yaml">
+meta:
+  layout: contentpage
+</route>

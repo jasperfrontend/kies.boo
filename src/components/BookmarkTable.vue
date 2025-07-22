@@ -48,6 +48,7 @@
       :collapsed-domains="collapsedDomainsWithCounts"
       :expanding-domain="expandingDomain"
       :focused-row-index="focusedRowIndex"
+      :remembered-focus-index="rememberedFocusIndex"
       :is-all-selected="isAllSelected"
       :is-indeterminate="isIndeterminate"
       :loading="loading"
@@ -196,6 +197,7 @@ const {
 // Keyboard navigation - only for desktop table view
 const {
   focusedRowIndex,
+  rememberedFocusIndex,
   restoreFocus,
   clearRememberedFocus,
 } = useBookmarkTableKeyboard(
