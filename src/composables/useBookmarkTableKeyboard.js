@@ -162,7 +162,6 @@ export function useBookmarkTableKeyboard (
       }
     }
   }
-
   function handleTableClearFocus () {
     if (!hasOpenDialogs()) {
       focusedRowIndex.value = -1
