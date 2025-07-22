@@ -124,11 +124,20 @@ export function useBookmarkTableKeyboard (
   // }
 
   // Keyboard navigation functions
+  function getCurrentIndex () {
+    return focusedRowIndex.value >= 0
+      ? focusedRowIndex.value
+      : (rememberedFocusIndex.value >= 0
+          ? rememberedFocusIndex.value
+          : -1)
+  }
+
   function handleTableNavigateNext () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex < bookmarkCount - 1
+        ? startIndex + 1
         : 0
       focusRow(newIndex)
     }
@@ -137,8 +146,9 @@ export function useBookmarkTableKeyboard (
   function handleTableNavigatePrev () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex > 0
+        ? startIndex - 1
         : bookmarkCount - 1
       focusRow(newIndex)
     }
@@ -156,8 +166,9 @@ export function useBookmarkTableKeyboard (
   function handleTableArrowDown () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value < bookmarkCount - 1
-        ? focusedRowIndex.value + 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex < bookmarkCount - 1
+        ? startIndex + 1
         : 0
       focusRow(newIndex)
     }
@@ -166,8 +177,9 @@ export function useBookmarkTableKeyboard (
   function handleTableArrowUp () {
     const bookmarkCount = bookmarks.value.length
     if (!hasOpenDialogs() && bookmarkCount > 0) {
-      const newIndex = focusedRowIndex.value > 0
-        ? focusedRowIndex.value - 1
+      const startIndex = getCurrentIndex()
+      const newIndex = startIndex > 0
+        ? startIndex - 1
         : bookmarkCount - 1
       focusRow(newIndex)
     }
